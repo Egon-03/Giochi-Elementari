@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Il Quaderno degli Enigmi — Detective Matematica</title>
+<title>Il Segreto dei Tre Castelli — Detective Storia del Ticino</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Nunito:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -38,7 +38,7 @@
   .center{text-align:center;}
   .eyebrow{font-family:var(--font-mono);color:var(--brass);font-size:.8rem;letter-spacing:.15em;text-transform:uppercase;margin:0 0 .5rem;}
 
-  .flap-title{font-size:clamp(1.5rem,5.4vw,2.8rem);color:var(--paper);margin:.2rem 0 .6rem;min-height:1.2em;}
+  .flap-title{font-size:clamp(1.6rem,5.6vw,3rem);color:var(--paper);margin:.2rem 0 .6rem;min-height:1.2em;}
   .flap-char{display:inline-block;font-family:var(--font-display);}
   .flap-char.flip{transform:rotateX(85deg);transition:transform .08s linear;}
 
@@ -59,41 +59,48 @@
   .howto ul{margin:.7rem 0 0;padding-left:1.2rem;}
   .howto li{margin-bottom:.4rem;}
 
+  /* --- banner --- */
+  .banner{width:100%;height:auto;display:block;border-radius:10px;margin-bottom:1.5rem;}
+  .banner .sky{fill:#2B3648;}
+  .banner .hill{fill:#3A4657;}
+  .banner .tower-a{fill:#8C6239;}
+  .banner .tower-b{fill:#A9764A;}
+  .banner .roof{fill:var(--rail-red);}
+  .banner .wall{fill:#C9A227;opacity:.9;}
+  .banner .flag{fill:var(--paper);}
+
   /* --- briefing --- */
   #screen-briefing{background:var(--cream);}
   .case-card{background:var(--paper);border:1px solid #E6DBBE;border-radius:14px;padding:1.4rem 1.6rem;margin:1.5rem 0;box-shadow:0 2px 0 #E6DBBE;}
-  .suspects-ref{width:100%;border-collapse:collapse;margin-top:1rem;background:var(--paper);border-radius:10px;overflow:hidden;}
-  .suspects-ref th,.suspects-ref td{padding:.6rem .7rem;text-align:left;font-size:.88rem;border-bottom:1px solid #E6DBBE;}
-  .suspects-ref th{background:var(--noir);color:var(--brass);font-family:var(--font-mono);font-size:.72rem;text-transform:uppercase;}
-  .suspects-ref td b{display:block;}
-  .continue-row{margin-top:1.8rem;text-align:center;}
+  .suspects-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-top:1.5rem;}
+  @media (max-width:760px){.suspects-grid{grid-template-columns:repeat(2,1fr);}}
+  .suspect-mini{background:var(--paper);border:2px solid var(--noir);border-radius:12px;padding:1rem .8rem;text-align:center;}
+  .suspect-mini .avatar{font-size:2.4rem;}
+  .suspect-mini h4{margin:.4rem 0 .1rem;font-size:1rem;font-family:var(--font-display);letter-spacing:.02em;}
+  .suspect-mini p{margin:0;font-size:.85rem;color:var(--steel);}
 
-  /* --- puzzle screen --- */
-  #screen-puzzle{background:var(--noir);color:var(--paper);}
+  /* --- board screen --- */
+  #screen-board{background:var(--noir);color:var(--paper);}
   .top-row{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;}
   .progress-pill{font-family:var(--font-mono);background:var(--noir-2);border:1px solid #2C3444;padding:.4rem .8rem;border-radius:999px;font-size:.85rem;color:var(--brass);}
 
-  .cards-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:.7rem;margin-bottom:1.4rem;}
-  @media (max-width:760px){.cards-grid{grid-template-columns:repeat(3,1fr);}}
-  @media (max-width:480px){.cards-grid{grid-template-columns:repeat(2,1fr);}}
-  .clue-btn{background:var(--noir-2);border:1px solid #2C3444;border-radius:12px;padding:.9rem .5rem;text-align:center;color:var(--paper);}
-  .clue-btn .num{font-family:var(--font-mono);font-size:.7rem;color:#9DA6B8;}
-  .clue-btn .icon{font-size:1.7rem;margin:.3rem 0;}
-  .clue-btn.done{border-color:var(--ok);background:#16261C;}
+  .board-wrap{position:relative;width:100%;border-radius:16px;overflow:hidden;margin-top:1rem;box-shadow:0 6px 0 rgba(0,0,0,.35);border:10px solid #7A5330;}
+  .board-wrap::before{content:"";display:block;padding-top:64%;}
+  .board-bg{position:absolute;inset:0;background-color:#C08A52;background-image:radial-gradient(rgba(90,55,20,.35) 1.5px, transparent 1.5px);background-size:16px 16px;}
+  .board-lines{position:absolute;inset:0;width:100%;height:100%;}
+  .string-line{stroke:var(--rail-red);stroke-width:.7;stroke-linecap:round;opacity:0;transition:opacity .5s ease;}
+  .string-line.show{opacity:.85;}
 
-  .grid-wrap{background:var(--paper);border-radius:14px;padding:1.2rem;overflow-x:auto;}
-  .grid-wrap h3{color:var(--ink);margin:0 0 .2rem;font-size:1rem;}
-  .grid-wrap p.hint{color:var(--steel);font-size:.82rem;margin:0 0 .8rem;}
-  table.logic-table{border-collapse:collapse;width:100%;min-width:520px;}
-  table.logic-table th, table.logic-table td{border:1px solid #E6DBBE;padding:.5rem;text-align:center;}
-  table.logic-table th{background:var(--cream);font-family:var(--font-mono);font-size:.75rem;color:var(--ink);}
-  table.logic-table td.suspect-cell{text-align:left;font-weight:700;font-size:.85rem;background:var(--cream);white-space:nowrap;}
-  table.logic-table td.suspect-cell .av{margin-right:.3rem;}
-  .cell-btn{width:34px;height:34px;border-radius:8px;border:1px solid #D9CFAE;background:var(--paper);font-size:1.1rem;font-weight:800;color:var(--steel);}
-  .cell-btn.cross{background:#FBE6E4;color:var(--bad);border-color:var(--bad);}
-  .cell-btn.locked{background:#EFEAD9;color:#B7AD8E;cursor:not-allowed;}
+  .case-hub{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:17%;aspect-ratio:1/1;border-radius:50%;background:var(--noir);border:4px solid var(--brass);display:flex;align-items:center;justify-content:center;flex-direction:column;color:var(--paper);font-family:var(--font-display);font-size:.72rem;text-align:center;text-transform:uppercase;letter-spacing:.04em;box-shadow:0 4px 10px rgba(0,0,0,.4);padding:.3rem;}
 
-  .continue-row2{margin-top:1.4rem;text-align:center;}
+  .clue-pin{position:absolute;transform:translate(-50%,-50%) rotate(var(--rot,-3deg));width:120px;background:var(--paper);border:1px solid #E6DBBE;border-radius:6px;padding:.7rem .6rem .55rem;box-shadow:0 4px 8px rgba(0,0,0,.35);text-align:center;cursor:pointer;}
+  .clue-pin .push{position:absolute;top:-10px;left:50%;transform:translateX(-50%);width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 35% 30%, #ffffffaa, transparent 40%),var(--rail-red);box-shadow:0 2px 3px rgba(0,0,0,.4);}
+  .clue-pin .icon{font-size:1.6rem;margin-top:.2rem;}
+  .clue-pin .label{font-size:.7rem;font-weight:800;margin-top:.25rem;color:var(--ink);line-height:1.25;}
+  .clue-pin.solved{background:#EAF6EE;border-color:var(--ok);}
+  .clue-pin.solved .push{background:var(--ok);}
+
+  .continue-row{margin-top:1.8rem;text-align:center;}
 
   /* --- modal --- */
   .modal-overlay{position:fixed;inset:0;background:rgba(10,12,16,.72);display:flex;align-items:center;justify-content:center;z-index:60;padding:1rem;}
@@ -147,25 +154,52 @@
   .diploma{background:var(--paper);color:var(--ink);border-radius:16px;padding:1.8rem;max-width:640px;margin:1.5rem auto;border:3px double var(--brass);text-align:left;}
   .facts-list{margin:1rem 0;padding-left:1.2rem;}
   .facts-list li{margin-bottom:.6rem;}
+
+  /* ---------- home link ---------- */
+  .home-link{
+    position:fixed;left:1rem;top:1rem;z-index:50;
+    background:var(--paper);color:var(--ink);text-decoration:none;
+    font-weight:800;font-size:.9rem;padding:.55rem 1rem;border-radius:999px;
+    box-shadow:0 3px 0 #C9BE9E;
+  }
+  .home-link:active{transform:translateY(3px);box-shadow:0 1px 0 #C9BE9E;}
 </style>
 </head>
 <body>
+
+<a href="../index.html" class="home-link" aria-label="Torna alla pagina dei giochi">🏠 Home</a>
 
 <main id="app">
 
   <!-- COVER -->
   <section id="screen-cover" class="screen active">
     <div class="wrap center">
+      <svg class="banner" viewBox="0 0 800 200" role="img" aria-label="I tre castelli di Bellinzona su una collina">
+        <rect class="sky" x="0" y="0" width="800" height="200"/>
+        <polygon class="hill" points="0,160 800,160 800,200 0,200"/>
+        <rect class="tower-a" x="120" y="70" width="90" height="90"/>
+        <polygon class="roof" points="115,70 165,35 215,70"/>
+        <rect class="wall" x="60" y="140" width="260" height="20"/>
+        <rect class="tower-b" x="340" y="50" width="110" height="110"/>
+        <polygon class="roof" points="335,50 395,10 455,50"/>
+        <rect class="wall" x="300" y="140" width="280" height="20"/>
+        <rect class="tower-a" x="590" y="90" width="80" height="70"/>
+        <polygon class="roof" points="585,90 630,60 675,90"/>
+        <rect class="flag" x="163" y="20" width="4" height="18"/>
+        <polygon class="roof" points="167,20 190,26 167,32"/>
+      </svg>
+
       <span class="badge">🕵️ Agenzia Investigativa del Ticino</span>
       <h1 class="flap-title" id="coverTitle">&nbsp;</h1>
-      <p class="subtitle">Alla Fiera d'Autunno del paese è sparita la torta di castagne della nonna Elvira! Risolvi 5 problemi di matematica, riempi la griglia logica e scopri chi è stato.</p>
-      <button class="btn btn-punch" id="btnStart">Apri il quaderno 🔍</button>
+      <p class="subtitle">Il sigillo medievale di Castelgrande è sparito proprio prima della Festa dei Castelli di Bellinzona! Sblocca gli indizi storici sulla bacheca investigativa e scopri chi è stato.</p>
+      <button class="btn btn-punch" id="btnStart">Apri l'indagine 🔍</button>
+
       <details class="howto">
         <summary>Come si gioca</summary>
         <ul>
-          <li>Risolvi i 5 problemi numerati: ognuno svela un fatto sul furto.</li>
-          <li>Usa la griglia logica per segnare con una ✗ i sospetti che ogni fatto esclude.</li>
-          <li>Alla fine, chi resta senza ✗ è il colpevole: accusalo nella schermata finale.</li>
+          <li>Tocca i cartellini appuntati sulla bacheca: ognuno nasconde una domanda di storia del Ticino.</li>
+          <li>Ogni risposta corretta collega un filo rosso al caso e finisce nel taccuino 📓.</li>
+          <li>Quando tutti i fili sono collegati, confronta gli alibi e accusa il colpevole.</li>
         </ul>
       </details>
     </div>
@@ -177,46 +211,41 @@
       <p class="eyebrow">Rapporto del caso</p>
       <h2 id="briefTitle">&nbsp;</h2>
       <div class="case-card">
-        <p>La <b>torta di castagne della nonna Elvira</b> è sparita dal banco dei dolci della Fiera d'Autunno, proprio prima della premiazione. Quattro persone erano nei paraggi. Ecco cosa sappiamo su di loro:</p>
-        <table class="suspects-ref">
-          <thead><tr><th>Sospetto</th><th>Informazioni</th></tr></thead>
-          <tbody>
-            <tr><td><b>👦 Luca</b></td><td>Arrivato alle 14:15 · abita a 12 km · dice: "Ero al tiro a segno con papà"</td></tr>
-            <tr><td><b>👧 Giulia</b></td><td>Abita a 6 km · dice: "Sono arrivata 40 minuti dopo le 15:00"</td></tr>
-            <tr><td><b>🧑 Tommaso</b></td><td>Arrivato alle 14:50 · abita a 20 km · dice: "Sono venuto a piedi in mezz'ora"</td></tr>
-            <tr><td><b>👩 Sara</b></td><td>Abita a 8 km · dice: "Sono arrivata 10 minuti dopo le 15:00"</td></tr>
-          </tbody>
-        </table>
-        <p style="margin-top:1rem;">Tieni a mente questi dati: ti serviranno per riempire la griglia logica dopo ogni problema di matematica!</p>
+        <p>Il <b>sigillo medievale di Castelgrande</b>, simbolo della città esposto nella sala principale, è scomparso poco prima della Festa dei Castelli. I tre castelli di Bellinzona — Castelgrande, Montebello e Sasso Corbaro — sono Patrimonio mondiale dell'UNESCO, e oggi erano pieni di visitatori.</p>
+        <p>Quattro persone si trovavano nei castelli quel pomeriggio. Sblocca gli indizi storici sulla bacheca per scoprire dove si trovava ciascuno, poi scopri chi è stato.</p>
+      </div>
+      <h3>I sospetti</h3>
+      <div class="suspects-grid">
+        <div class="suspect-mini"><div class="avatar">👩‍🦰</div><h4>Sig.ra Bianchi</h4><p>Guida turistica</p></div>
+        <div class="suspect-mini"><div class="avatar">👨‍🔧</div><h4>Sig. Conti</h4><p>Custode del castello</p></div>
+        <div class="suspect-mini"><div class="avatar">👧</div><h4>Elena</h4><p>Studentessa in gita</p></div>
+        <div class="suspect-mini"><div class="avatar">📷</div><h4>Marco</h4><p>Fotografo</p></div>
       </div>
       <div class="continue-row">
-        <button class="btn btn-punch" id="btnToPuzzle">Apri il quaderno degli enigmi 📓</button>
+        <button class="btn btn-punch" id="btnToBoard">Vai alla bacheca degli indizi 📌</button>
       </div>
     </div>
   </section>
 
-  <!-- PUZZLE -->
-  <section id="screen-puzzle" class="screen">
+  <!-- BOARD -->
+  <section id="screen-board" class="screen">
     <div class="wrap">
       <div class="top-row">
         <div>
-          <p class="eyebrow">Il quaderno degli enigmi</p>
-          <h2 style="margin:.1rem 0;">Risolvi i 5 problemi</h2>
+          <p class="eyebrow">Bacheca investigativa</p>
+          <h2 style="margin:.1rem 0;">Sblocca i 5 indizi storici</h2>
         </div>
-        <span class="progress-pill" id="progressPill">Problemi: 0/5</span>
+        <span class="progress-pill" id="progressPill">Indizi: 0/5</span>
       </div>
 
-      <div class="cards-grid" id="cluesGrid"></div>
-
-      <div class="grid-wrap">
-        <h3>Griglia logica</h3>
-        <p class="hint">Dopo ogni problema risolto, tocca le caselle per segnare con una ✗ i sospetti che il fatto esclude.</p>
-        <div style="overflow-x:auto;">
-          <table class="logic-table" id="logicTable"></table>
-        </div>
+      <div class="board-wrap">
+        <div class="board-bg"></div>
+        <svg class="board-lines" id="boardLines" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
+        <div class="case-hub">IL CASO<br>del sigillo</div>
+        <!-- pins injected by JS -->
       </div>
 
-      <div class="continue-row2">
+      <div class="continue-row">
         <button class="btn btn-punch" id="btnToDeduction" disabled>Vai alla deduzione ⚖️</button>
       </div>
     </div>
@@ -226,8 +255,8 @@
   <section id="screen-deduction" class="screen">
     <div class="wrap">
       <p class="eyebrow">Momento della verità</p>
-      <h2>Chi ha preso la torta?</h2>
-      <p>Guarda la tua griglia logica e il taccuino, poi scegli chi accusare.</p>
+      <h2>Chi ha preso il sigillo?</h2>
+      <p>Confronta gli alibi raccolti nel taccuino, poi scegli chi accusare.</p>
       <div class="suspects-full" id="suspectsFull"></div>
       <div class="dedu-feedback" id="deduFeedback"></div>
     </div>
@@ -243,9 +272,9 @@
         <p id="endStory"></p>
         <p><b>Cosa hai imparato in questo caso:</b></p>
         <ul class="facts-list">
-          <li>🕒 Calcolare quanto tempo passa tra due orari.</li>
-          <li>🚶 Usare velocità, distanza e tempo per verificare se una storia è vera (distanza = velocità × tempo).</li>
-          <li>🔎 Usare una griglia logica per escludere i sospetti passo dopo passo, fino a trovare il colpevole.</li>
+          <li>🏰 I tre castelli di Bellinzona (Castelgrande, Montebello, Sasso Corbaro) sono Patrimonio mondiale dell'UNESCO.</li>
+          <li>🏛️ Bellinzona è il capoluogo del Canton Ticino, ed è famosa proprio per Castelgrande, il castello più antico e grande, nel cuore della città.</li>
+          <li>📜 Il Ticino è diventato un cantone della Confederazione Svizzera nel 1803.</li>
         </ul>
       </div>
       <button class="btn btn-punch" id="btnRestart">Gioca di nuovo 🔁</button>
@@ -273,59 +302,58 @@
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /* ================= DATA ================= */
-  var SUSPECTS = [
-    {id:'luca', name:'Luca', avatar:'👦', role:'Arrivato alle 14:15 · abita a 12 km', alibi:'Al tiro a segno con papà, testimoni presenti', confirmed:true, guilty:false},
-    {id:'giulia', name:'Giulia', avatar:'👧', role:'Dice: arrivata 40 min dopo le 15:00 · abita a 6 km', alibi:'Non ancora arrivata quando è sparita la torta', confirmed:true, guilty:false},
-    {id:'tommaso', name:'Tommaso', avatar:'🧑', role:'Arrivato alle 14:50 · abita a 20 km', alibi:'Dice di essere venuto a piedi in mezz\'ora — nessun testimone', confirmed:false, guilty:true},
-    {id:'sara', name:'Sara', avatar:'👩', role:'Dice: arrivata 10 min dopo le 15:00 · abita a 8 km', alibi:'Arrivata dopo il furto, confermato dalla nonna Elvira', confirmed:true, guilty:false}
-  ];
-
   var CLUES = [
     {
-      id:'finestra', icon:'⏱️',
-      question:'L\'ultima volta che la torta è stata vista al suo posto era alle 14:40. È stata segnalata sparita alle 15:00. Quanti minuti sono passati?',
-      options:['10 minuti','15 minuti','20 minuti','30 minuti'],
-      correct:'20 minuti',
-      success:'Esatto! Il furto è avvenuto in una finestra di 20 minuti, tra le 14:40 e le 15:00.',
-      note:'Il furto è avvenuto tra le 14:40 e le 15:00.'
+      id:'unesco', x:15, y:20, rot:-4, icon:'🏰', label:'I castelli UNESCO',
+      question:'Quanti castelli di Bellinzona sono Patrimonio mondiale dell\'UNESCO?',
+      options:['1','2','3','5'],
+      correct:'3',
+      success:'Esatto! Castelgrande, Montebello e Sasso Corbaro sono tre castelli, tutti Patrimonio UNESCO dal 2000.',
+      note:'I tre castelli di Bellinzona sono Patrimonio UNESCO.'
     },
     {
-      id:'giulia_arrivo', icon:'🚲',
-      question:'Giulia dice di essere arrivata 40 minuti dopo le 15:00. A che ora è arrivata?',
-      options:['15:20','15:40','16:00','14:40'],
-      correct:'15:40',
-      success:'Giusto! Giulia è arrivata alle 15:40, ben dopo la finestra del furto (14:40–15:00).',
-      note:'Giulia è arrivata alle 15:40: troppo tardi per essere lei.'
+      id:'castelgrande', x:83, y:18, rot:3, icon:'🗿', label:'Il castello nel centro',
+      question:'Quale castello si trova proprio nel cuore della città, su una rupe di roccia, ed è il più antico e grande dei tre?',
+      options:['Castelgrande','Montebello','Sasso Corbaro','Castello di Chillon'],
+      correct:'Castelgrande',
+      success:'Giusto! Castelgrande è il castello più antico e imponente, nel pieno centro di Bellinzona.',
+      note:'Castelgrande è il castello più antico, nel cuore della città.'
     },
     {
-      id:'sara_arrivo', icon:'🚶',
-      question:'Sara dice di essere arrivata 10 minuti dopo le 15:00. A che ora è arrivata?',
-      options:['14:50','15:10','15:50','14:10'],
-      correct:'15:10',
-      success:'Esatto! Anche Sara, arrivata alle 15:10, è arrivata dopo la fine della finestra del furto.',
-      note:'Sara è arrivata alle 15:10: anche lei troppo tardi.'
+      id:'sassocorbaro', x:50, y:12, rot:-2, icon:'⚒️', label:'Il castello veloce',
+      question:'Sasso Corbaro fu costruito molto in fretta, in meno di un anno! Per volere di chi?',
+      options:['Il Duca di Milano','Napoleone','Il Re di Francia','Un gruppo di monaci'],
+      correct:'Il Duca di Milano',
+      success:'Esatto! Nel 1479 il Duca di Milano fece costruire Sasso Corbaro in tempi record, dopo una battaglia.',
+      note:'Sasso Corbaro fu costruito in fretta nel 1479 per volere del Duca di Milano.'
     },
     {
-      id:'tommaso_piedi', icon:'🥾',
-      question:'Camminando si percorrono circa 4 km all\'ora. Tommaso abita a 20 km e dice di essere arrivato a piedi in appena mezz\'ora. Quante ore servono davvero per percorrere 20 km a piedi?',
-      options:['1 ora','2 ore','5 ore','30 minuti'],
-      correct:'5 ore',
-      success:'Esatto! 20 km ÷ 4 km/h = 5 ore. La storia di Tommaso non torna: non può essere arrivato a piedi in mezz\'ora.',
-      note:'Tommaso mente: a piedi da 20 km servono 5 ore, non mezz\'ora.'
+      id:'capoluogo', x:85, y:78, rot:4, icon:'🏛️', label:'Il capoluogo',
+      question:'Qual è il capoluogo (la città principale) del Canton Ticino?',
+      options:['Lugano','Bellinzona','Locarno','Chiasso'],
+      correct:'Bellinzona',
+      success:'Esatto! Anche se Lugano è più grande, il capoluogo del Ticino è Bellinzona, proprio dove si trovano i tre castelli.',
+      note:'Bellinzona è il capoluogo del Canton Ticino.'
     },
     {
-      id:'luca_alibi', icon:'🎯',
-      question:'Luca è rimasto al tiro a segno con il papà per 45 minuti, a partire dalle 14:30. A che ora ha finito?',
-      options:['15:00','15:15','15:30','14:45'],
-      correct:'15:15',
-      success:'Giusto! Luca era al tiro a segno, con testimoni, fino alle 15:15: copre tutta la finestra del furto (14:40–15:00).',
-      note:'Luca aveva un alibi con testimoni per tutta la finestra del furto.'
+      id:'1803', x:12, y:75, rot:-3, icon:'📜', label:'Un anno importante',
+      question:'In che anno il Ticino è diventato ufficialmente un cantone della Confederazione Svizzera?',
+      options:['1291','1803','1848','2000'],
+      correct:'1803',
+      success:'Giusto! Nel 1803, con l\'Atto di Mediazione, il Ticino divenne un cantone svizzero a tutti gli effetti.',
+      note:'Il Ticino è diventato cantone svizzero nel 1803.'
     }
+  ];
+
+  var SUSPECTS = [
+    {id:'bianchi', name:'Sig.ra Bianchi', role:'Guida turistica', avatar:'👩‍🦰', alibi:'A Sasso Corbaro con un gruppo di turisti', confirmed:true, guilty:false},
+    {id:'conti', name:'Sig. Conti', role:'Custode del castello', avatar:'👨‍🔧', alibi:'A Montebello a sistemare le luci', confirmed:true, guilty:false},
+    {id:'elena', name:'Elena', role:'Studentessa in gita', avatar:'👧', alibi:'A Castelgrande con la classe, sempre con l\'insegnante', confirmed:true, guilty:false},
+    {id:'marco', name:'Marco', role:'Fotografo', avatar:'📷', alibi:'Da solo a Castelgrande a fare foto', confirmed:false, guilty:true}
   ];
 
   var solved = {};
   var attempts = {};
-  var gridState = {}; // gridState[suspectId][clueIndex] = 'cross' | undefined
 
   /* ================= FLAP TEXT ================= */
   function flap(el, text, speed){
@@ -401,10 +429,10 @@
     var list = document.getElementById('notebookList');
     var count = Object.keys(solved).length;
     document.getElementById('notebookCount').textContent = count;
-    document.getElementById('progressPill').textContent = 'Problemi: ' + count + '/5';
+    document.getElementById('progressPill').textContent = 'Indizi: ' + count + '/5';
     list.innerHTML = '';
     if(count === 0){
-      list.innerHTML = '<div class="note-item empty">Non hai ancora risolto problemi.</div>';
+      list.innerHTML = '<div class="note-item empty">Non hai ancora trovato indizi.</div>';
     } else {
       CLUES.forEach(function(c){
         if(solved[c.id]){
@@ -419,49 +447,35 @@
     if(toDed) toDed.disabled = count < CLUES.length;
   }
 
-  /* ================= CLUE CARDS ================= */
-  function renderCluesGrid(){
-    var grid = document.getElementById('cluesGrid');
-    grid.innerHTML = '';
-    CLUES.forEach(function(c, i){
-      var card = document.createElement('button');
-      card.type = 'button';
-      card.className = 'clue-btn' + (solved[c.id] ? ' done' : '');
-      card.innerHTML =
-        '<div class="num">Problema ' + (i+1) + '</div>' +
-        '<div class="icon">' + (solved[c.id] ? '✅' : c.icon) + '</div>';
-      card.addEventListener('click', function(){ openClue(c.id); });
-      grid.appendChild(card);
+  /* ================= BOARD ================= */
+  function renderBoard(){
+    var board = document.querySelector('.board-wrap');
+    document.querySelectorAll('.clue-pin').forEach(function(p){ p.remove(); });
+    CLUES.forEach(function(c){
+      var pin = document.createElement('button');
+      pin.type = 'button';
+      pin.className = 'clue-pin' + (solved[c.id] ? ' solved' : '');
+      pin.style.left = c.x + '%';
+      pin.style.top = c.y + '%';
+      pin.style.setProperty('--rot', c.rot + 'deg');
+      pin.innerHTML =
+        '<div class="push"></div>' +
+        '<div class="icon">' + (solved[c.id] ? '✅' : c.icon) + '</div>' +
+        '<div class="label">' + c.label + '</div>';
+      pin.addEventListener('click', function(){ openClue(c.id); });
+      board.appendChild(pin);
+      if(solved[c.id]) drawLine(c.x, c.y);
     });
   }
 
-  /* ================= LOGIC GRID ================= */
-  function renderLogicTable(){
-    var table = document.getElementById('logicTable');
-    var html = '<thead><tr><th>Sospetto</th>';
-    CLUES.forEach(function(c, i){ html += '<th>' + (i+1) + ' ' + c.icon + '</th>'; });
-    html += '</tr></thead><tbody>';
-    SUSPECTS.forEach(function(s){
-      html += '<tr><td class="suspect-cell"><span class="av">' + s.avatar + '</span>' + s.name + '</td>';
-      CLUES.forEach(function(c, i){
-        var unlocked = !!solved[c.id];
-        var crossed = gridState[s.id] && gridState[s.id][i];
-        html += '<td><button type="button" class="cell-btn' + (crossed?' cross':'') + (unlocked?'':' locked') + '" data-suspect="' + s.id + '" data-clue="' + i + '"' + (unlocked?'':' disabled') + '>' + (unlocked ? (crossed ? '✗' : '○') : '🔒') + '</button></td>';
-      });
-      html += '</tr>';
-    });
-    html += '</tbody>';
-    table.innerHTML = html;
-
-    table.querySelectorAll('.cell-btn:not(.locked)').forEach(function(b){
-      b.addEventListener('click', function(){
-        var sid = b.getAttribute('data-suspect');
-        var ci = parseInt(b.getAttribute('data-clue'), 10);
-        if(!gridState[sid]) gridState[sid] = {};
-        gridState[sid][ci] = !gridState[sid][ci];
-        renderLogicTable();
-      });
-    });
+  function drawLine(x, y){
+    var svgns = 'http://www.w3.org/2000/svg';
+    var line = document.createElementNS(svgns, 'line');
+    line.setAttribute('x1', x); line.setAttribute('y1', y);
+    line.setAttribute('x2', 50); line.setAttribute('y2', 50);
+    line.setAttribute('class', 'string-line');
+    document.getElementById('boardLines').appendChild(line);
+    requestAnimationFrame(function(){ line.classList.add('show'); });
   }
 
   /* ================= MODAL / CLUE ================= */
@@ -470,8 +484,8 @@
     var already = solved[id];
     var content = document.getElementById('modalContent');
     content.innerHTML =
-      '<p class="kicker">Problema</p>' +
-      '<h3 id="modalTitle">' + clue.icon + ' Enigma</h3>' +
+      '<p class="kicker">Indizio</p>' +
+      '<h3 id="modalTitle">' + clue.label + '</h3>' +
       '<p><b>' + clue.question + '</b></p>' +
       '<div class="options" id="modalOptions"></div>' +
       '<div class="feedback" id="modalFeedback" hidden></div>' +
@@ -523,13 +537,12 @@
       solved[clue.id] = true;
       chime(true);
       renderNotebook();
-      renderCluesGrid();
-      renderLogicTable();
+      renderBoard();
       actions.innerHTML = '';
       var closeBtn = document.createElement('button');
       closeBtn.className = 'btn btn-punch';
       closeBtn.type = 'button';
-      closeBtn.textContent = 'Segna sulla griglia e chiudi';
+      closeBtn.textContent = 'Aggiungi al taccuino e chiudi';
       closeBtn.addEventListener('click', closeModal);
       actions.appendChild(closeBtn);
     } else {
@@ -537,7 +550,7 @@
       buttons.forEach(function(b){ if(b.textContent === opt) b.classList.add('wrong'); });
       fb.hidden = false;
       fb.className = 'feedback bad';
-      fb.textContent = attempts[clue.id] >= 2 ? 'Non è questa. Rileggi bene il problema e riprova.' : 'Non proprio, riprova!';
+      fb.textContent = attempts[clue.id] >= 2 ? 'Non è questa. Rileggi bene la domanda e riprova.' : 'Non proprio, riprova!';
       chime(false);
       setTimeout(function(){ buttons.forEach(function(b){ b.classList.remove('wrong'); }); }, 500);
     }
@@ -557,8 +570,8 @@
       card.innerHTML =
         '<div class="head"><div class="avatar">' + s.avatar + '</div><div><h3>' + s.name + '</h3><p class="role">' + s.role + '</p></div></div>' +
         '<div class="fact-row"><span>Alibi</span><b>' + s.alibi + '</b></div>' +
-        '<div class="fact-row"><span>Confermato</span><span class="tag ' + (s.confirmed?'yes':'no') + '">' + (s.confirmed?'Sì':'No') + '</span></div>' +
-        '<button class="accuse-btn btn-punch" data-id="' + s.id + '">Accuso ' + s.name + '</button>';
+        '<div class="fact-row"><span>Confermato da un testimone</span><span class="tag ' + (s.confirmed?'yes':'no') + '">' + (s.confirmed?'Sì':'No') + '</span></div>' +
+        '<button class="accuse-btn btn-punch" data-id="' + s.id + '">Accuso ' + s.name.split(' ')[0].replace('.','') + '</button>';
       wrap.appendChild(card);
     });
     wrap.querySelectorAll('.accuse-btn').forEach(function(b){
@@ -577,7 +590,7 @@
       setTimeout(goToEnd, 1400);
     } else {
       fb.style.background = '#FBE6E4'; fb.style.color = '#B3261E';
-      fb.textContent = s.name + ' ha un alibi confermato: non può essere lei/lui. Ricontrolla la griglia!';
+      fb.textContent = s.name + ' ha un alibi confermato: non può essere lei/lui. Ricontrolla il taccuino!';
       chime(false);
     }
   }
@@ -586,7 +599,7 @@
     showScreen('screen-end');
     flap(document.getElementById('endTitle'), 'CASO RISOLTO');
     document.getElementById('endStory').textContent =
-      "Era Tommaso! Aveva davvero fame e, passando vicino al banco, ha preso una fetta di torta senza pensarci... e poi, imbarazzato, ha portato via tutto il resto per paura di essere scoperto. Ha promesso alla nonna Elvira di aiutarla a preparare una torta ancora più grande per la prossima fiera. Ottimo lavoro, detective: hai risolto il caso usando tempo, velocità e un pizzico di logica!";
+      "Era Marco! Voleva fotografare da vicino il sigillo per un articolo sui castelli UNESCO e lo ha spostato per avere più luce. Per sbaglio gli è scivolato in un vecchio baule lì vicino. Marco si è scusato con il custode e ha promesso di chiedere sempre il permesso prima di toccare i reperti storici. Ottimo lavoro, detective: hai risolto il caso usando la storia del Ticino!";
   }
 
   /* ================= NOTEBOOK TOGGLE / MODAL CLOSE ================= */
@@ -601,12 +614,11 @@
   /* ================= NAV ================= */
   document.getElementById('btnStart').addEventListener('click', function(){
     showScreen('screen-briefing');
-    flap(document.getElementById('briefTitle'), 'Il caso della torta scomparsa');
+    flap(document.getElementById('briefTitle'), 'Il caso del sigillo scomparso');
   });
-  document.getElementById('btnToPuzzle').addEventListener('click', function(){
-    showScreen('screen-puzzle');
-    renderCluesGrid();
-    renderLogicTable();
+  document.getElementById('btnToBoard').addEventListener('click', function(){
+    showScreen('screen-board');
+    renderBoard();
     renderNotebook();
   });
   document.getElementById('btnToDeduction').addEventListener('click', function(){
@@ -615,13 +627,13 @@
     document.getElementById('deduFeedback').classList.remove('show');
   });
   document.getElementById('btnRestart').addEventListener('click', function(){
-    solved = {}; attempts = {}; gridState = {};
+    solved = {}; attempts = {};
     document.getElementById('notebookPanel').classList.remove('open');
     showScreen('screen-cover');
   });
 
   /* ================= INIT ================= */
-  flap(document.getElementById('coverTitle'), 'Il Quaderno degli Enigmi');
+  flap(document.getElementById('coverTitle'), 'Il Segreto dei Tre Castelli');
 })();
 </script>
 </body>

@@ -134,9 +134,20 @@
   .diploma{background:var(--paper);color:var(--ink);border-radius:16px;padding:1.8rem;max-width:640px;margin:1.5rem auto;border:3px double var(--brass);text-align:left;}
   .facts-list{margin:1rem 0;padding-left:1.2rem;}
   .facts-list li{margin-bottom:.6rem;}
+
+  /* ---------- home link ---------- */
+  .home-link{
+    position:fixed;left:1rem;top:1rem;z-index:50;
+    background:var(--paper);color:var(--ink);text-decoration:none;
+    font-weight:800;font-size:.9rem;padding:.55rem 1rem;border-radius:999px;
+    box-shadow:0 3px 0 #C9BE9E;
+  }
+  .home-link:active{transform:translateY(3px);box-shadow:0 1px 0 #C9BE9E;}
 </style>
 </head>
 <body>
+
+<a href="../index.html" class="home-link" aria-label="Torna alla pagina dei giochi">🏠 Home</a>
 
 <main id="app">
 
