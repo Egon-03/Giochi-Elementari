@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Il Fantasma della Ferrovia — Quattro Casi in Ticino</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Nunito:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --rail-red:#E10600;
+    --rail-red-dark:#B00400;
+    --noir:#161A22;
+    --noir-2:#1F2530;
+    --cream:#F4ECD8;
+    --paper:#FBF6EA;
+    --brass:#C9A227;
+    --ink:#20232B;
+    --steel:#5B6472;
+    --ok:#2E7D4F;
+    --bad:#B3261E;
+    --font-display:'Oswald',sans-serif;
+    --font-body:'Nunito',sans-serif;
+    --font-mono:'Space Mono',monospace;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:var(--font-body);background:var(--noir);color:var(--ink);line-height:1.5;}
+  h1,h2,h3,.flap{font-family:var(--font-display);text-transform:uppercase;letter-spacing:.03em;}
+  button{font-family:inherit;cursor:pointer;}
+  :focus-visible{outline:3px solid var(--brass);outline-offset:3px;}
+
+  #app{min-height:100vh;}
+  .screen{display:none;min-height:100vh;padding:2rem 1.25rem 4rem;}
+  .screen.active{display:block;animation:fadein .35s ease;}
+  @keyframes fadein{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+  .wrap{max-width:960px;margin:0 auto;}
+  .wrap.narrow{max-width:720px;}
+  .center{text-align:center;}
+  .eyebrow{font-family:var(--font-mono);color:var(--brass);font-size:.8rem;letter-spacing:.15em;text-transform:uppercase;margin:0 0 .5rem;}
+
+  .flap-title{font-size:clamp(1.6rem,5.6vw,3rem);color:var(--paper);margin:.2rem 0 .6rem;min-height:1.2em;}
+  .flap-char{display:inline-block;font-family:var(--font-display);}
+  .flap-char.flip{transform:rotateX(85deg);transition:transform .08s linear;}
+
+  .badge{display:inline-block;background:var(--rail-red);color:var(--paper);font-family:var(--font-mono);font-size:.75rem;letter-spacing:.08em;padding:.3rem .7rem;border-radius:999px;margin-bottom:1rem;}
+  .subtitle{font-size:1.05rem;color:#C7CEDB;max-width:600px;margin:0 auto 1.6rem;}
+
+  .btn{display:inline-block;border:none;border-radius:10px;padding:.9rem 1.6rem;font-weight:800;font-size:1rem;background:var(--rail-red);color:var(--paper);box-shadow:0 4px 0 var(--rail-red-dark);transition:transform .08s ease;}
+  .btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--rail-red-dark);}
+  .btn.secondary{background:var(--paper);color:var(--ink);box-shadow:0 4px 0 #C9BE9E;}
+  .btn.secondary:active{box-shadow:0 1px 0 #C9BE9E;}
+  .btn.dark{background:var(--noir);color:var(--paper);box-shadow:0 4px 0 #000;}
+  .btn.dark:active{box-shadow:0 1px 0 #000;}
+  .btn:disabled{opacity:.4;cursor:not-allowed;box-shadow:none;transform:none;}
+  .btn-punch{position:relative;overflow:hidden;}
+  .punch-dot{position:absolute;width:10px;height:10px;border-radius:50%;background:var(--paper);transform:translate(-50%,-50%) scale(0);animation:punch .4s ease-out forwards;pointer-events:none;}
+  @keyframes punch{0%{transform:translate(-50%,-50%) scale(0);opacity:1;}70%{transform:translate(-50%,-50%) scale(1);opacity:1;}100%{transform:translate(-50%,-50%) scale(1);opacity:0;}}
+
+  .howto{max-width:640px;margin:1.5rem auto 0;background:var(--noir-2);border:1px solid #2C3444;border-radius:12px;padding:1.1rem 1.3rem;text-align:left;color:#D6DBE6;}
+  .howto summary{cursor:pointer;font-weight:800;color:var(--paper);}
+  .howto ul{margin:.7rem 0 0;padding-left:1.2rem;}
+  .howto li{margin-bottom:.4rem;}
+
+  /* --- map / level select --- */
+  #screen-map{background:radial-gradient(ellipse at 50% -10%, #232B39 0%, var(--noir) 60%);color:var(--paper);}
+  .rail-line{position:relative;max-width:820px;margin:2.5rem auto 1rem;padding:0 1rem;}
+  .rail-line::before{content:"";position:absolute;left:5%;right:5%;top:38px;height:5px;background:linear-gradient(90deg,var(--rail-red),var(--brass));border-radius:3px;}
+  .stations{display:flex;justify-content:space-between;position:relative;flex-wrap:wrap;gap:1.2rem;}
+  .station-node{background:none;border:none;color:var(--paper);text-align:center;width:120px;}
+  .station-node .dot{width:76px;height:76px;border-radius:50%;background:var(--noir-2);border:3px solid var(--steel);display:flex;align-items:center;justify-content:center;font-size:1.8rem;margin:0 auto .5rem;transition:.15s;}
+  .station-node.done .dot{border-color:var(--ok);background:#1B2E22;}
+  .station-node.locked .dot{opacity:.4;}
+  .station-node:not(.locked):hover .dot{border-color:var(--brass);transform:translateY(-3px);}
+  .station-node h4{margin:0;font-size:.95rem;}
+  .station-node .tag2{font-family:var(--font-mono);font-size:.72rem;color:#9DA6B8;}
+  .station-node.locked{cursor:not-allowed;}
+
+  .finale-node{margin:2rem auto 0;text-align:center;}
+  .finale-node .dot{width:96px;height:96px;font-size:2.2rem;background:var(--noir-2);border:3px solid var(--brass);}
+  .finale-node.ready .dot{background:#3A2F0F;border-color:var(--brass);box-shadow:0 0 0 6px rgba(201,162,39,.15);}
+
+  .progress-strip{font-family:var(--font-mono);color:var(--brass);text-align:center;margin-top:1.4rem;font-size:.9rem;}
+
+  /* --- case intro / play --- */
+  .case-screen{background:var(--cream);}
+  .case-card{background:var(--paper);border:1px solid #E6DBBE;border-radius:14px;padding:1.4rem 1.6rem;margin:1.2rem 0;box-shadow:0 2px 0 #E6DBBE;}
+  .stage-title{font-size:1rem;margin:1.4rem 0 .5rem;}
+
+  table.timetable{width:100%;border-collapse:collapse;margin:1rem 0;font-family:var(--font-mono);background:var(--noir);color:var(--paper);border-radius:10px;overflow:hidden;}
+  table.timetable th,table.timetable td{padding:.6rem .7rem;text-align:left;font-size:.9rem;}
+  table.timetable th{background:var(--noir-2);color:var(--brass);}
+  table.timetable tr:nth-child(even) td{background:#1B212B;}
+
+  .map-diagram{background:var(--noir);color:var(--paper);border-radius:10px;padding:1rem;margin:1rem 0;font-family:var(--font-mono);font-size:.85rem;}
+  .map-line2{display:flex;align-items:center;gap:.3rem;flex-wrap:wrap;}
+  .map-dot{display:flex;flex-direction:column;align-items:center;font-size:.72rem;color:#C7CEDB;}
+  .map-dot .pt{width:10px;height:10px;border-radius:50%;background:var(--brass);margin-bottom:.25rem;}
+  .map-seg{flex:1;height:2px;background:#3A4354;min-width:16px;}
+
+  .witness{background:var(--noir);color:var(--paper);border-left:4px solid var(--brass);border-radius:8px;padding:.9rem 1.1rem;margin:1rem 0;font-style:italic;}
+
+  .options{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin:1rem 0;}
+  @media (max-width:520px){.options{grid-template-columns:1fr;}}
+  .opt-btn{background:var(--paper);border:2px solid var(--noir);border-radius:10px;padding:.7rem .8rem;font-weight:700;text-align:left;font-size:.95rem;}
+  .opt-btn.correct{border-color:var(--ok);background:#E4F3EA;}
+  .opt-btn.wrong{border-color:var(--bad);background:#FBE6E4;}
+  .opt-btn:disabled{cursor:default;}
+
+  .feedback{margin-top:.8rem;padding:.8rem 1rem;border-radius:10px;font-weight:700;font-size:.92rem;}
+  .feedback.ok{background:#E4F3EA;color:var(--ok);}
+  .feedback.bad{background:#FBE6E4;color:var(--bad);}
+  .feedback[hidden]{display:none;}
+
+  .clue-reveal{background:#FFF6DD;border:2px dashed var(--brass);border-radius:10px;padding:1rem 1.1rem;margin-top:1rem;display:none;}
+  .clue-reveal.show{display:block;}
+  .clue-reveal .kicker{font-family:var(--font-mono);color:var(--rail-red-dark);font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;}
+
+  .case-actions{margin-top:1.4rem;display:flex;gap:.7rem;flex-wrap:wrap;}
+
+  /* --- finale --- */
+  #screen-finale{background:var(--cream);}
+  .clues-recap{display:grid;grid-template-columns:repeat(2,1fr);gap:.8rem;margin:1.2rem 0;}
+  @media (max-width:640px){.clues-recap{grid-template-columns:1fr;}}
+  .recap-card{background:var(--paper);border:1px solid #E6DBBE;border-radius:10px;padding:.8rem 1rem;font-size:.9rem;}
+  .recap-card b{display:block;font-family:var(--font-mono);color:var(--rail-red-dark);font-size:.75rem;text-transform:uppercase;margin-bottom:.2rem;}
+
+  .candidates{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem;}
+  @media (max-width:760px){.candidates{grid-template-columns:1fr;}}
+  .cand-card{background:var(--paper);border:2px solid var(--noir);border-radius:14px;padding:1.1rem 1.2rem;}
+  .cand-card .head{display:flex;align-items:center;gap:.8rem;}
+  .cand-card .avatar{font-size:2.2rem;}
+  .cand-card h3{margin:0;font-size:1.02rem;}
+  .cand-card .role{color:var(--steel);font-size:.83rem;margin:0;}
+  .fact-row{display:flex;justify-content:space-between;font-size:.83rem;border-top:1px dashed #D9CFAE;padding:.35rem 0;gap:.5rem;}
+  .tag{font-family:var(--font-mono);font-size:.72rem;padding:.15rem .5rem;border-radius:999px;white-space:nowrap;}
+  .tag.yes{background:#E4F3EA;color:var(--ok);}
+  .tag.no{background:#FBE6E4;color:var(--bad);}
+  .accuse-btn{margin-top:.8rem;width:100%;background:var(--noir);color:var(--paper);border:none;border-radius:10px;padding:.65rem;font-weight:800;box-shadow:0 4px 0 #000;}
+  .accuse-btn:active{transform:translateY(3px);box-shadow:0 1px 0 #000;}
+  .dedu-feedback{margin-top:1rem;padding:1rem;border-radius:10px;font-weight:700;display:none;}
+  .dedu-feedback.show{display:block;}
+
+  /* --- end --- */
+  #screen-end{background:radial-gradient(ellipse at 50% -10%, #232B39 0%, var(--noir) 60%);color:var(--paper);}
+  .diploma{background:var(--paper);color:var(--ink);border-radius:16px;padding:1.8rem;max-width:680px;margin:1.5rem auto;border:3px double var(--brass);text-align:left;}
+  .facts-list{margin:1rem 0;padding-left:1.2rem;}
+  .facts-list li{margin-bottom:.6rem;}
+
+  /* --- notebook --- */
+  .notebook-tab{position:fixed;right:1rem;bottom:1rem;z-index:40;background:var(--brass);color:var(--ink);border:none;border-radius:999px;padding:.7rem 1.1rem;font-weight:800;box-shadow:0 3px 0 #98781B;}
+  .notebook-panel{position:fixed;right:1rem;bottom:4.4rem;z-index:40;width:min(360px,90vw);max-height:60vh;overflow:auto;background:var(--paper);color:var(--ink);border-radius:14px;padding:1rem 1.1rem;box-shadow:0 10px 30px rgba(0,0,0,.4);transform:translateY(12px) scale(.98);opacity:0;pointer-events:none;transition:.18s ease;}
+  .notebook-panel.open{transform:none;opacity:1;pointer-events:auto;}
+  .notebook-panel h3{margin:0 0 .6rem;font-size:1rem;}
+  .note-item{display:flex;gap:.5rem;margin-bottom:.7rem;font-size:.88rem;}
+  .note-item .chk{color:var(--ok);font-weight:800;}
+  .note-item.empty{color:var(--steel);font-style:italic;}
+
+  /* --- timer & toast --- */
+  .timer-badge{font-family:var(--font-mono);background:var(--noir-2);border:1px solid #2C3444;padding:.4rem .8rem;border-radius:999px;font-size:.85rem;color:var(--paper);display:inline-block;}
+  .timer-badge.time-up{color:var(--brass);}
+  .toast{position:fixed;top:1rem;left:50%;transform:translateX(-50%) translateY(-20px);background:var(--brass);color:var(--ink);padding:.7rem 1.1rem;border-radius:10px;font-weight:800;font-size:.9rem;z-index:80;opacity:0;transition:.25s ease;pointer-events:none;max-width:90vw;text-align:center;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  /* --- lock panel (per-room padlock) --- */
+  .lock-panel{margin-top:1.2rem;background:var(--noir-2);border:1px solid #2C3444;border-radius:16px;padding:1.4rem;text-align:center;}
+  .lock-panel h3{margin:0 0 .3rem;font-size:1.05rem;color:var(--paper);}
+  .lock-panel p.hint{color:#9DA6B8;font-size:.85rem;margin:.2rem 0 1rem;}
+  .lock-slots{display:flex;justify-content:center;gap:.7rem;margin-bottom:1.1rem;}
+  .lock-slot{width:54px;height:64px;border-radius:8px;background:var(--noir);border:2px solid #3A4354;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:1.6rem;color:var(--steel);}
+  .lock-slot.filled{border-color:var(--brass);color:var(--brass);background:#241E10;}
+  .padlock{margin:0 auto 1rem;width:64px;height:70px;position:relative;}
+  .padlock .shackle{position:absolute;top:0;left:12px;width:40px;height:34px;border:7px solid var(--brass);border-bottom:none;border-radius:20px 20px 0 0;transition:transform .5s cubic-bezier(.34,1.56,.64,1);}
+  .padlock .body{position:absolute;bottom:0;left:0;width:64px;height:42px;background:var(--brass);border-radius:8px;}
+  .padlock.open .shackle{transform:translateX(20px) rotate(35deg);}
+  .padlock.open .body{background:var(--ok);}
+
+  /* --- modal --- */
+  .modal-overlay{position:fixed;inset:0;background:rgba(10,12,16,.72);display:flex;align-items:center;justify-content:center;z-index:60;padding:1rem;}
+  .modal-overlay[hidden]{display:none;}
+  .modal{background:var(--paper);color:var(--ink);border-radius:16px;max-width:560px;width:100%;max-height:88vh;overflow:auto;padding:1.6rem;position:relative;}
+  .modal-close{position:absolute;top:.7rem;right:.7rem;background:none;border:none;font-size:1.6rem;line-height:1;color:var(--steel);}
+  .modal .kicker{font-family:var(--font-mono);color:var(--rail-red);font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;}
+  .modal h3{margin:.3rem 0 .8rem;font-size:1.3rem;}
+  .modal p{margin:.5rem 0;}
+  .modal-actions{margin-top:1.2rem;display:flex;justify-content:flex-end;gap:.6rem;}
+
+  /* --- illustrated room scene + hotspots (reused per case, tinted) --- */
+  .scene-wrap{position:relative;width:100%;border-radius:16px;overflow:hidden;margin-top:1rem;box-shadow:0 6px 0 rgba(0,0,0,.3);}
+  .scene-wrap::before{content:"";display:block;padding-top:55.56%;}
+  .scene-svg{position:absolute;inset:0;width:100%;height:100%;display:block;}
+  .hotspot{
+    position:absolute;transform:translate(-50%,-50%);
+    width:50px;height:50px;border-radius:50%;
+    background:rgba(201,162,39,.94);border:3px solid var(--paper);
+    display:flex;align-items:center;justify-content:center;font-size:1.4rem;
+    cursor:pointer;padding:0;box-shadow:0 3px 0 rgba(0,0,0,.35);
+    animation:pulseGlow 2.4s ease-in-out infinite;
+  }
+  .hotspot.done{background:var(--ok);animation:none;}
+  @keyframes pulseGlow{
+    0%{box-shadow:0 3px 0 rgba(0,0,0,.35), 0 0 0 0 rgba(201,162,39,.55);}
+    70%{box-shadow:0 3px 0 rgba(0,0,0,.35), 0 0 0 14px rgba(201,162,39,0);}
+    100%{box-shadow:0 3px 0 rgba(0,0,0,.35), 0 0 0 0 rgba(201,162,39,0);}
+  }
+  .roomscene .wall{fill:#EFE1BE;}
+  .roomscene .floor{fill:#B98A52;}
+  .roomscene .baseboard{fill:#8C6239;}
+  .roomscene .plank{stroke:#8C6239;stroke-width:2;opacity:.5;}
+  .roomscene .win-frame{fill:var(--brass);}
+  .roomscene .win-sky{fill:#AFCBE0;}
+  .roomscene .sign-post{fill:#8C6239;}
+  .roomscene .sign-board{fill:var(--paper);}
+  .roomscene .sign-line{stroke:#B7AD8E;stroke-width:2;}
+  .roomscene .crate-body{fill:#A9764A;}
+  .roomscene .crate-line{stroke:#6B4A28;stroke-width:3;}
+  .roomscene .door{fill:#8C6239;}
+  .roomscene .door-handle{fill:var(--brass);}
+  .roomscene .nameplate-bg{fill:var(--noir);}
+  .roomscene .nameplate-txt{fill:var(--paper);font-family:var(--font-display);font-size:22px;letter-spacing:1px;text-transform:uppercase;}
+
+  /* --- numeric keypad --- */
+  .keypad-wrap{max-width:230px;margin:1.2rem auto 0;text-align:center;}
+  .keypad-display{display:flex;justify-content:center;gap:.5rem;margin-bottom:.9rem;}
+  .digit-box{width:46px;height:56px;border-radius:8px;background:var(--noir);border:2px solid #3A4354;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:1.5rem;color:var(--paper);}
+  .digit-box.filled{border-color:var(--brass);color:var(--brass);}
+  .keypad-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;margin-bottom:.8rem;}
+  .keypad-btn{background:var(--paper);color:var(--ink);border:none;border-radius:10px;padding:.75rem 0;font-size:1.15rem;font-weight:800;box-shadow:0 3px 0 #C9BE9E;}
+  .keypad-btn:active{transform:translateY(2px);box-shadow:0 1px 0 #C9BE9E;}
+  .keypad-shake{animation:shakeX .4s;}
+  @keyframes shakeX{0%,100%{transform:translateX(0);}20%{transform:translateX(-8px);}40%{transform:translateX(8px);}60%{transform:translateX(-6px);}80%{transform:translateX(6px);}}
+
+  /* ---------- home link ---------- */
+  .home-link{
+    position:fixed;left:1rem;top:1rem;z-index:50;
+    background:var(--paper);color:var(--ink);text-decoration:none;
+    font-weight:800;font-size:.9rem;padding:.55rem 1rem;border-radius:999px;
+    box-shadow:0 3px 0 #C9BE9E;
+  }
+  .home-link:active{transform:translateY(3px);box-shadow:0 1px 0 #C9BE9E;}
+</style>
+</head>
+<body>
+
+<a href="../index.html" class="home-link" aria-label="Torna alla pagina dei giochi">🏠 Home</a>
+
+<main id="app">
+
+  <!-- COVER -->
+  <section id="screen-cover" class="screen active">
+    <div class="wrap center">
+      <span class="badge">🕵️ Agenzia Investigativa del Ticino</span>
+      <h1 class="flap-title" id="coverTitle">&nbsp;</h1>
+      <p class="subtitle">Il Fantasma della Ferrovia ha chiuso a chiave una stanza in quattro stazioni del Ticino, proprio prima della Festa del Treno. In ogni stanza c'è un piccolo lucchetto a 2 cifre: risolvi gli indizi, apri le porte e scopri chi è il Fantasma.</p>
+      <button class="btn btn-punch" id="btnStart">Apri l'agenzia 🔍</button>
+      <details class="howto">
+        <summary>Come si gioca</summary>
+        <ul>
+          <li>Sulla mappa scegli una stazione: dentro trovi una stanza chiusa da un lucchetto a 2 cifre.</li>
+          <li>Rispondi a due domande per scoprire le due cifre e aprire la porta.</li>
+          <li>Puoi giocare i quattro casi nell'ordine che vuoi. Ogni indizio finisce nel taccuino 📓.</li>
+          <li>Quando hai aperto tutte e quattro le porte, si apre il Quartier Generale per l'indagine finale.</li>
+        </ul>
+      </details>
+    </div>
+  </section>
+
+  <!-- MAP -->
+  <section id="screen-map" class="screen">
+    <div class="wrap center">
+      <p class="eyebrow">Linea del Ticino</p>
+      <h2 style="color:var(--paper);margin:.2rem 0 .6rem;">Scegli una stanza chiusa</h2>
+      <span class="timer-badge" id="timerBadge">⏱️ 20:00</span>
+      <div class="rail-line">
+        <div class="stations" id="stationsRow"></div>
+      </div>
+      <div class="finale-node">
+        <button class="station-node" id="finaleNode" type="button">
+          <div class="dot">🏢</div>
+          <h4>Quartier Generale</h4>
+          <div class="tag2">indagine finale</div>
+        </button>
+      </div>
+      <p class="progress-strip" id="mapProgress">Casi risolti: 0/4</p>
+    </div>
+  </section>
+
+  <!-- CASE (template, filled dynamically) -->
+  <section id="screen-case" class="screen case-screen">
+    <div class="wrap narrow">
+      <p class="eyebrow" id="caseEyebrow">Caso</p>
+      <h2 id="caseTitle">&nbsp;</h2>
+      <div class="case-card" id="caseIntro"></div>
+
+      <div id="caseScene"></div>
+
+      <div class="lock-panel" id="caseLockPanel" style="display:none;">
+        <h3>Cifre trovate</h3>
+        <p class="hint">Tocca i due oggetti che brillano, poi componi il codice sul tastierino.</p>
+        <div class="lock-slots" id="caseLockSlots"></div>
+      </div>
+
+      <div class="keypad-wrap" id="caseKeypadWrap" style="display:none;">
+        <div class="padlock" id="casePadlock"><div class="shackle"></div><div class="body"></div></div>
+        <p class="hint">La porta è chiusa: componi il codice a 2 cifre.</p>
+        <div class="keypad-display" id="caseKeypadDisplay"></div>
+        <div class="keypad-grid">
+          <button class="keypad-btn" type="button" data-num="1">1</button>
+          <button class="keypad-btn" type="button" data-num="2">2</button>
+          <button class="keypad-btn" type="button" data-num="3">3</button>
+          <button class="keypad-btn" type="button" data-num="4">4</button>
+          <button class="keypad-btn" type="button" data-num="5">5</button>
+          <button class="keypad-btn" type="button" data-num="6">6</button>
+          <button class="keypad-btn" type="button" data-num="7">7</button>
+          <button class="keypad-btn" type="button" data-num="8">8</button>
+          <button class="keypad-btn" type="button" data-num="9">9</button>
+          <button class="keypad-btn" type="button" id="caseKeypadClear">⌫</button>
+          <button class="keypad-btn" type="button" data-num="0">0</button>
+          <button class="keypad-btn" type="button" style="visibility:hidden;">·</button>
+        </div>
+        <button class="btn btn-punch" id="caseKeypadConfirm" type="button">Apri la porta 🔓</button>
+      </div>
+
+      <div class="clue-reveal" id="clueReveal">
+        <p class="kicker">Indizio raccolto</p>
+        <p id="clueRevealText"></p>
+      </div>
+
+      <div class="case-actions">
+        <button class="btn secondary btn-punch" id="btnBackToMap">← Torna alla mappa</button>
+        <button class="btn btn-punch" id="btnCaseDone" style="display:none;">Torna alla mappa ✓</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- modal for case questions -->
+  <div class="modal-overlay" id="modalOverlay" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <button class="modal-close" id="modalClose" aria-label="Chiudi">×</button>
+      <div id="modalContent"></div>
+    </div>
+  </div>
+
+  <!-- FINALE -->
+  <section id="screen-finale" class="screen">
+    <div class="wrap">
+      <p class="eyebrow">Quartier Generale</p>
+      <h2>Chi è il Fantasma della Ferrovia?</h2>
+      <p>Ecco i quattro indizi raccolti nei tuoi casi:</p>
+      <div class="clues-recap" id="cluesRecap"></div>
+      <p>Confronta gli indizi con i candidati e accusa chi corrisponde a <b>tutti e quattro</b> gli indizi.</p>
+      <div class="candidates" id="candidatesGrid"></div>
+      <div class="dedu-feedback" id="finaleFeedback"></div>
+    </div>
+  </section>
+
+  <!-- END -->
+  <section id="screen-end" class="screen">
+    <div class="wrap center">
+      <p class="eyebrow">Mistero risolto</p>
+      <h2 class="flap-title" id="endTitle">&nbsp;</h2>
+      <div class="diploma">
+        <h3>🎖️ Diploma da Detective Ferroviario</h3>
+        <p id="endStory"></p>
+        <p><b>Cosa hai imparato in questi quattro casi:</b></p>
+        <ul class="facts-list">
+          <li>🗺️ Chiasso è la stazione di confine con l'Italia; la linea del Ticino tocca Chiasso, Lugano, Bellinzona, Biasca e Airolo.</li>
+          <li>🕒 Come calcolare la durata di un viaggio in treno e usare semplici proporzioni (velocità, distanza, tempo).</li>
+          <li>🏔️ Il tunnel del San Gottardo (1882) fu il più lungo del mondo alla sua epoca; la nuova Galleria di base del San Gottardo (2016, 57 km) lo è ancora oggi.</li>
+          <li>🔎 Come usare testimonianze e indizi per fare una deduzione logica.</li>
+        </ul>
+      </div>
+      <button class="btn btn-punch" id="btnRestart">Gioca di nuovo 🔁</button>
+    </div>
+  </section>
+
+</main>
+
+<div class="toast" id="toast"></div>
+
+<button class="notebook-tab btn-punch" id="notebookTab">📓 Taccuino (<span id="notebookCount">0</span>/4)</button>
+<div class="notebook-panel" id="notebookPanel">
+  <h3>Il tuo taccuino</h3>
+  <div id="notebookList"></div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ================= DATA ================= */
+  var CASES = [
+    {
+      id:'chiasso', name:'Chiasso', icon:'🛂', topic:'Geografia', color:'#2F6FED',
+      title:'Caso 1 · Chiasso — la targa scomparsa',
+      intro:'Alla stazione di confine di Chiasso è sparita la targa con il nome della stazione. Vicino al binario, qualcuno ha lasciato un biglietto con due domande.',
+      questions:[
+        {
+          icon:'🛂',
+          q:'Chiasso è famosa perché si trova proprio al confine tra Svizzera e...',
+          options:['Francia','Germania','Italia','Austria'],
+          correct:'Italia',
+          success:'Esatto! Chiasso è l\'ultima stazione svizzera prima del confine con l\'Italia.',
+          digit:'7'
+        },
+        {
+          icon:'🗺️',
+          q:'Andando da sud (Chiasso) verso nord, quale stazione si incontra subito dopo Lugano?',
+          options:['Locarno','Bellinzona','Airolo','Chiasso'],
+          map:true,
+          correct:'Bellinzona',
+          success:'Giusto! L\'ordine è Chiasso → Lugano → Bellinzona → Biasca → Airolo.',
+          digit:'4'
+        }
+      ],
+      clueTitle:'Indizio 1 — l\'impronta',
+      clueText:'Vicino alla targa scomparsa c\'è un\'impronta di scarpa piccola, misura da bambino. Chiunque sia stato, non è un adulto.'
+    },
+    {
+      id:'bellinzona', name:'Bellinzona', icon:'🏰', topic:'Matematica', color:'#E10600',
+      title:'Caso 2 · Bellinzona — l\'orario misterioso',
+      intro:'Sulla bacheca della stazione di Bellinzona è comparso un biglietto: "Ci vediamo quando la lancetta segna un quarto dopo le quattro". Per capire di che ora si tratta e cosa è successo, rispondi alle domande.',
+      questions:[
+        {
+          icon:'⏰',
+          q:'Un treno parte da Bellinzona alle 13:50 e arriva a Lugano alle 14:20. Quanto dura il viaggio?',
+          options:['20 minuti','30 minuti','40 minuti','50 minuti'],
+          correct:'30 minuti',
+          success:'Esatto! Da 13:50 a 14:20 passano 30 minuti.',
+          digit:'1'
+        },
+        {
+          icon:'📏',
+          q:'Un trenino turistico percorre 40 km in 1 ora, sempre alla stessa velocità. Quanti km percorre in 30 minuti?',
+          options:['10 km','20 km','30 km','40 km'],
+          correct:'20 km',
+          success:'Bravo! 30 minuti sono metà ora, quindi metà di 40 km: 20 km.',
+          digit:'9'
+        }
+      ],
+      clueTitle:'Indizio 2 — l\'orario del biglietto',
+      clueText:'Il biglietto è stato attaccato alla bacheca esattamente alle 16:00, appena finite le lezioni nella scuola vicina. Il Fantasma agisce nel tardo pomeriggio, subito dopo la scuola.'
+    },
+    {
+      id:'airolo', name:'Airolo', icon:'⛰️', topic:'Storia', color:'#6B7280',
+      title:'Caso 3 · Airolo — il vecchio tunnel',
+      intro:'Nel piccolo museo della stazione di Airolo manca un modellino di locomotiva. Accanto alla vetrina vuota, due domande sulla storia del San Gottardo.',
+      questions:[
+        {
+          icon:'⛏️',
+          q:'In che anno fu inaugurato il primo tunnel ferroviario del San Gottardo?',
+          options:['1848','1872','1882','1910'],
+          correct:'1882',
+          success:'Esatto! Il tunnel del 1882 era lungo circa 15 km: all\'epoca era il tunnel più lungo del mondo.',
+          digit:'8'
+        },
+        {
+          icon:'🚇',
+          q:'La nuova Galleria di base del San Gottardo, aperta nel 2016 e lunga 57 km, che record detiene ancora oggi?',
+          options:['È il tunnel più lungo del mondo','È il tunnel più alto del mondo','È stata la prima ferrovia svizzera','È il tunnel più corto della Svizzera'],
+          correct:'È il tunnel più lungo del mondo',
+          success:'Giusto! È tuttora il tunnel ferroviario più lungo del mondo.',
+          digit:'2'
+        }
+      ],
+      clueTitle:'Indizio 3 — il disegno',
+      clueText:'Vicino alla vetrina c\'è un piccolo disegno: un fantasmino con una sciarpa da club, e le iniziali "P.F.L.". Il Fantasma fa parte di un club di appassionati di modellini di treni.'
+    },
+    {
+      id:'lugano', name:'Lugano', icon:'🌊', topic:'Testimonianze', color:'#0E7C86',
+      title:'Caso 4 · Lugano — il testimone',
+      intro:'A Lugano il giornalaio della stazione ha visto qualcosa. Ascolta la sua testimonianza e rispondi.',
+      witness:'"Poco dopo le 16, ho visto una ragazzina o un ragazzino correre verso il lago. Aveva uno zaino disegnato a mano, con sopra una locomotiva." — Il giornalaio',
+      questions:[
+        {
+          icon:'📰',
+          q:'Cosa aveva sulla schiena la persona vista dal giornalaio?',
+          options:['Un cappello rosso','Uno zaino con disegnata una locomotiva','Un ombrello','Niente'],
+          correct:'Uno zaino con disegnata una locomotiva',
+          success:'Esatto, uno zaino decorato con una locomotiva.',
+          digit:'5'
+        },
+        {
+          icon:'🎒',
+          q:'A che ora è stata vista questa persona?',
+          options:['A mezzogiorno','Poco dopo le 16','In piena notte','Alle 8 del mattino'],
+          correct:'Poco dopo le 16',
+          success:'Giusto, poco dopo le 16 — proprio come a Bellinzona.',
+          digit:'6'
+        }
+      ],
+      clueTitle:'Indizio 4 — lo zaino',
+      clueText:'A Lugano è stata vista, poco dopo le 16, con uno zaino decorato con una locomotiva disegnata a mano.'
+    }
+  ];
+
+  var CANDIDATES = [
+    {id:'sofia', name:'Sofia Conti', role:'10 anni, socia del Club dei Piccoli Ferrovieri di Lugano', avatar:'🧒', small:true, afterSchool:true, trainClub:true, backpack:true, guilty:true},
+    {id:'keller', name:'Sig. Keller', role:'Capostazione di Airolo, adulto', avatar:'👨‍✈️', small:false, afterSchool:false, trainClub:false, backpack:false, guilty:false},
+    {id:'paolo', name:'Paolo', role:'14 anni, quel pomeriggio era ad allenamento di calcio', avatar:'🧑', small:false, afterSchool:false, trainClub:false, backpack:false, guilty:false},
+    {id:'elvira', name:'Nonna Elvira', role:'Adulta, appassionata di storia, cammina con un bastone', avatar:'👵', small:false, afterSchool:false, trainClub:true, backpack:false, guilty:false}
+  ];
+
+  var solvedCases = {};   // id -> true
+  var currentCase = null;
+  var attempts = {};
+  var timerInterval = null;
+  var timerStarted = false;
+  var TIMER_MINUTES = 20;
+
+  /* ================= TIMER & TOAST ================= */
+  function startTimer(){
+    if(timerStarted) return;
+    timerStarted = true;
+    var totalSeconds = TIMER_MINUTES * 60;
+    var badge = document.getElementById('timerBadge');
+    function tick(){
+      if(totalSeconds <= 0){
+        clearInterval(timerInterval);
+        badge.textContent = '⏱️ 00:00';
+        badge.classList.add('time-up');
+        showToast("Il tempo consigliato è scaduto, ma potete continuare con calma: l'importante è risolvere i casi!");
+        return;
+      }
+      var m = Math.floor(totalSeconds/60);
+      var s = totalSeconds%60;
+      badge.textContent = '⏱️ ' + (m<10?'0':'') + m + ':' + (s<10?'0':'') + s;
+      totalSeconds--;
+    }
+    tick();
+    timerInterval = setInterval(tick, 1000);
+  }
+
+  function showToast(msg){
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(function(){ t.classList.remove('show'); }, 4200);
+  }
+
+  /* ================= FLAP TEXT ================= */
+  function flap(el, text, speed){
+    speed = speed || 34;
+    if(reduceMotion){ el.textContent = text; return; }
+    var chars = 'ABCDEFGHIJLMNOPQRSTUVZ0123456789:';
+    el.textContent = '';
+    var frag = document.createDocumentFragment();
+    var spans = [];
+    for(var i=0;i<text.length;i++){
+      var span = document.createElement('span');
+      span.className = 'flap-char';
+      span.textContent = text[i] === ' ' ? '\u00A0' : text[i];
+      frag.appendChild(span);
+      spans.push(span);
+    }
+    el.appendChild(frag);
+    spans.forEach(function(span, i){
+      var ch = text[i];
+      if(ch === ' '){ return; }
+      var ticks = 0, maxTicks = 5 + (i % 4);
+      var timer = setInterval(function(){
+        span.textContent = chars[Math.floor(Math.random()*chars.length)];
+        span.classList.add('flip');
+        setTimeout(function(){ span.classList.remove('flip'); }, 90);
+        ticks++;
+        if(ticks >= maxTicks){
+          clearInterval(timer);
+          span.textContent = ch;
+        }
+      }, speed + i*3);
+    });
+  }
+
+  /* ================= PUNCH + CHIME ================= */
+  document.addEventListener('click', function(e){
+    var btn = e.target.closest('.btn-punch');
+    if(!btn || reduceMotion) return;
+    var rect = btn.getBoundingClientRect();
+    var dot = document.createElement('span');
+    dot.className = 'punch-dot';
+    dot.style.left = (e.clientX - rect.left) + 'px';
+    dot.style.top = (e.clientY - rect.top) + 'px';
+    btn.appendChild(dot);
+    setTimeout(function(){ dot.remove(); }, 420);
+  });
+
+  function chime(ok){
+    try{
+      var Ctx = window.AudioContext || window.webkitAudioContext;
+      if(!chime.ctx) chime.ctx = new Ctx();
+      var ctx = chime.ctx;
+      var o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = 'sine';
+      o.frequency.value = ok ? 880 : 220;
+      g.gain.value = 0.07;
+      o.connect(g); g.connect(ctx.destination);
+      o.start();
+      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.3);
+      o.stop(ctx.currentTime + 0.32);
+    }catch(e){}
+  }
+
+  /* ================= SCREENS ================= */
+  function showScreen(id){
+    document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0,0);
+  }
+
+  /* ================= NOTEBOOK ================= */
+  function renderNotebook(){
+    var list = document.getElementById('notebookList');
+    var count = Object.keys(solvedCases).length;
+    document.getElementById('notebookCount').textContent = count;
+    list.innerHTML = '';
+    if(count === 0){
+      list.innerHTML = '<div class="note-item empty">Non hai ancora risolto nessun caso.</div>';
+    } else {
+      CASES.forEach(function(c){
+        if(solvedCases[c.id]){
+          var div = document.createElement('div');
+          div.className = 'note-item';
+          div.innerHTML = '<span class="chk">✓</span><span><b>' + c.name + ':</b> ' + c.clueText + '</span>';
+          list.appendChild(div);
+        }
+      });
+    }
+  }
+  document.getElementById('notebookTab').addEventListener('click', function(){
+    document.getElementById('notebookPanel').classList.toggle('open');
+  });
+  document.getElementById('modalClose').addEventListener('click', closeModal);
+  document.getElementById('modalOverlay').addEventListener('click', function(e){
+    if(e.target.id === 'modalOverlay') closeModal();
+  });
+
+  /* ================= MAP ================= */
+  function renderMap(){
+    var row = document.getElementById('stationsRow');
+    row.innerHTML = '';
+    CASES.forEach(function(c){
+      var done = !!solvedCases[c.id];
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'station-node' + (done ? ' done' : '');
+      btn.innerHTML = '<div class="dot">' + (done ? '✅' : c.icon) + '</div><h4>' + c.name + '</h4><div class="tag2">' + c.topic + '</div>';
+      btn.addEventListener('click', function(){ openCase(c.id); });
+      row.appendChild(btn);
+    });
+    var doneCount = Object.keys(solvedCases).length;
+    document.getElementById('mapProgress').textContent = 'Casi risolti: ' + doneCount + '/4';
+    var finale = document.getElementById('finaleNode');
+    var ready = doneCount === CASES.length;
+    finale.classList.toggle('ready', ready);
+    finale.title = ready ? 'Apri l\'indagine finale' : 'Risolvi prima tutti e quattro i casi';
+  }
+  document.getElementById('finaleNode').addEventListener('click', function(){
+    if(Object.keys(solvedCases).length === CASES.length){
+      openFinale();
+    } else {
+      alert('Devi prima risolvere tutti e quattro i casi sulla mappa!');
+    }
+  });
+
+  /* ================= CASE PLAY ================= */
+  var caseSolvedQ = {};      // { caseId: {0:true,1:true} }
+  var caseTypedDigits = [];
+
+  function openCase(id){
+    currentCase = CASES.filter(function(c){ return c.id === id; })[0];
+    var alreadyDone = !!solvedCases[currentCase.id];
+    document.getElementById('caseEyebrow').textContent = currentCase.topic;
+    document.getElementById('caseTitle').textContent = currentCase.title;
+    document.getElementById('caseIntro').innerHTML =
+      '<p>' + currentCase.intro + '</p>' +
+      (currentCase.witness ? '<div class="witness">' + currentCase.witness + '</div>' : '') +
+      (alreadyDone
+        ? '<p><i>Hai già aperto questa porta. Ecco di nuovo l\'indizio raccolto.</i></p>'
+        : '<p><i>La porta di questa stanza è chiusa da un lucchetto a 2 cifre: tocca i due oggetti che brillano per trovarle.</i></p>');
+    document.getElementById('clueReveal').classList.remove('show');
+    document.getElementById('btnCaseDone').style.display = alreadyDone ? 'inline-block' : 'none';
+    caseTypedDigits = [];
+    renderCaseScene();
+    renderCaseLockPanel();
+    if(alreadyDone) showClueReveal();
+    showScreen('screen-case');
+  }
+
+  function buildRoomSceneHTML(c, q0done, q1done){
+    var color = c.color || '#C9A227';
+    return '' +
+      '<div class="scene-wrap">' +
+        '<svg class="scene-svg roomscene" viewBox="0 0 900 500" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Stanza della stazione di ' + c.name + ' con due oggetti da esplorare">' +
+          '<rect class="wall" x="0" y="0" width="900" height="380"/>' +
+          '<rect class="floor" x="0" y="380" width="900" height="120"/>' +
+          '<rect class="baseboard" x="0" y="376" width="900" height="8"/>' +
+          '<line class="plank" x1="0" y1="410" x2="900" y2="410"/>' +
+          '<line class="plank" x1="0" y1="445" x2="900" y2="445"/>' +
+          '<line class="plank" x1="0" y1="480" x2="900" y2="480"/>' +
+          '<rect class="win-frame" x="45" y="55" width="170" height="140" rx="6" style="fill:' + color + '"/>' +
+          '<rect class="win-sky" x="58" y="68" width="144" height="114"/>' +
+          '<rect class="nameplate-bg" x="330" y="30" width="240" height="42" rx="8"/>' +
+          '<text class="nameplate-txt" x="450" y="58" text-anchor="middle">' + c.name + '</text>' +
+          '<g>' +
+            '<rect class="sign-post" x="290" y="230" width="14" height="120"/>' +
+            '<rect class="sign-board" x="230" y="150" width="140" height="95" rx="4" style="stroke:' + color + ';stroke-width:5;"/>' +
+            '<line class="sign-line" x1="245" y1="172" x2="355" y2="172"/>' +
+            '<line class="sign-line" x1="245" y1="192" x2="355" y2="192"/>' +
+            '<line class="sign-line" x1="245" y1="212" x2="355" y2="212"/>' +
+          '</g>' +
+          '<g>' +
+            '<rect class="crate-body" x="580" y="290" width="120" height="95" rx="4"/>' +
+            '<line class="crate-line" x1="580" y1="290" x2="700" y2="385"/>' +
+            '<line class="crate-line" x1="700" y1="290" x2="580" y2="385"/>' +
+            '<rect class="crate-body" x="580" y="290" width="120" height="18" style="fill:' + color + '"/>' +
+          '</g>' +
+          '<rect class="door" x="800" y="60" width="55" height="320" rx="4"/>' +
+          '<circle class="door-handle" cx="812" cy="215" r="5"/>' +
+        '</svg>' +
+        '<button class="hotspot' + (q0done?' done':'') + '" type="button" data-q="0" style="left:33.9%;top:39%;" aria-label="Domanda 1">' + (q0done?'✓':(c.questions[0].icon||'📌')) + '</button>' +
+        '<button class="hotspot' + (q1done?' done':'') + '" type="button" data-q="1" style="left:71.1%;top:69%;" aria-label="Domanda 2">' + (q1done?'✓':(c.questions[1].icon||'📦')) + '</button>' +
+      '</div>';
+  }
+
+  function renderCaseScene(){
+    var wrap = document.getElementById('caseScene');
+    var c = currentCase;
+    if(solvedCases[c.id]){
+      wrap.innerHTML = '';
+      return;
+    }
+    var solvedQ = caseSolvedQ[c.id] || {};
+    wrap.innerHTML = buildRoomSceneHTML(c, !!solvedQ[0], !!solvedQ[1]);
+    wrap.querySelectorAll('.hotspot[data-q]').forEach(function(h){
+      h.addEventListener('click', function(){ openCaseQuestion(parseInt(h.getAttribute('data-q'), 10)); });
+    });
+  }
+
+  function openCaseQuestion(qIndex){
+    var c = currentCase;
+    var q = c.questions[qIndex];
+    var already = !!(caseSolvedQ[c.id] && caseSolvedQ[c.id][qIndex]);
+    var extra = '';
+    if(q.map){
+      extra += '<div class="map-diagram"><div class="map-line2">' +
+        mapDot('Chiasso') + seg() + mapDot('Lugano') + seg() + mapDot('Bellinzona') + seg() + mapDot('Biasca') + seg() + mapDot('Airolo') +
+        '</div></div>';
+    }
+    document.getElementById('modalContent').innerHTML =
+      '<p class="kicker">Domanda ' + (qIndex+1) + ' di 2 — ' + c.name + '</p>' +
+      '<h3 id="modalTitle">' + c.topic + '</h3>' +
+      extra +
+      '<p><b>' + q.q + '</b></p>' +
+      '<div class="options" id="modalOptions"></div>' +
+      '<div class="feedback" id="modalFeedback" hidden></div>' +
+      '<div class="modal-actions" id="modalActions"></div>';
+
+    var optWrap = document.getElementById('modalOptions');
+    q.options.forEach(function(opt){
+      var b = document.createElement('button');
+      b.className = 'opt-btn';
+      b.type = 'button';
+      b.textContent = opt;
+      if(already){
+        b.disabled = true;
+        if(opt === q.correct) b.classList.add('correct');
+      }
+      b.addEventListener('click', function(){ chooseCaseOption(qIndex, opt, optWrap); });
+      optWrap.appendChild(b);
+    });
+
+    var actions = document.getElementById('modalActions');
+    if(already){
+      var fb = document.getElementById('modalFeedback');
+      fb.hidden = false;
+      fb.className = 'feedback ok';
+      fb.textContent = q.success;
+      var closeBtn = document.createElement('button');
+      closeBtn.className = 'btn secondary btn-punch';
+      closeBtn.type = 'button';
+      closeBtn.textContent = 'Chiudi';
+      closeBtn.addEventListener('click', closeModal);
+      actions.appendChild(closeBtn);
+    }
+    document.getElementById('modalOverlay').hidden = false;
+  }
+
+  function mapDot(name){ return '<div class="map-dot"><div class="pt"></div>' + name + '</div>'; }
+  function seg(){ return '<div class="map-seg"></div>'; }
+
+  function chooseCaseOption(qIndex, opt, optWrap){
+    var c = currentCase;
+    var q = c.questions[qIndex];
+    var buttons = optWrap.querySelectorAll('.opt-btn');
+    var fb = document.getElementById('modalFeedback');
+    var actions = document.getElementById('modalActions');
+    var key = c.id + '-' + qIndex;
+
+    if(opt === q.correct){
+      buttons.forEach(function(b){
+        b.disabled = true;
+        if(b.textContent === opt) b.classList.add('correct');
+      });
+      fb.hidden = false;
+      fb.className = 'feedback ok';
+      fb.textContent = q.success;
+      chime(true);
+      if(!caseSolvedQ[c.id]) caseSolvedQ[c.id] = {};
+      caseSolvedQ[c.id][qIndex] = true;
+      renderCaseScene();
+      renderCaseLockPanel();
+      actions.innerHTML = '';
+      var closeBtn = document.createElement('button');
+      closeBtn.className = 'btn btn-punch';
+      closeBtn.type = 'button';
+      closeBtn.textContent = 'Chiudi';
+      closeBtn.addEventListener('click', closeModal);
+      actions.appendChild(closeBtn);
+    } else {
+      attempts[key] = (attempts[key] || 0) + 1;
+      buttons.forEach(function(b){ if(b.textContent === opt) b.classList.add('wrong'); });
+      fb.hidden = false;
+      fb.className = 'feedback bad';
+      fb.textContent = attempts[key] >= 2 ? 'Non è questa. Rileggi bene la domanda e riprova.' : 'Non proprio, riprova!';
+      chime(false);
+      setTimeout(function(){ buttons.forEach(function(b){ b.classList.remove('wrong'); }); }, 500);
+    }
+  }
+
+  function closeModal(){
+    document.getElementById('modalOverlay').hidden = true;
+  }
+
+  function renderCaseLockPanel(){
+    var c = currentCase;
+    var lockPanel = document.getElementById('caseLockPanel');
+    var keypadWrap = document.getElementById('caseKeypadWrap');
+    if(solvedCases[c.id]){
+      lockPanel.style.display = 'none';
+      keypadWrap.style.display = 'none';
+      return;
+    }
+    var solvedQ = caseSolvedQ[c.id] || {};
+    var slotsWrap = document.getElementById('caseLockSlots');
+    slotsWrap.innerHTML = '';
+    c.questions.forEach(function(q, i){
+      var slot = document.createElement('div');
+      slot.className = 'lock-slot' + (solvedQ[i] ? ' filled' : '');
+      slot.textContent = solvedQ[i] ? q.digit : '?';
+      slotsWrap.appendChild(slot);
+    });
+    lockPanel.style.display = 'block';
+    var bothDone = solvedQ[0] && solvedQ[1];
+    keypadWrap.style.display = bothDone ? 'block' : 'none';
+    if(bothDone) renderCaseKeypadDisplay();
+  }
+
+  function renderCaseKeypadDisplay(){
+    var disp = document.getElementById('caseKeypadDisplay');
+    if(!disp) return;
+    disp.innerHTML = '';
+    for(var i=0;i<2;i++){
+      var box = document.createElement('div');
+      box.className = 'digit-box' + (caseTypedDigits[i] !== undefined ? ' filled' : '');
+      box.textContent = caseTypedDigits[i] !== undefined ? caseTypedDigits[i] : '';
+      disp.appendChild(box);
+    }
+  }
+
+  document.querySelectorAll('#caseKeypadWrap .keypad-btn[data-num]').forEach(function(b){
+    b.addEventListener('click', function(){
+      if(caseTypedDigits.length < 2){
+        caseTypedDigits.push(b.getAttribute('data-num'));
+        renderCaseKeypadDisplay();
+      }
+    });
+  });
+  document.getElementById('caseKeypadClear').addEventListener('click', function(){
+    caseTypedDigits.pop();
+    renderCaseKeypadDisplay();
+  });
+  document.getElementById('caseKeypadConfirm').addEventListener('click', function(){
+    var c = currentCase;
+    var code = c.questions.map(function(q){ return q.digit; }).join('');
+    var typed = caseTypedDigits.join('');
+    if(typed === code && caseTypedDigits.length === 2){
+      var pad = document.getElementById('casePadlock');
+      pad.classList.add('open');
+      chime(true);
+      document.getElementById('caseKeypadConfirm').disabled = true;
+      setTimeout(function(){
+        showClueReveal();
+        solvedCases[c.id] = true;
+        renderNotebook();
+        document.getElementById('btnCaseDone').style.display = 'inline-block';
+        renderCaseLockPanel();
+        document.getElementById('caseScene').innerHTML = '';
+      }, 500);
+    } else {
+      chime(false);
+      var wrap = document.getElementById('caseKeypadWrap');
+      wrap.classList.add('keypad-shake');
+      setTimeout(function(){ wrap.classList.remove('keypad-shake'); }, 420);
+      showToast('Codice errato, riprova!');
+      caseTypedDigits = [];
+      renderCaseKeypadDisplay();
+    }
+  });
+
+  function showClueReveal(){
+    document.getElementById('clueRevealText').textContent = currentCase.clueText;
+    document.getElementById('clueReveal').classList.add('show');
+  }
+
+  document.getElementById('btnBackToMap').addEventListener('click', function(){
+    showScreen('screen-map');
+    renderMap();
+  });
+  document.getElementById('btnCaseDone').addEventListener('click', function(){
+    showScreen('screen-map');
+    renderMap();
+  });
+
+  /* ================= FINALE ================= */
+  function openFinale(){
+    var recap = document.getElementById('cluesRecap');
+    recap.innerHTML = '';
+    CASES.forEach(function(c){
+      var d = document.createElement('div');
+      d.className = 'recap-card';
+      d.innerHTML = '<b>' + c.clueTitle + '</b>' + c.clueText;
+      recap.appendChild(d);
+    });
+
+    var grid = document.getElementById('candidatesGrid');
+    grid.innerHTML = '';
+    CANDIDATES.forEach(function(p){
+      var card = document.createElement('div');
+      card.className = 'cand-card';
+      card.innerHTML =
+        '<div class="head"><div class="avatar">' + p.avatar + '</div><div><h3>' + p.name + '</h3><p class="role">' + p.role + '</p></div></div>' +
+        factRow('Impronta piccola (bambino/a)', p.small) +
+        factRow('Libero/a subito dopo la scuola', p.afterSchool) +
+        factRow('Appassionato/a di modellini di treni', p.trainClub) +
+        factRow('Visto/a con zaino "locomotiva"', p.backpack) +
+        '<button class="accuse-btn btn-punch" data-id="' + p.id + '">Accuso ' + p.name.split(' ')[0] + '</button>';
+      grid.appendChild(card);
+    });
+    grid.querySelectorAll('.accuse-btn').forEach(function(b){
+      b.addEventListener('click', function(){ accuseFinale(b.getAttribute('data-id')); });
+    });
+    document.getElementById('finaleFeedback').classList.remove('show');
+    showScreen('screen-finale');
+  }
+
+  function factRow(label, yes){
+    return '<div class="fact-row"><span>' + label + '</span><span class="tag ' + (yes?'yes':'no') + '">' + (yes?'Sì':'No') + '</span></div>';
+  }
+
+  function accuseFinale(id){
+    var p = CANDIDATES.filter(function(x){ return x.id === id; })[0];
+    var fb = document.getElementById('finaleFeedback');
+    fb.classList.add('show');
+    if(p.guilty){
+      fb.style.background = '#E4F3EA'; fb.style.color = '#2E7D4F';
+      fb.textContent = 'Esatto: è ' + p.name + '! Scopri come è andata davvero...';
+      chime(true);
+      setTimeout(goToEnd, 1400);
+    } else {
+      fb.style.background = '#FBE6E4'; fb.style.color = '#B3261E';
+      fb.textContent = p.name + ' non corrisponde a tutti gli indizi. Guarda di nuovo la tabella!';
+      chime(false);
+    }
+  }
+
+  function goToEnd(){
+    showScreen('screen-end');
+    flap(document.getElementById('endTitle'), 'MISTERO RISOLTO');
+    document.getElementById('endStory').textContent =
+      "Il \"Fantasma della Ferrovia\" era Sofia! Con gli amici del suo club di modellismo, stava preparando di nascosto un plastico a sorpresa con tutte e quattro le stazioni, per la Festa del Treno. Aveva solo preso in prestito qualche oggetto, con l'intenzione di restituirlo subito dopo. Ha chiesto scusa per non aver domandato il permesso, e ha invitato tutta l'Agenzia Investigativa all'inaugurazione del plastico. Ottimo lavoro, detective: hai risolto quattro casi usando geografia, matematica, storia e testimonianze!";
+  }
+
+  /* ================= NAV ================= */
+  document.getElementById('btnStart').addEventListener('click', function(){
+    showScreen('screen-map');
+    renderMap();
+    renderNotebook();
+    startTimer();
+  });
+  document.getElementById('btnRestart').addEventListener('click', function(){
+    solvedCases = {}; attempts = {}; currentCase = null;
+    caseSolvedQ = {}; caseTypedDigits = [];
+    clearInterval(timerInterval);
+    timerStarted = false;
+    document.getElementById('notebookPanel').classList.remove('open');
+    var timerBadge = document.getElementById('timerBadge');
+    if(timerBadge){ timerBadge.classList.remove('time-up'); timerBadge.textContent = '⏱️ 20:00'; }
+    var keypadConfirm = document.getElementById('caseKeypadConfirm');
+    if(keypadConfirm) keypadConfirm.disabled = false;
+    showScreen('screen-cover');
+  });
+
+  /* ================= INIT ================= */
+  flap(document.getElementById('coverTitle'), 'Il Fantasma della Ferrovia');
+})();
+</script>
+</body>
+</html>
