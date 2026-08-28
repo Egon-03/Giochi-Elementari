@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Caccia sulla Mappa della Svizzera — Detective Geografia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Nunito:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --rail-red:#E10600;
+    --rail-red-dark:#B00400;
+    --noir:#161A22;
+    --noir-2:#1F2530;
+    --cream:#F4ECD8;
+    --paper:#FBF6EA;
+    --brass:#C9A227;
+    --ink:#20232B;
+    --steel:#5B6472;
+    --ok:#2E7D4F;
+    --bad:#B3261E;
+    --font-display:'Oswald',sans-serif;
+    --font-body:'Nunito',sans-serif;
+    --font-mono:'Space Mono',monospace;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:var(--font-body);background:var(--noir);color:var(--ink);line-height:1.5;}
+  h1,h2,h3,.flap{font-family:var(--font-display);text-transform:uppercase;letter-spacing:.03em;}
+  button{font-family:inherit;cursor:pointer;}
+  :focus-visible{outline:3px solid var(--brass);outline-offset:3px;}
+
+  #app{min-height:100vh;}
+  .screen{display:none;min-height:100vh;padding:2rem 1.25rem 4rem;}
+  .screen.active{display:block;animation:fadein .35s ease;}
+  @keyframes fadein{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+  .wrap{max-width:960px;margin:0 auto;}
+  .wrap.narrow{max-width:640px;}
+  .center{text-align:center;}
+  .eyebrow{font-family:var(--font-mono);color:var(--brass);font-size:.8rem;letter-spacing:.15em;text-transform:uppercase;margin:0 0 .5rem;}
+
+  .flap-title{font-size:clamp(1.5rem,5.4vw,2.8rem);color:var(--paper);margin:.2rem 0 .6rem;min-height:1.2em;}
+  .flap-char{display:inline-block;font-family:var(--font-display);}
+  .flap-char.flip{transform:rotateX(85deg);transition:transform .08s linear;}
+
+  .badge{display:inline-block;background:var(--rail-red);color:var(--paper);font-family:var(--font-mono);font-size:.75rem;letter-spacing:.08em;padding:.3rem .7rem;border-radius:999px;margin-bottom:1rem;}
+  .subtitle{font-size:1.05rem;color:#C7CEDB;max-width:600px;margin:0 auto 1.6rem;}
+
+  .btn{display:inline-block;border:none;border-radius:10px;padding:.9rem 1.6rem;font-weight:800;font-size:1rem;background:var(--rail-red);color:var(--paper);box-shadow:0 4px 0 var(--rail-red-dark);transition:transform .08s ease;}
+  .btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--rail-red-dark);}
+  .btn.secondary{background:var(--paper);color:var(--ink);box-shadow:0 4px 0 #C9BE9E;}
+  .btn.secondary:active{box-shadow:0 1px 0 #C9BE9E;}
+  .btn:disabled{opacity:.4;cursor:not-allowed;box-shadow:none;transform:none;}
+  .btn-punch{position:relative;overflow:hidden;}
+  .punch-dot{position:absolute;width:10px;height:10px;border-radius:50%;background:var(--paper);transform:translate(-50%,-50%) scale(0);animation:punch .4s ease-out forwards;pointer-events:none;}
+  @keyframes punch{0%{transform:translate(-50%,-50%) scale(0);opacity:1;}70%{transform:translate(-50%,-50%) scale(1);opacity:1;}100%{transform:translate(-50%,-50%) scale(1);opacity:0;}}
+
+  .howto{max-width:640px;margin:1.5rem auto 0;background:var(--noir-2);border:1px solid #2C3444;border-radius:12px;padding:1.1rem 1.3rem;text-align:left;color:#D6DBE6;}
+  .howto summary{cursor:pointer;font-weight:800;color:var(--paper);}
+  .howto ul{margin:.7rem 0 0;padding-left:1.2rem;}
+  .howto li{margin-bottom:.4rem;}
+
+  /* --- briefing --- */
+  #screen-briefing{background:var(--cream);}
+  .case-card{background:var(--paper);border:1px solid #E6DBBE;border-radius:14px;padding:1.4rem 1.6rem;margin:1.5rem 0;box-shadow:0 2px 0 #E6DBBE;}
+  .continue-row{margin-top:1.8rem;text-align:center;}
+
+  /* --- chase / map screen --- */
+  #screen-chase{background:var(--noir);color:var(--paper);}
+  .top-row{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;}
+  .progress-pill{font-family:var(--font-mono);background:var(--noir-2);border:1px solid #2C3444;padding:.4rem .8rem;border-radius:999px;font-size:.85rem;color:var(--brass);}
+
+  .clue-card{background:var(--noir-2);border:1px solid #2C3444;border-radius:14px;padding:1.1rem 1.3rem;margin-bottom:1rem;}
+  .clue-card p{margin:.3rem 0;}
+  .clue-card .riddle{font-style:italic;color:var(--paper);font-size:1.05rem;}
+
+  .map-wrap{position:relative;width:100%;border-radius:16px;overflow:hidden;margin-top:.5rem;box-shadow:0 6px 0 rgba(0,0,0,.35);}
+  .map-wrap::before{content:"";display:block;padding-top:68%;}
+  .map-svg{position:absolute;inset:0;width:100%;height:100%;display:block;}
+  .map-bg{fill:#7B93A6;}
+  .canton{fill:#93A8B8;stroke:#5B6472;stroke-width:1;}
+  .lake{fill:#4E7FA8;}
+  .route-line{stroke:var(--brass);stroke-width:.9;stroke-dasharray:2 2;fill:none;opacity:0;transition:opacity .5s ease;}
+  .route-line.show{opacity:.9;}
+
+  .city-pin{
+    position:absolute;transform:translate(-50%,-100%);
+    display:flex;flex-direction:column;align-items:center;cursor:pointer;
+    background:none;border:none;padding:0;
+  }
+  .city-pin .dot{
+    width:26px;height:26px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);
+    background:var(--steel);border:3px solid var(--paper);box-shadow:0 3px 0 rgba(0,0,0,.35);
+  }
+  .city-pin.active .dot{background:var(--brass);animation:bounce 1.4s ease-in-out infinite;}
+  .city-pin.done .dot{background:var(--ok);}
+  .city-pin .name{margin-top:.3rem;font-family:var(--font-mono);font-size:.68rem;background:var(--noir);color:var(--paper);padding:.1rem .4rem;border-radius:4px;white-space:nowrap;}
+  @keyframes bounce{0%,100%{transform:rotate(-45deg) translateY(0);}50%{transform:rotate(-45deg) translateY(-6px);}}
+
+  .runner{position:absolute;transform:translate(-50%,-100%);font-size:1.6rem;transition:left .8s ease, top .8s ease;filter:drop-shadow(0 3px 2px rgba(0,0,0,.4));}
+
+  .continue-row2{margin-top:1.4rem;text-align:center;}
+
+  /* --- modal --- */
+  .modal-overlay{position:fixed;inset:0;background:rgba(10,12,16,.72);display:flex;align-items:center;justify-content:center;z-index:60;padding:1rem;}
+  .modal-overlay[hidden]{display:none;}
+  .modal{background:var(--paper);color:var(--ink);border-radius:16px;max-width:560px;width:100%;max-height:88vh;overflow:auto;padding:1.6rem;position:relative;}
+  .modal-close{position:absolute;top:.7rem;right:.7rem;background:none;border:none;font-size:1.6rem;line-height:1;color:var(--steel);}
+  .modal .kicker{font-family:var(--font-mono);color:var(--rail-red);font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;}
+  .modal h3{margin:.3rem 0 .8rem;font-size:1.3rem;}
+  .modal p{margin:.5rem 0;}
+  .options{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin:1rem 0;}
+  @media (max-width:480px){.options{grid-template-columns:1fr;}}
+  .opt-btn{background:var(--paper);border:2px solid var(--noir);border-radius:10px;padding:.7rem .8rem;font-weight:700;text-align:left;font-size:.95rem;}
+  .opt-btn.correct{border-color:var(--ok);background:#E4F3EA;}
+  .opt-btn.wrong{border-color:var(--bad);background:#FBE6E4;}
+  .feedback{margin-top:.8rem;padding:.8rem 1rem;border-radius:10px;font-weight:700;font-size:.92rem;}
+  .feedback.ok{background:#E4F3EA;color:var(--ok);}
+  .feedback.bad{background:#FBE6E4;color:var(--bad);}
+  .feedback[hidden]{display:none;}
+  .modal-actions{margin-top:1.2rem;display:flex;justify-content:flex-end;gap:.6rem;}
+
+  /* --- notebook --- */
+  .notebook-tab{position:fixed;right:1rem;bottom:1rem;z-index:40;background:var(--brass);color:var(--ink);border:none;border-radius:999px;padding:.7rem 1.1rem;font-weight:800;box-shadow:0 3px 0 #98781B;}
+  .notebook-panel{position:fixed;right:1rem;bottom:4.4rem;z-index:40;width:min(360px,90vw);max-height:60vh;overflow:auto;background:var(--paper);color:var(--ink);border-radius:14px;padding:1rem 1.1rem;box-shadow:0 10px 30px rgba(0,0,0,.4);transform:translateY(12px) scale(.98);opacity:0;pointer-events:none;transition:.18s ease;}
+  .notebook-panel.open{transform:none;opacity:1;pointer-events:auto;}
+  .notebook-panel h3{margin:0 0 .6rem;font-size:1rem;}
+  .note-item{display:flex;gap:.5rem;margin-bottom:.7rem;font-size:.88rem;}
+  .note-item .chk{color:var(--ok);font-weight:800;}
+  .note-item.empty{color:var(--steel);font-style:italic;}
+
+  /* --- end --- */
+  #screen-end{background:radial-gradient(ellipse at 50% -10%, #232B39 0%, var(--noir) 60%);color:var(--paper);}
+  .diploma{background:var(--paper);color:var(--ink);border-radius:16px;padding:1.8rem;max-width:640px;margin:1.5rem auto;border:3px double var(--brass);text-align:left;}
+  .facts-list{margin:1rem 0;padding-left:1.2rem;}
+  .facts-list li{margin-bottom:.6rem;}
+</style>
+</head>
+<body>
+
+<main id="app">
+
+  <!-- COVER -->
+  <section id="screen-cover" class="screen active">
+    <div class="wrap center">
+      <span class="badge">🕵️ Agenzia Investigativa del Ticino</span>
+      <h1 class="flap-title" id="coverTitle">&nbsp;</h1>
+      <p class="subtitle">Qualcuno ha rubato la ricetta segreta di un famoso cioccolatino svizzero e sta scappando attraverso il Paese! Segui gli indizi geografici sulla mappa per stanarlo tappa dopo tappa.</p>
+      <button class="btn btn-punch" id="btnStart">Inizia la caccia 🔍</button>
+      <details class="howto">
+        <summary>Come si gioca</summary>
+        <ul>
+          <li>Leggi l'indovinello geografico e tocca sulla mappa la città giusta.</li>
+          <li>Ogni risposta corretta fa avanzare il ladro verso la tappa successiva.</li>
+          <li>Ogni indizio finisce nel taccuino 📓. In fondo alla Svizzera lo stanerai!</li>
+        </ul>
+      </details>
+    </div>
+  </section>
+
+  <!-- BRIEFING -->
+  <section id="screen-briefing" class="screen">
+    <div class="wrap">
+      <p class="eyebrow">Rapporto del caso</p>
+      <h2 id="briefTitle">&nbsp;</h2>
+      <div class="case-card">
+        <p>Un misterioso ladro, che si fa chiamare <b>"Il Cioccolataio Nero"</b>, ha rubato la ricetta segreta di un cioccolatino svizzero da una fabbrica di Lugano ed è scappato in treno verso nord.</p>
+        <p>Un informatore ti ha passato 5 indovinelli geografici: risolvili in ordine per seguire le sue tracce attraverso la Svizzera e catturarlo all'ultima tappa.</p>
+      </div>
+      <div class="continue-row">
+        <button class="btn btn-punch" id="btnToChase">Vai sulla mappa 🗺️</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHASE -->
+  <section id="screen-chase" class="screen">
+    <div class="wrap">
+      <div class="top-row">
+        <div>
+          <p class="eyebrow">Sulle tracce del Cioccolataio Nero</p>
+          <h2 style="margin:.1rem 0;">Segui la pista sulla mappa</h2>
+        </div>
+        <span class="progress-pill" id="progressPill">Tappa 1/5</span>
+      </div>
+
+      <div class="clue-card">
+        <p class="riddle" id="riddleText">Caricamento indizio...</p>
+        <p style="color:#9DA6B8;font-size:.85rem;">Tocca sulla mappa la città che pensi sia la risposta.</p>
+      </div>
+
+      <div class="map-wrap">
+        <svg class="map-svg" viewBox="0 0 600 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Mappa semplificata della Svizzera con città cliccabili">
+          <rect class="map-bg" x="0" y="0" width="600" height="400" rx="14"/>
+          <polygon class="canton" points="40,260 160,230 200,300 120,340 40,320"/>
+          <polygon class="canton" points="160,230 280,210 300,270 200,300"/>
+          <polygon class="canton" points="280,210 420,190 440,260 300,270"/>
+          <polygon class="canton" points="420,190 560,200 560,280 440,260"/>
+          <polygon class="canton" points="200,300 300,270 320,340 220,370"/>
+          <polygon class="canton" points="300,270 440,260 460,330 320,340"/>
+          <ellipse class="lake" cx="260" cy="330" rx="55" ry="18"/>
+          <ellipse class="lake" cx="420" cy="120" rx="40" ry="16"/>
+        </svg>
+        <div id="cityPins"></div>
+        <div class="runner" id="runner" style="left:16%;top:82%;">🏃</div>
+      </div>
+
+      <div class="continue-row2">
+        <button class="btn btn-punch" id="btnToEnd" style="display:none;">L'hai preso! Vai al finale 🎉</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- END -->
+  <section id="screen-end" class="screen">
+    <div class="wrap center">
+      <p class="eyebrow">Caso risolto</p>
+      <h2 class="flap-title" id="endTitle">&nbsp;</h2>
+      <div class="diploma">
+        <h3>🎖️ Diploma da Giovane Detective</h3>
+        <p id="endStory"></p>
+        <p><b>Cosa hai imparato in questo caso:</b></p>
+        <ul class="facts-list">
+          <li>🏛️ Berna è la capitale della Svizzera, ma Zurigo è la città più grande.</li>
+          <li>🗣️ La Svizzera ha quattro lingue nazionali: italiano, tedesco, francese e romancio.</li>
+          <li>⛰️ Il Ticino è a sud delle Alpi ed è collegato al resto della Svizzera attraverso le gallerie del San Gottardo.</li>
+          <li>🌊 Ginevra si trova sul suo lago, vicino al confine con la Francia.</li>
+        </ul>
+      </div>
+      <button class="btn btn-punch" id="btnRestart">Gioca di nuovo 🔁</button>
+    </div>
+  </section>
+
+</main>
+
+<button class="notebook-tab btn-punch" id="notebookTab">📓 Taccuino (<span id="notebookCount">0</span>/5)</button>
+<div class="notebook-panel" id="notebookPanel">
+  <h3>Il tuo taccuino</h3>
+  <div id="notebookList"></div>
+</div>
+
+<div class="modal-overlay" id="modalOverlay" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <button class="modal-close" id="modalClose" aria-label="Chiudi">×</button>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ================= DATA =================
+     Positions are simplified/schematic, not geographically precise,
+     laid out south (Ticino) -> north/west across the map. */
+  var STOPS = [
+    {
+      id:'lugano', name:'Lugano', x:22, y:80,
+      riddle:'Il ladro è partito dalla città sul lago, nella Svizzera italiana, famosa per le sue banche e per il suo lago circondato dalle montagne. Dov\'è iniziata la fuga?',
+      options:['Lugano','Ginevra','Basilea','San Gallo'],
+      correct:'Lugano',
+      fact:'Lugano è la città più grande del Canton Ticino, sul Lago di Lugano (chiamato anche Ceresio).'
+    },
+    {
+      id:'bellinzona', name:'Bellinzona', x:26, y:60,
+      riddle:'Da Lugano, il ladro è salito su un treno verso nord, fermandosi nel capoluogo del Ticino, famoso per i suoi tre castelli. Qual è questa città?',
+      options:['Bellinzona','Locarno','Chiasso','Berna'],
+      correct:'Bellinzona',
+      fact:'Bellinzona è il capoluogo del Canton Ticino ed è famosa per i suoi tre castelli, Patrimonio UNESCO.'
+    },
+    {
+      id:'bern', name:'Berna', x:44, y:38,
+      riddle:'Passando sotto le Alpi attraverso il San Gottardo, il ladro è arrivato nella capitale della Svizzera, famosa per le sue vie porticate e per gli orsi nel suo stemma. Qual è la capitale svizzera?',
+      options:['Zurigo','Berna','Lucerna','Sion'],
+      correct:'Berna',
+      fact:'Berna è la capitale della Svizzera, anche se non è la città più grande del Paese.'
+    },
+    {
+      id:'zurich', name:'Zurigo', x:60, y:22,
+      riddle:'Da Berna il ladro è corso verso la città più grande e più popolata della Svizzera, un importante centro finanziario. Qual è questa città?',
+      options:['Zurigo','Ginevra','Lugano','Basilea'],
+      correct:'Zurigo',
+      fact:'Zurigo, non Berna, è la città più grande e popolosa della Svizzera.'
+    },
+    {
+      id:'geneve', name:'Ginevra', x:14, y:34,
+      riddle:'All\'ultima tappa il ladro è fuggito verso ovest, fino a una città francofona sul suo lago, vicinissima al confine con la Francia, sede di molte organizzazioni internazionali. Dove lo catturerai?',
+      options:['Ginevra','Losanna','Neuchâtel','Friburgo'],
+      correct:'Ginevra',
+      fact:'Ginevra si trova sul Lago Lemano, vicino al confine francese, ed è una città francofona.'
+    }
+  ];
+
+  var current = 0;
+  var solved = {};
+  var attempts = {};
+
+  /* ================= FLAP TEXT ================= */
+  function flap(el, text, speed){
+    speed = speed || 34;
+    if(reduceMotion){ el.textContent = text; return; }
+    var chars = 'ABCDEFGHIJLMNOPQRSTUVZ0123456789';
+    el.textContent = '';
+    var frag = document.createDocumentFragment();
+    var spans = [];
+    for(var i=0;i<text.length;i++){
+      var span = document.createElement('span');
+      span.className = 'flap-char';
+      span.textContent = text[i] === ' ' ? '\u00A0' : text[i];
+      frag.appendChild(span);
+      spans.push(span);
+    }
+    el.appendChild(frag);
+    spans.forEach(function(span, i){
+      var ch = text[i];
+      if(ch === ' '){ return; }
+      var ticks = 0, maxTicks = 5 + (i % 4);
+      var timer = setInterval(function(){
+        span.textContent = chars[Math.floor(Math.random()*chars.length)];
+        span.classList.add('flip');
+        setTimeout(function(){ span.classList.remove('flip'); }, 90);
+        ticks++;
+        if(ticks >= maxTicks){
+          clearInterval(timer);
+          span.textContent = ch;
+        }
+      }, speed + i*3);
+    });
+  }
+
+  /* ================= PUNCH + CHIME ================= */
+  document.addEventListener('click', function(e){
+    var btn = e.target.closest('.btn-punch');
+    if(!btn || reduceMotion) return;
+    var rect = btn.getBoundingClientRect();
+    var dot = document.createElement('span');
+    dot.className = 'punch-dot';
+    dot.style.left = (e.clientX - rect.left) + 'px';
+    dot.style.top = (e.clientY - rect.top) + 'px';
+    btn.appendChild(dot);
+    setTimeout(function(){ dot.remove(); }, 420);
+  });
+
+  function chime(ok){
+    try{
+      var Ctx = window.AudioContext || window.webkitAudioContext;
+      if(!chime.ctx) chime.ctx = new Ctx();
+      var ctx = chime.ctx;
+      var o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = 'sine';
+      o.frequency.value = ok ? 880 : 220;
+      g.gain.value = 0.07;
+      o.connect(g); g.connect(ctx.destination);
+      o.start();
+      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.3);
+      o.stop(ctx.currentTime + 0.32);
+    }catch(e){}
+  }
+
+  /* ================= SCREENS ================= */
+  function showScreen(id){
+    document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0,0);
+  }
+
+  /* ================= NOTEBOOK ================= */
+  function renderNotebook(){
+    var list = document.getElementById('notebookList');
+    var count = Object.keys(solved).length;
+    document.getElementById('notebookCount').textContent = count;
+    list.innerHTML = '';
+    if(count === 0){
+      list.innerHTML = '<div class="note-item empty">Non hai ancora seguito nessuna pista.</div>';
+    } else {
+      STOPS.forEach(function(s){
+        if(solved[s.id]){
+          var div = document.createElement('div');
+          div.className = 'note-item';
+          div.innerHTML = '<span class="chk">✓</span><span>' + s.fact + '</span>';
+          list.appendChild(div);
+        }
+      });
+    }
+  }
+  document.getElementById('notebookTab').addEventListener('click', function(){
+    document.getElementById('notebookPanel').classList.toggle('open');
+  });
+
+  /* ================= MAP / CHASE ================= */
+  function renderPins(){
+    var wrap = document.getElementById('cityPins');
+    wrap.innerHTML = '';
+    STOPS.forEach(function(s, i){
+      var pin = document.createElement('button');
+      pin.type = 'button';
+      pin.className = 'city-pin' + (solved[s.id] ? ' done' : (i === current ? ' active' : ''));
+      pin.style.left = s.x + '%';
+      pin.style.top = s.y + '%';
+      pin.innerHTML = '<div class="dot"></div><div class="name">' + s.name + '</div>';
+      pin.addEventListener('click', function(){
+        if(i === current && !solved[s.id]) openStop();
+      });
+      wrap.appendChild(pin);
+    });
+  }
+
+  function updateRunner(){
+    var runner = document.getElementById('runner');
+    var stop = STOPS[current] || STOPS[STOPS.length-1];
+    runner.style.left = stop.x + '%';
+    runner.style.top = stop.y + '%';
+  }
+
+  function renderRiddle(){
+    document.getElementById('progressPill').textContent = 'Tappa ' + (current+1) + '/' + STOPS.length;
+    document.getElementById('riddleText').textContent = STOPS[current].riddle;
+  }
+
+  function openStop(){
+    var stop = STOPS[current];
+    var content = document.getElementById('modalContent');
+    content.innerHTML =
+      '<p class="kicker">Indovinello ' + (current+1) + '</p>' +
+      '<h3 id="modalTitle">Dove si trova il ladro?</h3>' +
+      '<p><b>' + stop.riddle + '</b></p>' +
+      '<div class="options" id="modalOptions"></div>' +
+      '<div class="feedback" id="modalFeedback" hidden></div>' +
+      '<div class="modal-actions" id="modalActions"></div>';
+
+    var optWrap = document.getElementById('modalOptions');
+    stop.options.forEach(function(opt){
+      var b = document.createElement('button');
+      b.className = 'opt-btn';
+      b.type = 'button';
+      b.textContent = opt;
+      b.addEventListener('click', function(){ chooseStop(stop, opt, optWrap); });
+      optWrap.appendChild(b);
+    });
+    document.getElementById('modalOverlay').hidden = false;
+  }
+
+  function chooseStop(stop, opt, optWrap){
+    var buttons = optWrap.querySelectorAll('.opt-btn');
+    var fb = document.getElementById('modalFeedback');
+    var actions = document.getElementById('modalActions');
+
+    if(opt === stop.correct){
+      buttons.forEach(function(b){
+        b.disabled = true;
+        if(b.textContent === opt) b.classList.add('correct');
+      });
+      fb.hidden = false;
+      fb.className = 'feedback ok';
+      fb.textContent = stop.fact;
+      solved[stop.id] = true;
+      chime(true);
+      renderNotebook();
+      renderPins();
+      updateRunner();
+      drawRoute();
+      actions.innerHTML = '';
+      var closeBtn = document.createElement('button');
+      closeBtn.className = 'btn btn-punch';
+      closeBtn.type = 'button';
+      closeBtn.textContent = 'Continua la caccia';
+      closeBtn.addEventListener('click', function(){
+        closeModal();
+        advance();
+      });
+      actions.appendChild(closeBtn);
+    } else {
+      var key = stop.id;
+      attempts[key] = (attempts[key] || 0) + 1;
+      buttons.forEach(function(b){ if(b.textContent === opt) b.classList.add('wrong'); });
+      fb.hidden = false;
+      fb.className = 'feedback bad';
+      fb.textContent = attempts[key] >= 2 ? 'Non è questa città. Rileggi bene l\'indizio e riprova.' : 'Non proprio, riprova!';
+      chime(false);
+      setTimeout(function(){ buttons.forEach(function(b){ b.classList.remove('wrong'); }); }, 500);
+    }
+  }
+
+  function drawRoute(){
+    // simple visual trail: nothing to draw between single points here,
+    // kept as a hook in case a future version wants connecting lines.
+  }
+
+  function closeModal(){
+    document.getElementById('modalOverlay').hidden = true;
+  }
+
+  function advance(){
+    if(current < STOPS.length - 1){
+      current++;
+      renderPins();
+      renderRiddle();
+    } else {
+      document.getElementById('riddleText').textContent = 'L\'hai raggiunto! Il Cioccolataio Nero non ha più vie di fuga.';
+      document.getElementById('btnToEnd').style.display = 'inline-block';
+    }
+  }
+
+  document.getElementById('modalClose').addEventListener('click', closeModal);
+  document.getElementById('modalOverlay').addEventListener('click', function(e){
+    if(e.target.id === 'modalOverlay') closeModal();
+  });
+
+  /* ================= NAV ================= */
+  document.getElementById('btnStart').addEventListener('click', function(){
+    showScreen('screen-briefing');
+    flap(document.getElementById('briefTitle'), 'Il caso del cioccolataio nero');
+  });
+  document.getElementById('btnToChase').addEventListener('click', function(){
+    showScreen('screen-chase');
+    renderPins();
+    updateRunner();
+    renderRiddle();
+    renderNotebook();
+  });
+  document.getElementById('btnToEnd').addEventListener('click', function(){
+    showScreen('screen-end');
+    flap(document.getElementById('endTitle'), 'CASO RISOLTO');
+    document.getElementById('endStory').textContent =
+      "L'hai preso a Ginevra! Il \"Cioccolataio Nero\" in realtà è un giovane apprendista che voleva copiare la ricetta per stupire la sua famiglia, senza pensare al danno che avrebbe causato alla fabbrica. Ha promesso di restituire tutto e di chiedere scusa. Ottimo lavoro, detective: hai attraversato la Svizzera usando solo la geografia!";
+  });
+  document.getElementById('btnRestart').addEventListener('click', function(){
+    current = 0; solved = {}; attempts = {};
+    document.getElementById('notebookPanel').classList.remove('open');
+    document.getElementById('btnToEnd').style.display = 'none';
+    showScreen('screen-cover');
+  });
+
+  /* ================= INIT ================= */
+  flap(document.getElementById('coverTitle'), 'Caccia sulla Mappa della Svizzera');
+})();
+</script>
+</body>
+</html>

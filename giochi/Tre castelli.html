@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Il Segreto dei Tre Castelli — Detective Storia del Ticino</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Nunito:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --rail-red:#E10600;
+    --rail-red-dark:#B00400;
+    --noir:#161A22;
+    --noir-2:#1F2530;
+    --cream:#F4ECD8;
+    --paper:#FBF6EA;
+    --brass:#C9A227;
+    --ink:#20232B;
+    --steel:#5B6472;
+    --ok:#2E7D4F;
+    --bad:#B3261E;
+    --font-display:'Oswald',sans-serif;
+    --font-body:'Nunito',sans-serif;
+    --font-mono:'Space Mono',monospace;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:var(--font-body);background:var(--noir);color:var(--ink);line-height:1.5;}
+  h1,h2,h3,.flap{font-family:var(--font-display);text-transform:uppercase;letter-spacing:.03em;}
+  button{font-family:inherit;cursor:pointer;}
+  :focus-visible{outline:3px solid var(--brass);outline-offset:3px;}
+
+  #app{min-height:100vh;}
+  .screen{display:none;min-height:100vh;padding:2rem 1.25rem 4rem;}
+  .screen.active{display:block;animation:fadein .35s ease;}
+  @keyframes fadein{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+  .wrap{max-width:960px;margin:0 auto;}
+  .center{text-align:center;}
+  .eyebrow{font-family:var(--font-mono);color:var(--brass);font-size:.8rem;letter-spacing:.15em;text-transform:uppercase;margin:0 0 .5rem;}
+
+  .flap-title{font-size:clamp(1.6rem,5.6vw,3rem);color:var(--paper);margin:.2rem 0 .6rem;min-height:1.2em;}
+  .flap-char{display:inline-block;font-family:var(--font-display);}
+  .flap-char.flip{transform:rotateX(85deg);transition:transform .08s linear;}
+
+  .badge{display:inline-block;background:var(--rail-red);color:var(--paper);font-family:var(--font-mono);font-size:.75rem;letter-spacing:.08em;padding:.3rem .7rem;border-radius:999px;margin-bottom:1rem;}
+  .subtitle{font-size:1.05rem;color:#C7CEDB;max-width:600px;margin:0 auto 1.6rem;}
+
+  .btn{display:inline-block;border:none;border-radius:10px;padding:.9rem 1.6rem;font-weight:800;font-size:1rem;background:var(--rail-red);color:var(--paper);box-shadow:0 4px 0 var(--rail-red-dark);transition:transform .08s ease;}
+  .btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--rail-red-dark);}
+  .btn.secondary{background:var(--paper);color:var(--ink);box-shadow:0 4px 0 #C9BE9E;}
+  .btn.secondary:active{box-shadow:0 1px 0 #C9BE9E;}
+  .btn:disabled{opacity:.4;cursor:not-allowed;box-shadow:none;transform:none;}
+  .btn-punch{position:relative;overflow:hidden;}
+  .punch-dot{position:absolute;width:10px;height:10px;border-radius:50%;background:var(--paper);transform:translate(-50%,-50%) scale(0);animation:punch .4s ease-out forwards;pointer-events:none;}
+  @keyframes punch{0%{transform:translate(-50%,-50%) scale(0);opacity:1;}70%{transform:translate(-50%,-50%) scale(1);opacity:1;}100%{transform:translate(-50%,-50%) scale(1);opacity:0;}}
+
+  .howto{max-width:640px;margin:1.5rem auto 0;background:var(--noir-2);border:1px solid #2C3444;border-radius:12px;padding:1.1rem 1.3rem;text-align:left;color:#D6DBE6;}
+  .howto summary{cursor:pointer;font-weight:800;color:var(--paper);}
+  .howto ul{margin:.7rem 0 0;padding-left:1.2rem;}
+  .howto li{margin-bottom:.4rem;}
+
+  /* --- banner --- */
+  .banner{width:100%;height:auto;display:block;border-radius:10px;margin-bottom:1.5rem;}
+  .banner .sky{fill:#2B3648;}
+  .banner .hill{fill:#3A4657;}
+  .banner .tower-a{fill:#8C6239;}
+  .banner .tower-b{fill:#A9764A;}
+  .banner .roof{fill:var(--rail-red);}
+  .banner .wall{fill:#C9A227;opacity:.9;}
+  .banner .flag{fill:var(--paper);}
+
+  /* --- briefing --- */
+  #screen-briefing{background:var(--cream);}
+  .case-card{background:var(--paper);border:1px solid #E6DBBE;border-radius:14px;padding:1.4rem 1.6rem;margin:1.5rem 0;box-shadow:0 2px 0 #E6DBBE;}
+  .suspects-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-top:1.5rem;}
+  @media (max-width:760px){.suspects-grid{grid-template-columns:repeat(2,1fr);}}
+  .suspect-mini{background:var(--paper);border:2px solid var(--noir);border-radius:12px;padding:1rem .8rem;text-align:center;}
+  .suspect-mini .avatar{font-size:2.4rem;}
+  .suspect-mini h4{margin:.4rem 0 .1rem;font-size:1rem;font-family:var(--font-display);letter-spacing:.02em;}
+  .suspect-mini p{margin:0;font-size:.85rem;color:var(--steel);}
+
+  /* --- board screen --- */
+  #screen-board{background:var(--noir);color:var(--paper);}
+  .top-row{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;}
+  .progress-pill{font-family:var(--font-mono);background:var(--noir-2);border:1px solid #2C3444;padding:.4rem .8rem;border-radius:999px;font-size:.85rem;color:var(--brass);}
+
+  .board-wrap{position:relative;width:100%;border-radius:16px;overflow:hidden;margin-top:1rem;box-shadow:0 6px 0 rgba(0,0,0,.35);border:10px solid #7A5330;}
+  .board-wrap::before{content:"";display:block;padding-top:64%;}
+  .board-bg{position:absolute;inset:0;background-color:#C08A52;background-image:radial-gradient(rgba(90,55,20,.35) 1.5px, transparent 1.5px);background-size:16px 16px;}
+  .board-lines{position:absolute;inset:0;width:100%;height:100%;}
+  .string-line{stroke:var(--rail-red);stroke-width:.7;stroke-linecap:round;opacity:0;transition:opacity .5s ease;}
+  .string-line.show{opacity:.85;}
+
+  .case-hub{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:17%;aspect-ratio:1/1;border-radius:50%;background:var(--noir);border:4px solid var(--brass);display:flex;align-items:center;justify-content:center;flex-direction:column;color:var(--paper);font-family:var(--font-display);font-size:.72rem;text-align:center;text-transform:uppercase;letter-spacing:.04em;box-shadow:0 4px 10px rgba(0,0,0,.4);padding:.3rem;}
+
+  .clue-pin{position:absolute;transform:translate(-50%,-50%) rotate(var(--rot,-3deg));width:120px;background:var(--paper);border:1px solid #E6DBBE;border-radius:6px;padding:.7rem .6rem .55rem;box-shadow:0 4px 8px rgba(0,0,0,.35);text-align:center;cursor:pointer;}
+  .clue-pin .push{position:absolute;top:-10px;left:50%;transform:translateX(-50%);width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 35% 30%, #ffffffaa, transparent 40%),var(--rail-red);box-shadow:0 2px 3px rgba(0,0,0,.4);}
+  .clue-pin .icon{font-size:1.6rem;margin-top:.2rem;}
+  .clue-pin .label{font-size:.7rem;font-weight:800;margin-top:.25rem;color:var(--ink);line-height:1.25;}
+  .clue-pin.solved{background:#EAF6EE;border-color:var(--ok);}
+  .clue-pin.solved .push{background:var(--ok);}
+
+  .continue-row{margin-top:1.8rem;text-align:center;}
+
+  /* --- modal --- */
+  .modal-overlay{position:fixed;inset:0;background:rgba(10,12,16,.72);display:flex;align-items:center;justify-content:center;z-index:60;padding:1rem;}
+  .modal-overlay[hidden]{display:none;}
+  .modal{background:var(--paper);color:var(--ink);border-radius:16px;max-width:560px;width:100%;max-height:88vh;overflow:auto;padding:1.6rem;position:relative;}
+  .modal-close{position:absolute;top:.7rem;right:.7rem;background:none;border:none;font-size:1.6rem;line-height:1;color:var(--steel);}
+  .modal .kicker{font-family:var(--font-mono);color:var(--rail-red);font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;}
+  .modal h3{margin:.3rem 0 .8rem;font-size:1.3rem;}
+  .modal p{margin:.5rem 0;}
+  .options{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin:1rem 0;}
+  @media (max-width:480px){.options{grid-template-columns:1fr;}}
+  .opt-btn{background:var(--paper);border:2px solid var(--noir);border-radius:10px;padding:.7rem .8rem;font-weight:700;text-align:left;font-size:.95rem;}
+  .opt-btn.correct{border-color:var(--ok);background:#E4F3EA;}
+  .opt-btn.wrong{border-color:var(--bad);background:#FBE6E4;}
+  .feedback{margin-top:.8rem;padding:.8rem 1rem;border-radius:10px;font-weight:700;font-size:.92rem;}
+  .feedback.ok{background:#E4F3EA;color:var(--ok);}
+  .feedback.bad{background:#FBE6E4;color:var(--bad);}
+  .feedback[hidden]{display:none;}
+  .modal-actions{margin-top:1.2rem;display:flex;justify-content:flex-end;gap:.6rem;}
+
+  /* --- notebook --- */
+  .notebook-tab{position:fixed;right:1rem;bottom:1rem;z-index:40;background:var(--brass);color:var(--ink);border:none;border-radius:999px;padding:.7rem 1.1rem;font-weight:800;box-shadow:0 3px 0 #98781B;}
+  .notebook-panel{position:fixed;right:1rem;bottom:4.4rem;z-index:40;width:min(360px,90vw);max-height:60vh;overflow:auto;background:var(--paper);color:var(--ink);border-radius:14px;padding:1rem 1.1rem;box-shadow:0 10px 30px rgba(0,0,0,.4);transform:translateY(12px) scale(.98);opacity:0;pointer-events:none;transition:.18s ease;}
+  .notebook-panel.open{transform:none;opacity:1;pointer-events:auto;}
+  .notebook-panel h3{margin:0 0 .6rem;font-size:1rem;}
+  .note-item{display:flex;gap:.5rem;margin-bottom:.7rem;font-size:.88rem;}
+  .note-item .chk{color:var(--ok);font-weight:800;}
+  .note-item.empty{color:var(--steel);font-style:italic;}
+
+  /* --- deduction --- */
+  #screen-deduction{background:var(--cream);}
+  .suspects-full{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1.2rem;}
+  @media (max-width:760px){.suspects-full{grid-template-columns:1fr;}}
+  .suspect-card{background:var(--paper);border:2px solid var(--noir);border-radius:14px;padding:1.1rem 1.2rem;}
+  .suspect-card .head{display:flex;align-items:center;gap:.8rem;}
+  .suspect-card .avatar{font-size:2.2rem;}
+  .suspect-card h3{margin:0;font-size:1.05rem;}
+  .suspect-card .role{color:var(--steel);font-size:.85rem;margin:0 0 .6rem;}
+  .fact-row{display:flex;justify-content:space-between;font-size:.86rem;border-top:1px dashed #D9CFAE;padding:.4rem 0;gap:.5rem;}
+  .fact-row b{font-weight:700;text-align:right;}
+  .tag{font-family:var(--font-mono);font-size:.75rem;padding:.15rem .5rem;border-radius:999px;white-space:nowrap;}
+  .tag.yes{background:#E4F3EA;color:var(--ok);}
+  .tag.no{background:#FBE6E4;color:var(--bad);}
+  .accuse-btn{margin-top:.9rem;width:100%;background:var(--noir);color:var(--paper);border:none;border-radius:10px;padding:.7rem;font-weight:800;box-shadow:0 4px 0 #000;}
+  .accuse-btn:active{transform:translateY(3px);box-shadow:0 1px 0 #000;}
+  .dedu-feedback{margin-top:1rem;padding:1rem;border-radius:10px;font-weight:700;display:none;}
+  .dedu-feedback.show{display:block;}
+
+  /* --- end --- */
+  #screen-end{background:radial-gradient(ellipse at 50% -10%, #232B39 0%, var(--noir) 60%);color:var(--paper);}
+  .diploma{background:var(--paper);color:var(--ink);border-radius:16px;padding:1.8rem;max-width:640px;margin:1.5rem auto;border:3px double var(--brass);text-align:left;}
+  .facts-list{margin:1rem 0;padding-left:1.2rem;}
+  .facts-list li{margin-bottom:.6rem;}
+</style>
+</head>
+<body>
+
+<main id="app">
+
+  <!-- COVER -->
+  <section id="screen-cover" class="screen active">
+    <div class="wrap center">
+      <svg class="banner" viewBox="0 0 800 200" role="img" aria-label="I tre castelli di Bellinzona su una collina">
+        <rect class="sky" x="0" y="0" width="800" height="200"/>
+        <polygon class="hill" points="0,160 800,160 800,200 0,200"/>
+        <rect class="tower-a" x="120" y="70" width="90" height="90"/>
+        <polygon class="roof" points="115,70 165,35 215,70"/>
+        <rect class="wall" x="60" y="140" width="260" height="20"/>
+        <rect class="tower-b" x="340" y="50" width="110" height="110"/>
+        <polygon class="roof" points="335,50 395,10 455,50"/>
+        <rect class="wall" x="300" y="140" width="280" height="20"/>
+        <rect class="tower-a" x="590" y="90" width="80" height="70"/>
+        <polygon class="roof" points="585,90 630,60 675,90"/>
+        <rect class="flag" x="163" y="20" width="4" height="18"/>
+        <polygon class="roof" points="167,20 190,26 167,32"/>
+      </svg>
+
+      <span class="badge">🕵️ Agenzia Investigativa del Ticino</span>
+      <h1 class="flap-title" id="coverTitle">&nbsp;</h1>
+      <p class="subtitle">Il sigillo medievale di Castelgrande è sparito proprio prima della Festa dei Castelli di Bellinzona! Sblocca gli indizi storici sulla bacheca investigativa e scopri chi è stato.</p>
+      <button class="btn btn-punch" id="btnStart">Apri l'indagine 🔍</button>
+
+      <details class="howto">
+        <summary>Come si gioca</summary>
+        <ul>
+          <li>Tocca i cartellini appuntati sulla bacheca: ognuno nasconde una domanda di storia del Ticino.</li>
+          <li>Ogni risposta corretta collega un filo rosso al caso e finisce nel taccuino 📓.</li>
+          <li>Quando tutti i fili sono collegati, confronta gli alibi e accusa il colpevole.</li>
+        </ul>
+      </details>
+    </div>
+  </section>
+
+  <!-- BRIEFING -->
+  <section id="screen-briefing" class="screen">
+    <div class="wrap">
+      <p class="eyebrow">Rapporto del caso</p>
+      <h2 id="briefTitle">&nbsp;</h2>
+      <div class="case-card">
+        <p>Il <b>sigillo medievale di Castelgrande</b>, simbolo della città esposto nella sala principale, è scomparso poco prima della Festa dei Castelli. I tre castelli di Bellinzona — Castelgrande, Montebello e Sasso Corbaro — sono Patrimonio mondiale dell'UNESCO, e oggi erano pieni di visitatori.</p>
+        <p>Quattro persone si trovavano nei castelli quel pomeriggio. Sblocca gli indizi storici sulla bacheca per scoprire dove si trovava ciascuno, poi scopri chi è stato.</p>
+      </div>
+      <h3>I sospetti</h3>
+      <div class="suspects-grid">
+        <div class="suspect-mini"><div class="avatar">👩‍🦰</div><h4>Sig.ra Bianchi</h4><p>Guida turistica</p></div>
+        <div class="suspect-mini"><div class="avatar">👨‍🔧</div><h4>Sig. Conti</h4><p>Custode del castello</p></div>
+        <div class="suspect-mini"><div class="avatar">👧</div><h4>Elena</h4><p>Studentessa in gita</p></div>
+        <div class="suspect-mini"><div class="avatar">📷</div><h4>Marco</h4><p>Fotografo</p></div>
+      </div>
+      <div class="continue-row">
+        <button class="btn btn-punch" id="btnToBoard">Vai alla bacheca degli indizi 📌</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- BOARD -->
+  <section id="screen-board" class="screen">
+    <div class="wrap">
+      <div class="top-row">
+        <div>
+          <p class="eyebrow">Bacheca investigativa</p>
+          <h2 style="margin:.1rem 0;">Sblocca i 5 indizi storici</h2>
+        </div>
+        <span class="progress-pill" id="progressPill">Indizi: 0/5</span>
+      </div>
+
+      <div class="board-wrap">
+        <div class="board-bg"></div>
+        <svg class="board-lines" id="boardLines" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
+        <div class="case-hub">IL CASO<br>del sigillo</div>
+        <!-- pins injected by JS -->
+      </div>
+
+      <div class="continue-row">
+        <button class="btn btn-punch" id="btnToDeduction" disabled>Vai alla deduzione ⚖️</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- DEDUCTION -->
+  <section id="screen-deduction" class="screen">
+    <div class="wrap">
+      <p class="eyebrow">Momento della verità</p>
+      <h2>Chi ha preso il sigillo?</h2>
+      <p>Confronta gli alibi raccolti nel taccuino, poi scegli chi accusare.</p>
+      <div class="suspects-full" id="suspectsFull"></div>
+      <div class="dedu-feedback" id="deduFeedback"></div>
+    </div>
+  </section>
+
+  <!-- END -->
+  <section id="screen-end" class="screen">
+    <div class="wrap center">
+      <p class="eyebrow">Caso risolto</p>
+      <h2 class="flap-title" id="endTitle">&nbsp;</h2>
+      <div class="diploma">
+        <h3>🎖️ Diploma da Giovane Detective</h3>
+        <p id="endStory"></p>
+        <p><b>Cosa hai imparato in questo caso:</b></p>
+        <ul class="facts-list">
+          <li>🏰 I tre castelli di Bellinzona (Castelgrande, Montebello, Sasso Corbaro) sono Patrimonio mondiale dell'UNESCO.</li>
+          <li>🏛️ Bellinzona è il capoluogo del Canton Ticino, ed è famosa proprio per Castelgrande, il castello più antico e grande, nel cuore della città.</li>
+          <li>📜 Il Ticino è diventato un cantone della Confederazione Svizzera nel 1803.</li>
+        </ul>
+      </div>
+      <button class="btn btn-punch" id="btnRestart">Gioca di nuovo 🔁</button>
+    </div>
+  </section>
+
+</main>
+
+<button class="notebook-tab btn-punch" id="notebookTab">📓 Taccuino (<span id="notebookCount">0</span>/5)</button>
+<div class="notebook-panel" id="notebookPanel">
+  <h3>Il tuo taccuino</h3>
+  <div id="notebookList"></div>
+</div>
+
+<div class="modal-overlay" id="modalOverlay" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <button class="modal-close" id="modalClose" aria-label="Chiudi">×</button>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ================= DATA ================= */
+  var CLUES = [
+    {
+      id:'unesco', x:15, y:20, rot:-4, icon:'🏰', label:'I castelli UNESCO',
+      question:'Quanti castelli di Bellinzona sono Patrimonio mondiale dell\'UNESCO?',
+      options:['1','2','3','5'],
+      correct:'3',
+      success:'Esatto! Castelgrande, Montebello e Sasso Corbaro sono tre castelli, tutti Patrimonio UNESCO dal 2000.',
+      note:'I tre castelli di Bellinzona sono Patrimonio UNESCO.'
+    },
+    {
+      id:'castelgrande', x:83, y:18, rot:3, icon:'🗿', label:'Il castello nel centro',
+      question:'Quale castello si trova proprio nel cuore della città, su una rupe di roccia, ed è il più antico e grande dei tre?',
+      options:['Castelgrande','Montebello','Sasso Corbaro','Castello di Chillon'],
+      correct:'Castelgrande',
+      success:'Giusto! Castelgrande è il castello più antico e imponente, nel pieno centro di Bellinzona.',
+      note:'Castelgrande è il castello più antico, nel cuore della città.'
+    },
+    {
+      id:'sassocorbaro', x:50, y:12, rot:-2, icon:'⚒️', label:'Il castello veloce',
+      question:'Sasso Corbaro fu costruito molto in fretta, in meno di un anno! Per volere di chi?',
+      options:['Il Duca di Milano','Napoleone','Il Re di Francia','Un gruppo di monaci'],
+      correct:'Il Duca di Milano',
+      success:'Esatto! Nel 1479 il Duca di Milano fece costruire Sasso Corbaro in tempi record, dopo una battaglia.',
+      note:'Sasso Corbaro fu costruito in fretta nel 1479 per volere del Duca di Milano.'
+    },
+    {
+      id:'capoluogo', x:85, y:78, rot:4, icon:'🏛️', label:'Il capoluogo',
+      question:'Qual è il capoluogo (la città principale) del Canton Ticino?',
+      options:['Lugano','Bellinzona','Locarno','Chiasso'],
+      correct:'Bellinzona',
+      success:'Esatto! Anche se Lugano è più grande, il capoluogo del Ticino è Bellinzona, proprio dove si trovano i tre castelli.',
+      note:'Bellinzona è il capoluogo del Canton Ticino.'
+    },
+    {
+      id:'1803', x:12, y:75, rot:-3, icon:'📜', label:'Un anno importante',
+      question:'In che anno il Ticino è diventato ufficialmente un cantone della Confederazione Svizzera?',
+      options:['1291','1803','1848','2000'],
+      correct:'1803',
+      success:'Giusto! Nel 1803, con l\'Atto di Mediazione, il Ticino divenne un cantone svizzero a tutti gli effetti.',
+      note:'Il Ticino è diventato cantone svizzero nel 1803.'
+    }
+  ];
+
+  var SUSPECTS = [
+    {id:'bianchi', name:'Sig.ra Bianchi', role:'Guida turistica', avatar:'👩‍🦰', alibi:'A Sasso Corbaro con un gruppo di turisti', confirmed:true, guilty:false},
+    {id:'conti', name:'Sig. Conti', role:'Custode del castello', avatar:'👨‍🔧', alibi:'A Montebello a sistemare le luci', confirmed:true, guilty:false},
+    {id:'elena', name:'Elena', role:'Studentessa in gita', avatar:'👧', alibi:'A Castelgrande con la classe, sempre con l\'insegnante', confirmed:true, guilty:false},
+    {id:'marco', name:'Marco', role:'Fotografo', avatar:'📷', alibi:'Da solo a Castelgrande a fare foto', confirmed:false, guilty:true}
+  ];
+
+  var solved = {};
+  var attempts = {};
+
+  /* ================= FLAP TEXT ================= */
+  function flap(el, text, speed){
+    speed = speed || 34;
+    if(reduceMotion){ el.textContent = text; return; }
+    var chars = 'ABCDEFGHIJLMNOPQRSTUVZ0123456789';
+    el.textContent = '';
+    var frag = document.createDocumentFragment();
+    var spans = [];
+    for(var i=0;i<text.length;i++){
+      var span = document.createElement('span');
+      span.className = 'flap-char';
+      span.textContent = text[i] === ' ' ? '\u00A0' : text[i];
+      frag.appendChild(span);
+      spans.push(span);
+    }
+    el.appendChild(frag);
+    spans.forEach(function(span, i){
+      var ch = text[i];
+      if(ch === ' '){ return; }
+      var ticks = 0, maxTicks = 5 + (i % 4);
+      var timer = setInterval(function(){
+        span.textContent = chars[Math.floor(Math.random()*chars.length)];
+        span.classList.add('flip');
+        setTimeout(function(){ span.classList.remove('flip'); }, 90);
+        ticks++;
+        if(ticks >= maxTicks){
+          clearInterval(timer);
+          span.textContent = ch;
+        }
+      }, speed + i*3);
+    });
+  }
+
+  /* ================= PUNCH + CHIME ================= */
+  document.addEventListener('click', function(e){
+    var btn = e.target.closest('.btn-punch');
+    if(!btn || reduceMotion) return;
+    var rect = btn.getBoundingClientRect();
+    var dot = document.createElement('span');
+    dot.className = 'punch-dot';
+    dot.style.left = (e.clientX - rect.left) + 'px';
+    dot.style.top = (e.clientY - rect.top) + 'px';
+    btn.appendChild(dot);
+    setTimeout(function(){ dot.remove(); }, 420);
+  });
+
+  function chime(ok){
+    try{
+      var Ctx = window.AudioContext || window.webkitAudioContext;
+      if(!chime.ctx) chime.ctx = new Ctx();
+      var ctx = chime.ctx;
+      var o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = 'sine';
+      o.frequency.value = ok ? 880 : 220;
+      g.gain.value = 0.07;
+      o.connect(g); g.connect(ctx.destination);
+      o.start();
+      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.3);
+      o.stop(ctx.currentTime + 0.32);
+    }catch(e){}
+  }
+
+  /* ================= SCREENS ================= */
+  function showScreen(id){
+    document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0,0);
+  }
+
+  /* ================= NOTEBOOK ================= */
+  function renderNotebook(){
+    var list = document.getElementById('notebookList');
+    var count = Object.keys(solved).length;
+    document.getElementById('notebookCount').textContent = count;
+    document.getElementById('progressPill').textContent = 'Indizi: ' + count + '/5';
+    list.innerHTML = '';
+    if(count === 0){
+      list.innerHTML = '<div class="note-item empty">Non hai ancora trovato indizi.</div>';
+    } else {
+      CLUES.forEach(function(c){
+        if(solved[c.id]){
+          var div = document.createElement('div');
+          div.className = 'note-item';
+          div.innerHTML = '<span class="chk">✓</span><span>' + c.note + '</span>';
+          list.appendChild(div);
+        }
+      });
+    }
+    var toDed = document.getElementById('btnToDeduction');
+    if(toDed) toDed.disabled = count < CLUES.length;
+  }
+
+  /* ================= BOARD ================= */
+  function renderBoard(){
+    var board = document.querySelector('.board-wrap');
+    document.querySelectorAll('.clue-pin').forEach(function(p){ p.remove(); });
+    CLUES.forEach(function(c){
+      var pin = document.createElement('button');
+      pin.type = 'button';
+      pin.className = 'clue-pin' + (solved[c.id] ? ' solved' : '');
+      pin.style.left = c.x + '%';
+      pin.style.top = c.y + '%';
+      pin.style.setProperty('--rot', c.rot + 'deg');
+      pin.innerHTML =
+        '<div class="push"></div>' +
+        '<div class="icon">' + (solved[c.id] ? '✅' : c.icon) + '</div>' +
+        '<div class="label">' + c.label + '</div>';
+      pin.addEventListener('click', function(){ openClue(c.id); });
+      board.appendChild(pin);
+      if(solved[c.id]) drawLine(c.x, c.y);
+    });
+  }
+
+  function drawLine(x, y){
+    var svgns = 'http://www.w3.org/2000/svg';
+    var line = document.createElementNS(svgns, 'line');
+    line.setAttribute('x1', x); line.setAttribute('y1', y);
+    line.setAttribute('x2', 50); line.setAttribute('y2', 50);
+    line.setAttribute('class', 'string-line');
+    document.getElementById('boardLines').appendChild(line);
+    requestAnimationFrame(function(){ line.classList.add('show'); });
+  }
+
+  /* ================= MODAL / CLUE ================= */
+  function openClue(id){
+    var clue = CLUES.filter(function(c){ return c.id === id; })[0];
+    var already = solved[id];
+    var content = document.getElementById('modalContent');
+    content.innerHTML =
+      '<p class="kicker">Indizio</p>' +
+      '<h3 id="modalTitle">' + clue.label + '</h3>' +
+      '<p><b>' + clue.question + '</b></p>' +
+      '<div class="options" id="modalOptions"></div>' +
+      '<div class="feedback" id="modalFeedback" hidden></div>' +
+      '<div class="modal-actions" id="modalActions"></div>';
+
+    var optWrap = document.getElementById('modalOptions');
+    clue.options.forEach(function(opt){
+      var b = document.createElement('button');
+      b.className = 'opt-btn';
+      b.type = 'button';
+      b.textContent = opt;
+      if(already){
+        b.disabled = true;
+        if(opt === clue.correct) b.classList.add('correct');
+      }
+      b.addEventListener('click', function(){ chooseOption(clue, opt, optWrap); });
+      optWrap.appendChild(b);
+    });
+
+    var actions = document.getElementById('modalActions');
+    if(already){
+      var fb = document.getElementById('modalFeedback');
+      fb.hidden = false;
+      fb.className = 'feedback ok';
+      fb.textContent = clue.success;
+      var closeBtn = document.createElement('button');
+      closeBtn.className = 'btn secondary btn-punch';
+      closeBtn.type = 'button';
+      closeBtn.textContent = 'Chiudi';
+      closeBtn.addEventListener('click', closeModal);
+      actions.appendChild(closeBtn);
+    }
+    document.getElementById('modalOverlay').hidden = false;
+  }
+
+  function chooseOption(clue, opt, optWrap){
+    var buttons = optWrap.querySelectorAll('.opt-btn');
+    var fb = document.getElementById('modalFeedback');
+    var actions = document.getElementById('modalActions');
+
+    if(opt === clue.correct){
+      buttons.forEach(function(b){
+        b.disabled = true;
+        if(b.textContent === opt) b.classList.add('correct');
+      });
+      fb.hidden = false;
+      fb.className = 'feedback ok';
+      fb.textContent = clue.success;
+      solved[clue.id] = true;
+      chime(true);
+      renderNotebook();
+      renderBoard();
+      actions.innerHTML = '';
+      var closeBtn = document.createElement('button');
+      closeBtn.className = 'btn btn-punch';
+      closeBtn.type = 'button';
+      closeBtn.textContent = 'Aggiungi al taccuino e chiudi';
+      closeBtn.addEventListener('click', closeModal);
+      actions.appendChild(closeBtn);
+    } else {
+      attempts[clue.id] = (attempts[clue.id] || 0) + 1;
+      buttons.forEach(function(b){ if(b.textContent === opt) b.classList.add('wrong'); });
+      fb.hidden = false;
+      fb.className = 'feedback bad';
+      fb.textContent = attempts[clue.id] >= 2 ? 'Non è questa. Rileggi bene la domanda e riprova.' : 'Non proprio, riprova!';
+      chime(false);
+      setTimeout(function(){ buttons.forEach(function(b){ b.classList.remove('wrong'); }); }, 500);
+    }
+  }
+
+  function closeModal(){
+    document.getElementById('modalOverlay').hidden = true;
+  }
+
+  /* ================= DEDUCTION ================= */
+  function renderSuspects(){
+    var wrap = document.getElementById('suspectsFull');
+    wrap.innerHTML = '';
+    SUSPECTS.forEach(function(s){
+      var card = document.createElement('div');
+      card.className = 'suspect-card';
+      card.innerHTML =
+        '<div class="head"><div class="avatar">' + s.avatar + '</div><div><h3>' + s.name + '</h3><p class="role">' + s.role + '</p></div></div>' +
+        '<div class="fact-row"><span>Alibi</span><b>' + s.alibi + '</b></div>' +
+        '<div class="fact-row"><span>Confermato da un testimone</span><span class="tag ' + (s.confirmed?'yes':'no') + '">' + (s.confirmed?'Sì':'No') + '</span></div>' +
+        '<button class="accuse-btn btn-punch" data-id="' + s.id + '">Accuso ' + s.name.split(' ')[0].replace('.','') + '</button>';
+      wrap.appendChild(card);
+    });
+    wrap.querySelectorAll('.accuse-btn').forEach(function(b){
+      b.addEventListener('click', function(){ accuse(b.getAttribute('data-id')); });
+    });
+  }
+
+  function accuse(id){
+    var s = SUSPECTS.filter(function(x){ return x.id === id; })[0];
+    var fb = document.getElementById('deduFeedback');
+    fb.classList.add('show');
+    if(s.guilty){
+      fb.style.background = '#E4F3EA'; fb.style.color = '#2E7D4F';
+      fb.textContent = 'Esatto: è ' + s.name + '! Vai a scoprire come è andata davvero...';
+      chime(true);
+      setTimeout(goToEnd, 1400);
+    } else {
+      fb.style.background = '#FBE6E4'; fb.style.color = '#B3261E';
+      fb.textContent = s.name + ' ha un alibi confermato: non può essere lei/lui. Ricontrolla il taccuino!';
+      chime(false);
+    }
+  }
+
+  function goToEnd(){
+    showScreen('screen-end');
+    flap(document.getElementById('endTitle'), 'CASO RISOLTO');
+    document.getElementById('endStory').textContent =
+      "Era Marco! Voleva fotografare da vicino il sigillo per un articolo sui castelli UNESCO e lo ha spostato per avere più luce. Per sbaglio gli è scivolato in un vecchio baule lì vicino. Marco si è scusato con il custode e ha promesso di chiedere sempre il permesso prima di toccare i reperti storici. Ottimo lavoro, detective: hai risolto il caso usando la storia del Ticino!";
+  }
+
+  /* ================= NOTEBOOK TOGGLE / MODAL CLOSE ================= */
+  document.getElementById('notebookTab').addEventListener('click', function(){
+    document.getElementById('notebookPanel').classList.toggle('open');
+  });
+  document.getElementById('modalClose').addEventListener('click', closeModal);
+  document.getElementById('modalOverlay').addEventListener('click', function(e){
+    if(e.target.id === 'modalOverlay') closeModal();
+  });
+
+  /* ================= NAV ================= */
+  document.getElementById('btnStart').addEventListener('click', function(){
+    showScreen('screen-briefing');
+    flap(document.getElementById('briefTitle'), 'Il caso del sigillo scomparso');
+  });
+  document.getElementById('btnToBoard').addEventListener('click', function(){
+    showScreen('screen-board');
+    renderBoard();
+    renderNotebook();
+  });
+  document.getElementById('btnToDeduction').addEventListener('click', function(){
+    showScreen('screen-deduction');
+    renderSuspects();
+    document.getElementById('deduFeedback').classList.remove('show');
+  });
+  document.getElementById('btnRestart').addEventListener('click', function(){
+    solved = {}; attempts = {};
+    document.getElementById('notebookPanel').classList.remove('open');
+    showScreen('screen-cover');
+  });
+
+  /* ================= INIT ================= */
+  flap(document.getElementById('coverTitle'), 'Il Segreto dei Tre Castelli');
+})();
+</script>
+</body>
+</html>
