@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>La Scuola Ticinese Gioca</title>
+<meta name="google-adsense-account" content="ca-pub-XXXXXXXXXXXXXXXX">
 <link rel="icon" href="favicon.ico" sizes="any">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -148,11 +149,24 @@
   .game-card.coming-soon .badge-icon{background:#F1ECFB;color:var(--purple);}
   .game-card.coming-soon h3{color:var(--purple);}
 
+  /* ---------- pubblicita' ---------- */
+  .ad-slot{
+    max-width:760px;margin:0 auto 2rem;padding:.5rem .75rem .75rem;
+    border-radius:16px;background:#fff;border:2px solid #E6EEDB;
+    min-height:120px;
+  }
+  .ad-slot[hidden]{display:none;}
+  .ad-label{
+    display:block;text-align:center;font-size:.7rem;font-weight:700;
+    letter-spacing:.08em;text-transform:uppercase;color:#9A94AA;margin-bottom:.35rem;
+  }
+
   /* ---------- footer ---------- */
   footer{
     text-align:center;padding:1.5rem 1rem 2.5rem;
     color:var(--steel);font-size:.85rem;
   }
+  footer .legal a{color:var(--steel);}
 
   @media (prefers-reduced-motion: reduce){
     .game-card{animation:none;}
@@ -229,10 +243,17 @@
       <div class="games-grid" id="gamesGrid"></div>
     </div>
   </section>
+
+  <div class="wrap">
+    <aside class="ad-slot" hidden aria-label="Pubblicità">
+      <span class="ad-label">Pubblicità</span>
+    </aside>
+  </div>
 </main>
 
 <footer>
   <p>✨ Nuovi giochi in arrivo presto — torna a trovarci! ✨</p>
+  <p class="legal"><a href="privacy.html">Privacy e cookie</a></p>
 </footer>
 
 <script>
@@ -337,5 +358,6 @@
   renderGames();
 })();
 </script>
+<script src="ads.js"></script>
 </body>
 </html>
