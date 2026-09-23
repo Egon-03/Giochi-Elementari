@@ -17,7 +17,7 @@
 (function(){
   "use strict";
 
-  var ADSENSE_CLIENT = "ca-pub-XXXXXXXXXXXXXXXX";
+  var ADSENSE_CLIENT = "ca-pub-8226793615168454";
   var ADSENSE_SLOT = "XXXXXXXXXX";
 
   if (/X{4}/.test(ADSENSE_CLIENT) || /X{4}/.test(ADSENSE_SLOT)) return;
