@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Il Mercato di Lugano — Matematica con i franchi</title>
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --awning:#E4572E;
+    --awning-dark:#B23F1B;
+    --cream:#FFF6E5;
+    --wood:#B5793D;
+    --wood-dark:#8A5A2B;
+    --basil:#3E8E5B;
+    --basil-dark:#2A6640;
+    --coin:#D9B44A;
+    --coin-dark:#A8862A;
+    --silver:#C9CED6;
+    --silver-dark:#9AA1AC;
+    --ink:#2E2420;
+    --steel:#6E625A;
+    --ok:#2E7D4F;
+    --bad:#B3261E;
+    --font-display:'Lilita One',sans-serif;
+    --font-body:'Nunito',sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:var(--font-body);background:var(--cream);color:var(--ink);line-height:1.5;}
+  h1,h2,h3{font-family:var(--font-display);font-weight:400;margin:0;letter-spacing:.01em;}
+  button{font-family:inherit;cursor:pointer;}
+  :focus-visible{outline:3px solid #2F8FC4;outline-offset:3px;}
+
+  .screen{display:none;min-height:100vh;padding:4.5rem 1.25rem 4rem;}
+  .screen.active{display:block;animation:fadein .35s ease;}
+  @keyframes fadein{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+  .wrap{max-width:900px;margin:0 auto;}
+  .center{text-align:center;}
+  .eyebrow{color:var(--awning-dark);font-weight:800;font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;margin:0 0 .4rem;}
+
+  .title{font-size:clamp(2.1rem,6vw,3.3rem);color:var(--awning);margin:.4rem 0 .6rem;text-shadow:0 3px 0 rgba(0,0,0,.08);}
+  .subtitle{font-size:1.05rem;color:var(--steel);max-width:600px;margin:0 auto 1.6rem;}
+
+  .btn{display:inline-block;border:none;border-radius:14px;padding:.9rem 1.6rem;font-weight:800;font-size:1rem;background:var(--basil);color:#fff;box-shadow:0 4px 0 var(--basil-dark);}
+  .btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--basil-dark);}
+  .btn[hidden]{display:none;}
+  .btn:disabled{opacity:.4;cursor:not-allowed;box-shadow:none;transform:none;}
+  .btn.plain{background:#fff;color:var(--ink);box-shadow:0 4px 0 #E3D4BC;}
+  .btn.plain:active{box-shadow:0 1px 0 #E3D4BC;}
+  .btn-punch{position:relative;overflow:hidden;}
+  .punch-dot{position:absolute;width:10px;height:10px;border-radius:50%;background:#fff;transform:translate(-50%,-50%) scale(0);animation:punch .4s ease-out forwards;pointer-events:none;}
+  @keyframes punch{0%{transform:translate(-50%,-50%) scale(0);opacity:1;}70%{transform:translate(-50%,-50%) scale(1);opacity:1;}100%{transform:translate(-50%,-50%) scale(1);opacity:0;}}
+
+  .howto{max-width:620px;margin:1.5rem auto 0;background:#fff;border:2px solid #F0E1C8;border-radius:14px;padding:1rem 1.3rem;text-align:left;}
+  .howto summary{cursor:pointer;font-weight:800;}
+  .howto ul{margin:.7rem 0 0;padding-left:1.2rem;}
+  .howto li{margin-bottom:.4rem;}
+
+  .banner{width:100%;max-width:640px;height:auto;display:block;margin:0 auto 1rem;}
+
+  /* --- price list --- */
+  .listino{background:#2E2420;color:#FFF6E5;border-radius:14px;padding:1rem 1.2rem;border:6px solid var(--wood);}
+  .listino h3{font-size:1.1rem;color:#FFD54F;margin-bottom:.5rem;}
+  .listino ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:.25rem 1.2rem;}
+  .listino li{display:flex;justify-content:space-between;border-bottom:1px dashed #5A4A40;padding:.2rem 0;font-size:.95rem;}
+  .listino li b{font-family:'Courier New',monospace;color:#FFD54F;}
+  @media (max-width:520px){.listino ul{grid-template-columns:1fr;}}
+
+  /* --- shop --- */
+  .top-row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.6rem;margin-bottom:1rem;}
+  .pill{background:#fff;border:2px solid #F0E1C8;border-radius:999px;padding:.35rem .9rem;font-weight:800;font-size:.9rem;}
+  .shop-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:1rem;align-items:start;}
+  @media (max-width:760px){.shop-grid{grid-template-columns:1fr;}}
+
+  .counter{background:#fff;border-radius:18px;padding:1.3rem;box-shadow:0 6px 0 #F0E1C8;}
+  .customer{display:flex;gap:.9rem;align-items:flex-start;}
+  .customer .face{font-size:3rem;line-height:1;flex:none;}
+  .bubble{background:#FFF1D6;border-radius:14px;padding:.7rem .9rem;position:relative;font-weight:700;}
+  .bubble::before{content:"";position:absolute;left:-10px;top:16px;border:6px solid transparent;border-right:8px solid #FFF1D6;}
+  .order{margin:1rem 0;border-top:2px dashed #F0E1C8;padding-top:.8rem;}
+  .order-row{display:flex;justify-content:space-between;padding:.25rem 0;font-size:1rem;}
+  .order-row{gap:.6rem;}
+  .order-row span:last-child{font-family:'Courier New',monospace;font-weight:700;white-space:nowrap;}
+  .order-total{display:flex;justify-content:space-between;font-weight:800;font-size:1.1rem;border-top:2px solid var(--ink);margin-top:.4rem;padding-top:.4rem;}
+
+  .step-title{font-family:var(--font-display);font-size:1.25rem;color:var(--awning-dark);margin:.4rem 0 .6rem;}
+  .options{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;}
+  .opt-btn{background:#fff;border:2px solid var(--ink);border-radius:12px;padding:.75rem .9rem;font-weight:800;font-size:1.1rem;color:var(--ink);font-family:'Courier New',monospace;}
+  .opt-btn:hover:not(:disabled){background:#FFF6E5;}
+  .opt-btn.correct{border-color:var(--ok);background:#E4F3EA;}
+  .opt-btn.wrong{border-color:var(--bad);background:#FBE6E4;}
+
+  .paid{display:flex;align-items:center;gap:.6rem;margin:.6rem 0 1rem;font-weight:700;}
+
+  .drawer{background:var(--wood);border-radius:16px;padding:1rem;box-shadow:inset 0 -6px 0 var(--wood-dark);}
+  .drawer h3{color:#fff;font-size:1.05rem;margin-bottom:.6rem;}
+  .money-row{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center;}
+  .coin{width:58px;height:58px;border-radius:50%;border:none;font-weight:800;font-size:.85rem;color:var(--ink);
+    background:radial-gradient(circle at 35% 30%,#fff8,transparent 45%),var(--silver);box-shadow:0 3px 0 var(--silver-dark),inset 0 0 0 4px #fff5;}
+  .coin.big{width:66px;height:66px;font-size:.95rem;}
+  .coin.small{width:48px;height:48px;font-size:.75rem;background:radial-gradient(circle at 35% 30%,#fff8,transparent 45%),var(--coin);box-shadow:0 3px 0 var(--coin-dark),inset 0 0 0 4px #fff5;}
+  .note{min-width:96px;height:52px;border-radius:8px;border:none;font-weight:800;font-size:.95rem;color:var(--ink);box-shadow:0 3px 0 rgba(0,0,0,.25);padding:0 .6rem;}
+  .note.n10{background:linear-gradient(135deg,#F6C445,#E8A92B);}
+  .note.n20{background:linear-gradient(135deg,#E06B7C,#C4485B);color:#fff;}
+  .note.n50{background:linear-gradient(135deg,#6FBF5B,#3E8E3A);color:#fff;}
+  .coin:active,.note:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.25);}
+  .coin:disabled,.note:disabled{opacity:.45;cursor:not-allowed;}
+
+  .tray{min-height:84px;background:#fff;border:3px dashed var(--basil);border-radius:14px;margin:1rem 0 .6rem;padding:.6rem;display:flex;flex-wrap:wrap;gap:.4rem;align-items:center;}
+  .tray:empty::before{content:"Tocca le monete e le banconote del cassetto per preparare il resto";color:var(--steel);font-style:italic;font-size:.9rem;}
+  .tray-sum{font-weight:800;font-size:1.1rem;}
+  .tray-sum b{font-family:'Courier New',monospace;}
+  .row-actions{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.8rem;}
+
+  .feedback{margin-top:1rem;padding:.8rem 1rem;border-radius:10px;font-weight:700;}
+  .feedback.ok{background:#E4F3EA;color:var(--ok);}
+  .feedback.bad{background:#FBE6E4;color:var(--bad);}
+  .feedback[hidden]{display:none;}
+
+  /* end */
+  .diploma{background:#fff;border-radius:16px;padding:1.8rem;max-width:640px;margin:1.5rem auto;border:4px double var(--awning);text-align:left;}
+  .diploma h3{color:var(--awning-dark);}
+  .facts-list{margin:1rem 0;padding-left:1.2rem;}
+  .facts-list li{margin-bottom:.5rem;}
+  .stars{font-size:2rem;letter-spacing:.2rem;}
+
+  .home-link{position:fixed;left:1rem;top:1rem;z-index:50;background:#fff;color:var(--ink);text-decoration:none;font-weight:800;font-size:.9rem;padding:.55rem 1rem;border-radius:999px;box-shadow:0 3px 0 #E3D4BC;}
+  .home-link:active{transform:translateY(3px);box-shadow:0 1px 0 #E3D4BC;}
+
+  @media (prefers-reduced-motion: reduce){
+    .screen.active{animation:none;}
+  }
+</style>
+</head>
+<body>
+
+<a href="../index.html" class="home-link" aria-label="Torna alla pagina dei giochi">🏠 Home</a>
+
+<main id="app">
+
+  <!-- COVER -->
+  <section id="screen-cover" class="screen active">
+    <div class="wrap center">
+      <svg class="banner" viewBox="0 0 640 210" role="img" aria-label="Una bancarella del mercato con tendone a righe rosse e bianche, frutta, pane e formaggi">
+        <rect x="0" y="0" width="640" height="210" rx="18" fill="#BFEFFF"/>
+        <rect x="0" y="170" width="640" height="40" fill="#D8C3A0"/>
+        <g>
+          <rect x="140" y="60" width="10" height="120" fill="#8A5A2B"/>
+          <rect x="490" y="60" width="10" height="120" fill="#8A5A2B"/>
+          <path d="M120,40 L520,40 L520,80 L120,80 Z" fill="#fff"/>
+          <g fill="#E4572E">
+            <rect x="120" y="40" width="40" height="40"/><rect x="200" y="40" width="40" height="40"/><rect x="280" y="40" width="40" height="40"/><rect x="360" y="40" width="40" height="40"/><rect x="440" y="40" width="40" height="40"/>
+          </g>
+          <path d="M120,80 q20,16 40,0 q20,16 40,0 q20,16 40,0 q20,16 40,0 q20,16 40,0 q20,16 40,0 q20,16 40,0 q20,16 40,0 q20,16 40,0 q20,16 40,0" fill="#E4572E"/>
+          <rect x="130" y="130" width="380" height="50" rx="6" fill="#B5793D"/>
+          <rect x="130" y="130" width="380" height="8" fill="#8A5A2B"/>
+        </g>
+        <g>
+          <circle cx="180" cy="122" r="11" fill="#E4572E"/><circle cx="198" cy="124" r="11" fill="#E8483A"/><circle cx="189" cy="110" r="11" fill="#D93A2E"/>
+          <ellipse cx="260" cy="120" rx="34" ry="14" fill="#E0A55A"/>
+          <path d="M236,116 l10,-6 M252,114 l10,-6 M268,114 l10,-6" stroke="#B87B33" stroke-width="3" stroke-linecap="round"/>
+          <path d="M320,132 L330,100 L380,100 L390,132 Z" fill="#FFD54F"/>
+          <circle cx="345" cy="114" r="4" fill="#E8B92F"/><circle cx="365" cy="120" r="3" fill="#E8B92F"/>
+          <rect x="410" y="104" width="26" height="28" rx="5" fill="#F2B33D"/><rect x="408" y="98" width="30" height="8" rx="3" fill="#8A5A2B"/>
+          <circle cx="470" cy="122" r="10" fill="#7A5330"/><circle cx="455" cy="124" r="9" fill="#8A5A2B"/>
+        </g>
+        <g font-family="Lilita One, sans-serif" fill="#fff">
+          <rect x="250" y="8" width="140" height="28" rx="8" fill="#3E8E5B"/>
+          <text x="320" y="29" font-size="18" text-anchor="middle">MERCATO</text>
+        </g>
+      </svg>
+
+      <span class="eyebrow">🧮 Matematica con i franchi</span>
+      <h1 class="title">Il Mercato di Lugano</h1>
+      <p class="subtitle">È sabato mattina in Piazza della Riforma e la signora Rosa ti ha lasciato la sua bancarella! Arrivano 6 clienti: calcola quanto devono pagare e dai il resto giusto con monete e banconote svizzere.</p>
+      <button class="btn btn-punch" id="btnStart">Apri la bancarella 🧺</button>
+
+      <details class="howto">
+        <summary>Come si gioca</summary>
+        <ul>
+          <li>Ogni cliente ti dice cosa vuole comprare. Guarda il listino dei prezzi.</li>
+          <li><b>Passo 1:</b> scegli il totale giusto da pagare.</li>
+          <li><b>Passo 2:</b> il cliente ti dà dei soldi. Tocca le monete e le banconote del cassetto per preparare il resto. Se ti sbagli, tocca una moneta nel vassoio per toglierla.</li>
+          <li>Ricorda: 1 franco = 100 centesimi. In Svizzera la moneta più piccola è da 5 centesimi.</li>
+        </ul>
+      </details>
+    </div>
+  </section>
+
+  <!-- SHOP -->
+  <section id="screen-shop" class="screen">
+    <div class="wrap">
+      <div class="top-row">
+        <div>
+          <p class="eyebrow">La bancarella della signora Rosa</p>
+          <h2 style="font-size:1.6rem;" id="shopTitle">Cliente 1 di 6</h2>
+        </div>
+        <span class="pill" id="cashPill">Cassa: Fr. 0.00</span>
+      </div>
+
+      <div class="shop-grid">
+        <div class="counter" id="counter"></div>
+        <aside class="listino" aria-label="Listino prezzi">
+          <h3>📋 Listino prezzi</h3>
+          <ul id="listino"></ul>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <!-- END -->
+  <section id="screen-end" class="screen">
+    <div class="wrap center">
+      <p class="eyebrow">Il mercato è chiuso!</p>
+      <h2 class="title">Che bravo/a commerciante!</h2>
+      <div class="stars" id="endStars"></div>
+      <div class="diploma">
+        <h3>🎖️ Diploma di Cassiere/a del Mercato</h3>
+        <p id="endStory"></p>
+        <p><b>Cosa hai imparato al mercato:</b></p>
+        <ul class="facts-list">
+          <li>💰 In Svizzera si paga con il <b>franco svizzero</b> (CHF): 1 franco = 100 centesimi.</li>
+          <li>🪙 Le monete sono da 5, 10, 20 e 50 centesimi e da 1, 2 e 5 franchi. Non esistono monete da 1 o 2 centesimi!</li>
+          <li>💵 Le banconote vanno da 10 a 1000 franchi.</li>
+          <li>➕ Per trovare il totale si sommano i prezzi: per 3 mele da 60 centesimi fai 3 × 60 = 180 centesimi, cioè Fr. 1.80.</li>
+          <li>➖ Il resto è quello che ti hanno dato meno il totale. Un trucco: conta in avanti dal totale fino alla cifra ricevuta!</li>
+        </ul>
+      </div>
+      <button class="btn btn-punch" id="btnRestart">Gioca di nuovo 🔁</button>
+    </div>
+  </section>
+
+</main>
+
+<script>
+(function(){
+  "use strict";
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ================= DATA (tutti i prezzi in centesimi) ================= */
+  var PRODUCTS = {
+    mela:      {name:'Mela', emoji:'🍎', price:60},
+    latte:     {name:'Latte (1 litro)', emoji:'🥛', price:180},
+    pane:      {name:'Pane', emoji:'🍞', price:320},
+    castagne:  {name:'Sacchetto di castagne', emoji:'🌰', price:400},
+    uova:      {name:'6 uova', emoji:'🥚', price:450},
+    formaggio: {name:'Formaggio dell\'alpe', emoji:'🧀', price:550},
+    miele:     {name:'Vasetto di miele', emoji:'🍯', price:850}
+  };
+
+  var MONEY = [
+    {v:5, label:'5 ct', cls:'coin small'},
+    {v:10, label:'10 ct', cls:'coin small'},
+    {v:20, label:'20 ct', cls:'coin small'},
+    {v:50, label:'50 ct', cls:'coin'},
+    {v:100, label:'Fr. 1', cls:'coin'},
+    {v:200, label:'Fr. 2', cls:'coin big'},
+    {v:500, label:'Fr. 5', cls:'coin big'},
+    {v:1000, label:'Fr. 10', cls:'note n10'},
+    {v:2000, label:'Fr. 20', cls:'note n20'}
+  ];
+
+  var CUSTOMERS = [
+    {face:'👵', name:'Nonna Pina', say:'Buongiorno! Vorrei 2 mele e un litro di latte, per favore.',
+     items:[['mela',2],['latte',1]], pays:500, wrong:[240, 360, 250]},
+    {face:'👨‍🍳', name:'Il cuoco Gianni', say:'Ciao! Mi servono un pane e un litro di latte per la colazione.',
+     items:[['pane',1],['latte',1]], pays:1000, wrong:[400, 520, 480]},
+    {face:'👧', name:'Sofia', say:'Mamma mi ha mandato a prendere un formaggio e 2 mele!',
+     items:[['formaggio',1],['mela',2]], pays:1000, wrong:[610, 790, 570]},
+    {face:'🧔', name:'Il signor Bernasconi', say:'Prendo un sacchetto di castagne e 6 uova, grazie.',
+     items:[['castagne',1],['uova',1]], pays:2000, wrong:[800, 950, 900]},
+    {face:'👩‍🦱', name:'La maestra Carla', say:'Per la merenda della classe: un vasetto di miele, un pane e 3 mele.',
+     items:[['miele',1],['pane',1],['mela',3]], pays:2000, wrong:[1230, 1450, 1290]},
+    {face:'👨‍🌾', name:'Il contadino Tiziano', say:'Oggi faccio una festa! 2 formaggi, un miele e un litro di latte.',
+     items:[['formaggio',2],['miele',1],['latte',1]], pays:5000, wrong:[1580, 2030, 2230]}
+  ];
+
+  var idx = 0, mistakes = 0, cash = 0;
+
+  /* ================= HELPERS ================= */
+  function $(id){ return document.getElementById(id); }
+  function fr(c){ return 'Fr. ' + Math.floor(c/100) + '.' + ('0' + (c%100)).slice(-2); }
+  function shuffle(a){
+    a = a.slice();
+    for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; }
+    return a;
+  }
+  function totalOf(c){ return c.items.reduce(function(s, it){ return s + PRODUCTS[it[0]].price * it[1]; }, 0); }
+  function paidLabel(v){
+    var m = MONEY.filter(function(x){ return x.v === v; })[0];
+    if(m) return m.cls.indexOf('note') >= 0 ? 'una banconota da ' + m.label : 'una moneta da ' + m.label;
+    return 'una banconota da ' + fr(v).replace('.00','');
+  }
+
+  document.addEventListener('click', function(e){
+    var btn = e.target.closest('.btn-punch');
+    if(!btn || reduceMotion) return;
+    var rect = btn.getBoundingClientRect();
+    var dot = document.createElement('span');
+    dot.className = 'punch-dot';
+    dot.style.left = (e.clientX - rect.left) + 'px';
+    dot.style.top = (e.clientY - rect.top) + 'px';
+    btn.appendChild(dot);
+    setTimeout(function(){ dot.remove(); }, 420);
+  });
+
+  function chime(ok){
+    try{
+      var Ctx = window.AudioContext || window.webkitAudioContext;
+      if(!chime.ctx) chime.ctx = new Ctx();
+      var ctx = chime.ctx;
+      var o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = ok ? 'square' : 'sine';
+      o.frequency.value = ok ? 1046 : 220;
+      g.gain.value = ok ? 0.04 : 0.07;
+      o.connect(g); g.connect(ctx.destination);
+      o.start();
+      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.3);
+      o.stop(ctx.currentTime + 0.32);
+    }catch(e){}
+  }
+
+  function showScreen(id){
+    document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+    $(id).classList.add('active');
+    window.scrollTo(0,0);
+  }
+
+  function renderListino(){
+    var ul = $('listino');
+    ul.innerHTML = '';
+    Object.keys(PRODUCTS).forEach(function(k){
+      var p = PRODUCTS[k];
+      var li = document.createElement('li');
+      li.innerHTML = '<span>' + p.emoji + ' ' + p.name + '</span><b>' + fr(p.price) + '</b>';
+      ul.appendChild(li);
+    });
+  }
+
+  /* ================= CUSTOMER FLOW ================= */
+  var counter = $('counter');
+
+  function startCustomer(){
+    var c = CUSTOMERS[idx];
+    $('shopTitle').textContent = 'Cliente ' + (idx+1) + ' di ' + CUSTOMERS.length;
+    $('cashPill').textContent = 'Cassa: ' + fr(cash);
+    counter.innerHTML =
+      '<div class="customer"><div class="face" aria-hidden="true">' + c.face + '</div>' +
+      '<div><b>' + c.name + '</b><div class="bubble"></div></div></div>' +
+      '<div class="order" id="order"></div>' +
+      '<p class="step-title">Passo 1: quanto deve pagare?</p>' +
+      '<div class="options" id="opts"></div>' +
+      '<div class="feedback" id="fb" hidden aria-live="polite"></div>';
+    counter.querySelector('.bubble').textContent = c.say;
+
+    var order = $('order');
+    c.items.forEach(function(it){
+      var p = PRODUCTS[it[0]];
+      var row = document.createElement('div');
+      row.className = 'order-row';
+      row.innerHTML = '<span>' + p.emoji + ' ' + it[1] + ' × ' + p.name + '</span><span>' + (it[1] > 1 ? it[1] + ' × ' + fr(p.price) : fr(p.price)) + '</span>';
+      order.appendChild(row);
+    });
+
+    var total = totalOf(c);
+    var opts = $('opts');
+    shuffle([total].concat(c.wrong)).forEach(function(v){
+      var b = document.createElement('button');
+      b.className = 'opt-btn';
+      b.textContent = fr(v);
+      b.addEventListener('click', function(){
+        var fb = $('fb');
+        fb.hidden = false;
+        if(v === total){
+          chime(true);
+          b.classList.add('correct');
+          opts.querySelectorAll('button').forEach(function(x){ x.disabled = true; });
+          var tot = document.createElement('div');
+          tot.className = 'order-total';
+          tot.innerHTML = '<span>Totale</span><span>' + fr(total) + '</span>';
+          order.appendChild(tot);
+          fb.className = 'feedback ok';
+          fb.textContent = '✅ Giusto! Il totale è ' + fr(total) + '.';
+          setTimeout(function(){ startChange(c, total); }, reduceMotion ? 200 : 900);
+        } else {
+          chime(false);
+          mistakes++;
+          b.classList.add('wrong');
+          b.disabled = true;
+          fb.className = 'feedback bad';
+          fb.textContent = '❌ Non torna. Somma un prodotto alla volta e ricordati di moltiplicare quando ce n\'è più di uno.';
+        }
+      });
+      opts.appendChild(b);
+    });
+  }
+
+  function startChange(c, total){
+    var change = c.pays - total;
+    var tray = [];
+    var fb = $('fb');
+    fb.hidden = true;
+    var step = counter.querySelector('.step-title');
+    step.textContent = 'Passo 2: prepara il resto';
+    $('opts').remove();
+
+    var box = document.createElement('div');
+    box.innerHTML =
+      '<p class="paid">💶 ' + c.name + ' ti dà ' + paidLabel(c.pays) + ' (' + fr(c.pays) + ').</p>' +
+      '<div class="drawer"><h3>Il cassetto dei soldi</h3><div class="money-row" id="drawer"></div></div>' +
+      '<div class="tray" id="tray" aria-label="Il resto che stai preparando"></div>' +
+      '<p class="tray-sum" aria-live="polite">Resto preparato: <b id="traySum">Fr. 0.00</b></p>' +
+      '<div class="row-actions">' +
+        '<button class="btn btn-punch" id="btnGive">Dai il resto 🤝</button>' +
+        '<button class="btn plain btn-punch" id="btnClear">Svuota il vassoio</button>' +
+      '</div>';
+    step.after(box);
+
+    var drawer = $('drawer');
+    MONEY.forEach(function(m){
+      var b = document.createElement('button');
+      b.className = m.cls;
+      b.textContent = m.label;
+      b.setAttribute('aria-label', 'Aggiungi ' + m.label);
+      b.addEventListener('click', function(){ tray.push(m); renderTray(); });
+      drawer.appendChild(b);
+    });
+
+    function renderTray(){
+      var t = $('tray');
+      t.innerHTML = '';
+      tray.forEach(function(m, k){
+        var b = document.createElement('button');
+        b.className = m.cls;
+        b.textContent = m.label;
+        b.setAttribute('aria-label', 'Togli ' + m.label);
+        b.addEventListener('click', function(){ tray.splice(k,1); renderTray(); });
+        t.appendChild(b);
+      });
+      $('traySum').textContent = fr(tray.reduce(function(s, m){ return s + m.v; }, 0));
+    }
+
+    $('btnClear').addEventListener('click', function(){ tray = []; renderTray(); });
+    $('btnGive').addEventListener('click', function(){
+      var sum = tray.reduce(function(s, m){ return s + m.v; }, 0);
+      fb.hidden = false;
+      if(sum === change){
+        chime(true);
+        cash += total;
+        $('cashPill').textContent = 'Cassa: ' + fr(cash);
+        counter.querySelectorAll('#drawer button, #tray button, #btnGive, #btnClear').forEach(function(x){ x.disabled = true; });
+        fb.className = 'feedback ok';
+        fb.textContent = '✅ Perfetto! ' + fr(c.pays) + ' − ' + fr(total) + ' = ' + fr(change) + '. ' + c.name + ' ti ringrazia e se ne va contento!';
+        var next = document.createElement('button');
+        next.className = 'btn btn-punch';
+        next.style.marginTop = '1rem';
+        next.textContent = idx === CUSTOMERS.length - 1 ? 'Chiudi la bancarella 🏁' : 'Prossimo cliente →';
+        next.addEventListener('click', function(){
+          idx++;
+          if(idx >= CUSTOMERS.length) endGame(); else { startCustomer(); window.scrollTo(0,0); }
+        });
+        fb.after(next);
+        next.focus();
+      } else {
+        chime(false);
+        mistakes++;
+        fb.className = 'feedback bad';
+        fb.textContent = sum > change
+          ? '❌ È troppo! Stai dando più resto del dovuto. Togli qualche moneta.'
+          : '❌ È troppo poco! Il cliente aspetta ancora qualche moneta. Prova a contare in avanti da ' + fr(total) + ' fino a ' + fr(c.pays) + '.';
+      }
+    });
+
+    renderTray();
+  }
+
+  /* ================= END ================= */
+  function endGame(){
+    var stars = mistakes <= 1 ? 3 : mistakes <= 5 ? 2 : 1;
+    $('endStars').textContent = '⭐'.repeat(stars) + '☆'.repeat(3 - stars);
+    $('endStars').setAttribute('aria-label', stars + ' stelle su 3');
+    $('endStory').textContent = 'Hai servito tutti e 6 i clienti e nella cassa ci sono ' + fr(cash) + '. La signora Rosa è tornata ed è felicissima: ogni conto e ogni resto erano giusti! ' +
+      (mistakes === 0 ? 'Senza nemmeno un errore: sei un vero campione dei conti!' : 'Hai fatto ' + mistakes + (mistakes === 1 ? ' errore' : ' errori') + ', ma alla fine hai sempre trovato la cifra giusta.');
+    showScreen('screen-end');
+  }
+
+  /* ================= WIRING ================= */
+  renderListino();
+  $('btnStart').addEventListener('click', function(){
+    idx = 0; mistakes = 0; cash = 0;
+    startCustomer();
+    showScreen('screen-shop');
+  });
+  $('btnRestart').addEventListener('click', function(){ showScreen('screen-cover'); });
+})();
+</script>
+</body>
+</html>
