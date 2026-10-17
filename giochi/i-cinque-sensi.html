@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>I Cinque Sensi — Scienze per i più piccoli</title>
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --lilac:#9B7BE8;
+    --lilac-dark:#6D4FC0;
+    --mint:#7FD8C3;
+    --lemon:#FFE27A;
+    --rose:#FF9BB3;
+    --sky:#8FCBFF;
+    --peach:#FFC39B;
+    --skin:#F6CFA8;
+    --ink:#2B2645;
+    --steel:#6A6584;
+    --ok:#2E7D4F;
+    --bad:#B3261E;
+    --font-display:'Baloo 2',sans-serif;
+    --font-body:'Nunito',sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:var(--font-body);background:#F5F0FF;color:var(--ink);line-height:1.5;}
+  h1,h2,h3{font-family:var(--font-display);margin:0;}
+  button{font-family:inherit;cursor:pointer;}
+  :focus-visible{outline:4px solid #F2792B;outline-offset:3px;}
+
+  .screen{display:none;min-height:100vh;padding:4.5rem 1.25rem 3rem;}
+  .screen.active{display:block;animation:fadein .3s ease;}
+  @keyframes fadein{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+  .wrap{max-width:860px;margin:0 auto;}
+  .center{text-align:center;}
+  .eyebrow{color:var(--lilac-dark);font-weight:800;font-size:.85rem;letter-spacing:.12em;text-transform:uppercase;margin:0 0 .3rem;}
+  .title{font-size:clamp(2.2rem,7vw,3.4rem);color:var(--lilac-dark);margin:.2rem 0 .5rem;}
+  .subtitle{font-size:1.15rem;color:var(--steel);max-width:560px;margin:0 auto 1.4rem;}
+
+  .btn{display:inline-block;border:none;border-radius:16px;padding:1rem 1.8rem;font-weight:800;font-size:1.15rem;background:var(--lilac);color:#fff;box-shadow:0 5px 0 var(--lilac-dark);}
+  .btn:active{transform:translateY(4px);box-shadow:0 1px 0 var(--lilac-dark);}
+  .btn[hidden]{display:none;}
+  .btn-punch{position:relative;overflow:hidden;}
+  .punch-dot{position:absolute;width:10px;height:10px;border-radius:50%;background:#fff;transform:translate(-50%,-50%) scale(0);animation:punch .4s ease-out forwards;pointer-events:none;}
+  @keyframes punch{0%{transform:translate(-50%,-50%) scale(0);opacity:1;}70%{transform:translate(-50%,-50%) scale(1);opacity:1;}100%{transform:translate(-50%,-50%) scale(1);opacity:0;}}
+
+  /* --- face --- */
+  .face{width:min(220px,60vw);height:auto;display:block;margin:0 auto;}
+  .face .part{transition:filter .2s ease, transform .2s ease;transform-box:fill-box;transform-origin:center;}
+  .face .part.glow{filter:drop-shadow(0 0 6px #FFD54F) drop-shadow(0 0 10px #FFD54F);transform:scale(1.12);}
+
+  /* --- play --- */
+  .hud{display:flex;justify-content:space-between;align-items:center;gap:.5rem;margin-bottom:.8rem;}
+  .pill{background:#fff;border-radius:999px;padding:.4rem 1rem;font-weight:800;box-shadow:0 3px 0 #E3DAF8;}
+  .speak{border:none;background:#fff;border-radius:999px;padding:.45rem 1rem;font-weight:800;box-shadow:0 3px 0 #E3DAF8;}
+  .speak[hidden]{display:none;}
+  .layout{display:grid;grid-template-columns:240px 1fr;gap:1.2rem;align-items:center;}
+  @media (max-width:700px){.layout{grid-template-columns:1fr;} .layout .face{width:150px;}}
+  .card{background:#fff;border-radius:24px;padding:1.2rem;box-shadow:0 6px 0 #E3DAF8;text-align:center;}
+  .scene{font-size:4.2rem;line-height:1.1;}
+  .situation{font-family:var(--font-display);font-size:clamp(1.3rem,5vw,1.7rem);margin:.4rem 0 .2rem;}
+  .ask{color:var(--steel);font-weight:700;margin:0;}
+  .senses{display:grid;grid-template-columns:repeat(5,1fr);gap:.6rem;margin-top:1rem;}
+  @media (max-width:560px){.senses{grid-template-columns:repeat(3,1fr);}}
+  .sense{border:none;border-radius:18px;padding:.7rem .3rem;background:var(--c);color:var(--ink);font-weight:800;font-size:1rem;display:flex;flex-direction:column;align-items:center;gap:.1rem;box-shadow:0 5px 0 rgba(0,0,0,.15);}
+  .sense .ic{font-size:2.2rem;line-height:1.1;}
+  .sense .sub{font-size:.75rem;font-weight:700;opacity:.85;}
+  .sense:active{transform:translateY(4px);box-shadow:0 1px 0 rgba(0,0,0,.15);}
+  .sense.correct{outline:4px solid var(--ok);}
+  .sense.wrong{opacity:.4;}
+  .feedback{margin-top:1rem;padding:.8rem 1rem;border-radius:14px;font-weight:800;font-size:1.1rem;}
+  .feedback.ok{background:#E4F3EA;color:var(--ok);}
+  .feedback.bad{background:#FBE6E4;color:var(--bad);}
+  .feedback[hidden]{display:none;}
+  .next-row{text-align:center;margin-top:1rem;}
+
+  .diploma{background:#fff;border-radius:20px;padding:1.6rem;max-width:600px;margin:1.2rem auto;border:4px dashed var(--lilac);text-align:left;}
+  .diploma h3{color:var(--lilac-dark);}
+  .facts-list{padding-left:1.2rem;}
+  .facts-list li{margin-bottom:.4rem;}
+  .stars{font-size:2.4rem;letter-spacing:.2rem;}
+
+  .home-link{position:fixed;left:1rem;top:1rem;z-index:50;background:#fff;color:var(--ink);text-decoration:none;font-weight:800;font-size:.95rem;padding:.55rem 1rem;border-radius:999px;box-shadow:0 3px 0 #D9CEF3;}
+  .home-link:active{transform:translateY(3px);box-shadow:0 1px 0 #D9CEF3;}
+
+  @media (prefers-reduced-motion: reduce){
+    .screen.active{animation:none;}
+    .face .part{transition:none;}
+    .face .part.glow{transform:none;}
+  }
+</style>
+</head>
+<body>
+
+<a href="../index.html" class="home-link" aria-label="Torna alla pagina dei giochi">🏠 Home</a>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="kid" viewBox="0 0 220 240">
+      <path d="M40,95 Q40,20 110,20 Q180,20 180,95 L180,110 L40,110 Z" fill="#7A4E2D"/>
+      <g class="part" data-sense="udito"><ellipse cx="38" cy="120" rx="14" ry="20" fill="#F6CFA8" stroke="#E0A97E" stroke-width="3"/><ellipse cx="182" cy="120" rx="14" ry="20" fill="#F6CFA8" stroke="#E0A97E" stroke-width="3"/></g>
+      <ellipse cx="110" cy="122" rx="72" ry="78" fill="#F6CFA8"/>
+      <path d="M45,90 Q80,50 140,62 Q170,70 178,95 Q150,70 110,78 Q70,84 45,90 Z" fill="#7A4E2D"/>
+      <g class="part" data-sense="vista"><ellipse cx="82" cy="115" rx="11" ry="13" fill="#fff"/><ellipse cx="138" cy="115" rx="11" ry="13" fill="#fff"/><circle cx="84" cy="117" r="6.5" fill="#2B2645"/><circle cx="140" cy="117" r="6.5" fill="#2B2645"/><circle cx="86" cy="114" r="2" fill="#fff"/><circle cx="142" cy="114" r="2" fill="#fff"/></g>
+      <g class="part" data-sense="olfatto"><path d="M110,122 Q100,148 104,152 Q110,156 118,152" fill="none" stroke="#D99A6C" stroke-width="5" stroke-linecap="round"/></g>
+      <circle cx="68" cy="150" r="10" fill="#FF9BB3" opacity=".55"/><circle cx="152" cy="150" r="10" fill="#FF9BB3" opacity=".55"/>
+      <g class="part" data-sense="gusto"><path d="M88,166 Q110,190 132,166 Z" fill="#B23A5C"/><path d="M100,176 Q110,186 120,176 Q110,172 100,176 Z" fill="#FF7B9C"/></g>
+      <g class="part" data-sense="tatto"><g transform="translate(176,196) rotate(-20)"><rect x="-14" y="-6" width="28" height="30" rx="10" fill="#F6CFA8" stroke="#E0A97E" stroke-width="3"/><rect x="-12" y="-26" width="7" height="24" rx="3.5" fill="#F6CFA8" stroke="#E0A97E" stroke-width="2.5"/><rect x="-3" y="-30" width="7" height="28" rx="3.5" fill="#F6CFA8" stroke="#E0A97E" stroke-width="2.5"/><rect x="6" y="-26" width="7" height="24" rx="3.5" fill="#F6CFA8" stroke="#E0A97E" stroke-width="2.5"/><rect x="-22" y="-2" width="10" height="7" rx="3.5" fill="#F6CFA8" stroke="#E0A97E" stroke-width="2.5" transform="rotate(-30 -17 1)"/></g></g>
+    </symbol>
+  </defs>
+</svg>
+
+<main id="app">
+
+  <!-- COVER -->
+  <section id="screen-cover" class="screen active">
+    <div class="wrap center">
+      <svg class="face" viewBox="0 0 220 240" role="img" aria-label="Il viso sorridente di Nina"><use href="#kid"/></svg>
+      <span class="eyebrow">🔬 Scienze · 1ª e 2ª elementare</span>
+      <h1 class="title">I Cinque Sensi</h1>
+      <p class="subtitle">Nina va in gita alla fattoria e scopre il mondo con i suoi cinque sensi: vista, udito, olfatto, gusto e tatto. Indovina quale senso usa in ogni momento!</p>
+      <button class="btn btn-punch" id="btnStart">Andiamo alla fattoria! 🚜</button>
+    </div>
+  </section>
+
+  <!-- PLAY -->
+  <section id="screen-play" class="screen">
+    <div class="wrap">
+      <div class="hud">
+        <span class="pill" id="pill">1 di 10</span>
+        <button class="speak" id="btnSpeak" hidden>🔊 Ascolta</button>
+      </div>
+      <div class="layout">
+        <svg class="face" id="faceSvg" viewBox="0 0 220 240" role="img" aria-label="Il viso di Nina"></svg>
+        <div class="card">
+          <div class="scene" id="scene" aria-hidden="true"></div>
+          <p class="situation" id="situation"></p>
+          <p class="ask">Quale senso usa Nina?</p>
+          <div class="senses" id="senses"></div>
+          <div class="feedback" id="fb" hidden aria-live="polite"></div>
+          <div class="next-row"><button class="btn btn-punch" id="btnNext" hidden>Avanti ➜</button></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- END -->
+  <section id="screen-end" class="screen">
+    <div class="wrap center">
+      <svg class="face" id="faceEnd" viewBox="0 0 220 240" role="img" aria-label="Nina felice"></svg>
+      <h2 class="title">Che bella gita!</h2>
+      <div class="stars" id="endStars"></div>
+      <div class="diploma">
+        <h3>🎖️ Diploma di Esploratore dei Sensi</h3>
+        <p id="endStory"></p>
+        <ul class="facts-list">
+          <li>👀 Con gli <b>occhi</b> (vista) vediamo colori e forme.</li>
+          <li>👂 Con le <b>orecchie</b> (udito) sentiamo suoni e rumori.</li>
+          <li>👃 Con il <b>naso</b> (olfatto) sentiamo gli odori e i profumi.</li>
+          <li>👅 Con la <b>lingua</b> (gusto) sentiamo i sapori: dolce, salato, aspro e amaro.</li>
+          <li>✋ Con la <b>pelle</b> (tatto) sentiamo se una cosa è calda, fredda, morbida o ruvida.</li>
+        </ul>
+      </div>
+      <button class="btn btn-punch" id="btnAgain">Gioca ancora 🔁</button>
+    </div>
+  </section>
+
+</main>
+
+<script>
+(function(){
+  "use strict";
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var SENSES = [
+    {id:'vista', ic:'👀', label:'Vista', part:'occhi', di:'della vista', con:'gli occhi', color:'#8FCBFF'},
+    {id:'udito', ic:'👂', label:'Udito', part:'orecchie', di:'dell\'udito', con:'le orecchie', color:'#FFE27A'},
+    {id:'olfatto', ic:'👃', label:'Olfatto', part:'naso', di:'dell\'olfatto', con:'il naso', color:'#7FD8C3'},
+    {id:'gusto', ic:'👅', label:'Gusto', part:'lingua', di:'del gusto', con:'la lingua', color:'#FF9BB3'},
+    {id:'tatto', ic:'✋', label:'Tatto', part:'pelle e mani', di:'del tatto', con:'la pelle e le mani', color:'#FFC39B'}
+  ];
+
+  var SITUATIONS = [
+    {scene:'🐓🔊', text:'Il gallo fa chicchirichì!', sense:'udito'},
+    {scene:'🌸', text:'Che profumo hanno i fiori del prato!', sense:'olfatto'},
+    {scene:'🌈', text:'Dopo la pioggia c\'è l\'arcobaleno colorato.', sense:'vista'},
+    {scene:'🍓', text:'Nina assaggia una fragola dolcissima.', sense:'gusto'},
+    {scene:'🐑', text:'Nina accarezza la lana morbida della pecora.', sense:'tatto'},
+    {scene:'🐄🎵', text:'Il campanaccio della mucca fa din don.', sense:'udito'},
+    {scene:'🍋', text:'Bleah! Il succo di limone è aspro!', sense:'gusto'},
+    {scene:'🧊', text:'L\'acqua della fontana è freddissima sulle mani.', sense:'tatto'},
+    {scene:'🍞🔥', text:'Mmm, dalla cucina arriva l\'odore del pane appena sfornato.', sense:'olfatto'},
+    {scene:'🐞', text:'Su una foglia c\'è una coccinella rossa a puntini neri.', sense:'vista'},
+    {scene:'🌵', text:'Ahi! Il cactus punge!', sense:'tatto'},
+    {scene:'🧀', text:'Il formaggio dell\'alpe ha un sapore buonissimo.', sense:'gusto'},
+    {scene:'🐴', text:'Nina guarda il cavallo che corre nel recinto.', sense:'vista'},
+    {scene:'💩', text:'Puzza! Il contadino pulisce la stalla.', sense:'olfatto'},
+    {scene:'🐶', text:'Da lontano si sente abbaiare il cane.', sense:'udito'}
+  ];
+  var ROUNDS = 10;
+
+  var round = 0, mistakes = 0, deck = [], current = null;
+
+  function $(id){ return document.getElementById(id); }
+  function shuffle(a){
+    a = a.slice();
+    for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; }
+    return a;
+  }
+  function senseById(id){ return SENSES.filter(function(s){ return s.id === id; })[0]; }
+
+  document.addEventListener('click', function(e){
+    var btn = e.target.closest('.btn-punch');
+    if(!btn || reduceMotion) return;
+    var rect = btn.getBoundingClientRect();
+    var dot = document.createElement('span');
+    dot.className = 'punch-dot';
+    dot.style.left = (e.clientX - rect.left) + 'px';
+    dot.style.top = (e.clientY - rect.top) + 'px';
+    btn.appendChild(dot);
+    setTimeout(function(){ dot.remove(); }, 420);
+  });
+
+  function chime(ok){
+    try{
+      var Ctx = window.AudioContext || window.webkitAudioContext;
+      if(!chime.ctx) chime.ctx = new Ctx();
+      var ctx = chime.ctx;
+      var notes = ok ? [587, 740, 880] : [196];
+      notes.forEach(function(f, i){
+        var o = ctx.createOscillator(), g = ctx.createGain();
+        o.type = 'triangle'; o.frequency.value = f;
+        o.connect(g); g.connect(ctx.destination);
+        var t = ctx.currentTime + i * 0.09;
+        g.gain.setValueAtTime(0.06, t);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.25);
+        o.start(t); o.stop(t + 0.27);
+      });
+    }catch(e){}
+  }
+
+  var canSpeak = 'speechSynthesis' in window && typeof SpeechSynthesisUtterance !== 'undefined';
+  function say(text){
+    if(!canSpeak) return;
+    try{
+      window.speechSynthesis.cancel();
+      var u = new SpeechSynthesisUtterance(text);
+      u.lang = 'it-IT'; u.rate = 0.9;
+      var v = window.speechSynthesis.getVoices().filter(function(v){ return /^it/i.test(v.lang); })[0];
+      if(v) u.voice = v;
+      window.speechSynthesis.speak(u);
+    }catch(e){}
+  }
+
+  function showScreen(id){
+    document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+    $(id).classList.add('active');
+    window.scrollTo(0,0);
+  }
+
+  function drawFace(el, glowId){
+    el.innerHTML = document.getElementById('kid').innerHTML;
+    if(glowId){
+      el.querySelectorAll('.part').forEach(function(p){ p.classList.toggle('glow', p.getAttribute('data-sense') === glowId); });
+    }
+  }
+
+  function renderSenses(){
+    var box = $('senses');
+    box.innerHTML = '';
+    SENSES.forEach(function(s){
+      var b = document.createElement('button');
+      b.className = 'sense';
+      b.style.setProperty('--c', s.color);
+      b.innerHTML = '<span class="ic" aria-hidden="true">' + s.ic + '</span><span>' + s.label + '</span><span class="sub">' + s.part + '</span>';
+      b.addEventListener('click', function(){ choose(s, b); });
+      box.appendChild(b);
+    });
+  }
+
+  function nextRound(){
+    current = deck[round];
+    $('pill').textContent = (round+1) + ' di ' + ROUNDS;
+    $('scene').textContent = current.scene;
+    $('situation').textContent = current.text;
+    $('fb').hidden = true;
+    $('btnNext').hidden = true;
+    renderSenses();
+    drawFace($('faceSvg'), null);
+    say(current.text + ' Quale senso usa Nina?');
+  }
+
+  function choose(s, b){
+    var fb = $('fb');
+    fb.hidden = false;
+    if(s.id === current.sense){
+      chime(true);
+      b.classList.add('correct');
+      $('senses').querySelectorAll('button').forEach(function(x){ x.disabled = true; });
+      drawFace($('faceSvg'), s.id);
+      round++;
+      fb.className = 'feedback ok';
+      fb.textContent = '🎉 Sì! È il senso ' + s.di + ': si usa' + (/^(gli|le) /.test(s.con) || s.id === 'tatto' ? 'no ' : ' ') + s.con + '.';
+      say('Sì! ' + s.label + '!');
+      var nx = $('btnNext');
+      nx.textContent = round >= ROUNDS ? 'Fine della gita 🏁' : 'Avanti ➜';
+      nx.hidden = false; nx.focus();
+    } else {
+      chime(false);
+      mistakes++;
+      b.classList.add('wrong');
+      b.disabled = true;
+      fb.className = 'feedback bad';
+      fb.textContent = '🤔 Con ' + s.con + '? Pensaci ancora!';
+      say('Pensaci ancora!');
+    }
+  }
+
+  function endGame(){
+    var stars = mistakes <= 1 ? 3 : mistakes <= 4 ? 2 : 1;
+    $('endStars').textContent = '⭐'.repeat(stars) + '☆'.repeat(3 - stars);
+    $('endStars').setAttribute('aria-label', stars + ' stelle su 3');
+    drawFace($('faceEnd'), null);
+    $('endStory').textContent = 'Hai aiutato Nina a scoprire la fattoria con tutti e cinque i sensi! ' +
+      (mistakes === 0 ? 'Nemmeno un errore: bravissimo!' : 'Hai fatto ' + mistakes + (mistakes === 1 ? ' errore' : ' errori') + ', ma alla fine hai sempre trovato il senso giusto.');
+    say('Che bella gita!');
+    showScreen('screen-end');
+  }
+
+  if(canSpeak){ $('btnSpeak').hidden = false; try{ window.speechSynthesis.getVoices(); }catch(e){} }
+  $('btnSpeak').addEventListener('click', function(){ if(current) say(current.text + ' Quale senso usa Nina?'); });
+  $('btnStart').addEventListener('click', function(){
+    round = 0; mistakes = 0;
+    deck = shuffle(SITUATIONS).slice(0, ROUNDS);
+    showScreen('screen-play');
+    nextRound();
+  });
+  $('btnNext').addEventListener('click', function(){ if(round >= ROUNDS) endGame(); else nextRound(); });
+  $('btnAgain').addEventListener('click', function(){ showScreen('screen-cover'); });
+})();
+</script>
+</body>
+</html>
