@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Che Ore Sono? — Impara a leggere l'orologio</title>
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --teal:#1C9AA8;
+    --teal-dark:#127480;
+    --peach:#FFD6B8;
+    --coral:#F2705E;
+    --coral-dark:#C24F3F;
+    --cream:#FFF8EE;
+    --ink:#24304A;
+    --steel:#667089;
+    --ok:#2E7D4F;
+    --bad:#B3261E;
+    --font-display:'Fredoka',sans-serif;
+    --font-body:'Nunito',sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:var(--font-body);background:var(--cream);color:var(--ink);line-height:1.5;}
+  h1,h2,h3{font-family:var(--font-display);margin:0;}
+  button{font-family:inherit;cursor:pointer;}
+  :focus-visible{outline:4px solid var(--coral);outline-offset:3px;}
+
+  .screen{display:none;min-height:100vh;padding:4.5rem 1.25rem 3rem;}
+  .screen.active{display:block;animation:fadein .3s ease;}
+  @keyframes fadein{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+  .wrap{max-width:880px;margin:0 auto;}
+  .center{text-align:center;}
+  .eyebrow{color:var(--coral-dark);font-weight:800;font-size:.85rem;letter-spacing:.12em;text-transform:uppercase;margin:0 0 .3rem;}
+  .title{font-size:clamp(2.2rem,7vw,3.4rem);color:var(--teal-dark);margin:.2rem 0 .5rem;}
+  .subtitle{font-size:1.1rem;color:var(--steel);max-width:580px;margin:0 auto 1.4rem;}
+
+  .btn{display:inline-block;border:none;border-radius:16px;padding:1rem 1.8rem;font-weight:800;font-size:1.1rem;background:var(--coral);color:#fff;box-shadow:0 5px 0 var(--coral-dark);}
+  .btn:active{transform:translateY(4px);box-shadow:0 1px 0 var(--coral-dark);}
+  .btn[hidden]{display:none;}
+  .btn-punch{position:relative;overflow:hidden;}
+  .punch-dot{position:absolute;width:10px;height:10px;border-radius:50%;background:#fff;transform:translate(-50%,-50%) scale(0);animation:punch .4s ease-out forwards;pointer-events:none;}
+  @keyframes punch{0%{transform:translate(-50%,-50%) scale(0);opacity:1;}70%{transform:translate(-50%,-50%) scale(1);opacity:1;}100%{transform:translate(-50%,-50%) scale(1);opacity:0;}}
+
+  .levels{display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem;max-width:620px;margin:0 auto 1.2rem;}
+  @media (max-width:520px){.levels{grid-template-columns:1fr;}}
+  .level{border:4px solid transparent;background:#fff;border-radius:20px;padding:1rem .6rem;font-weight:800;font-size:1rem;color:var(--ink);box-shadow:0 5px 0 #F0DFC9;display:flex;flex-direction:column;align-items:center;gap:.2rem;}
+  .level .ic{font-size:1.6rem;line-height:1;font-family:var(--font-display);color:var(--teal-dark);}
+  .level .sub{font-size:.8rem;color:var(--steel);font-weight:700;}
+  .level[aria-pressed="true"]{border-color:var(--coral);}
+
+  .howto{max-width:600px;margin:1.4rem auto 0;background:#fff;border-radius:14px;padding:1rem 1.3rem;text-align:left;border:2px solid #F0DFC9;}
+  .howto summary{cursor:pointer;font-weight:800;}
+  .howto ul{margin:.6rem 0 0;padding-left:1.2rem;}
+
+  /* --- clock --- */
+  .clock{width:min(300px,78vw);height:auto;display:block;margin:0 auto;}
+  .clock .hand{transition:transform .35s ease;transform-origin:150px 150px;}
+
+  /* --- play --- */
+  .layout{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;align-items:center;}
+  @media (max-width:720px){.layout{grid-template-columns:1fr;}}
+  .hud{display:flex;justify-content:space-between;align-items:center;gap:.5rem;margin-bottom:.8rem;flex-wrap:wrap;}
+  .pill{background:#fff;border-radius:999px;padding:.4rem 1rem;font-weight:800;box-shadow:0 3px 0 #F0DFC9;}
+  .speak{border:none;background:#fff;border-radius:999px;padding:.45rem 1rem;font-weight:800;box-shadow:0 3px 0 #F0DFC9;}
+  .speak[hidden]{display:none;}
+  .card{background:#fff;border-radius:22px;padding:1.3rem;box-shadow:0 6px 0 #F0DFC9;}
+  .event{display:flex;align-items:center;gap:.7rem;margin-bottom:.6rem;}
+  .event .emo{font-size:2.6rem;line-height:1;}
+  .event p{margin:0;font-weight:700;font-size:1.05rem;}
+  .question{font-family:var(--font-display);font-size:1.35rem;margin:.4rem 0 .8rem;color:var(--teal-dark);}
+  .options{display:grid;gap:.6rem;}
+  .opt-btn{background:#fff;border:3px solid var(--ink);border-radius:14px;padding:.7rem .9rem;font-weight:800;font-size:1.05rem;color:var(--ink);text-align:left;display:flex;justify-content:space-between;align-items:center;gap:.6rem;}
+  .opt-btn .digital{font-family:var(--font-display);font-size:1.4rem;color:var(--teal-dark);}
+  .opt-btn.correct{border-color:var(--ok);background:#E4F3EA;}
+  .opt-btn.wrong{border-color:var(--bad);background:#FBE6E4;}
+  .target{font-family:var(--font-display);font-size:2.4rem;color:var(--coral-dark);text-align:center;margin:.2rem 0;}
+  .target small{display:block;font-family:var(--font-body);font-size:1rem;color:var(--steel);font-weight:700;}
+  .controls{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin:.8rem 0;}
+  .ctrl{display:flex;flex-direction:column;align-items:center;gap:.3rem;background:var(--cream);border-radius:14px;padding:.6rem;}
+  .ctrl .lbl{font-weight:800;font-size:.9rem;}
+  .ctrl .row{display:flex;gap:.4rem;}
+  .ctrl button{border:none;width:52px;height:52px;border-radius:14px;font-size:1.5rem;font-weight:800;color:#fff;}
+  .ctrl.hour button{background:var(--ink);box-shadow:0 4px 0 #0F1628;}
+  .ctrl.min button{background:var(--coral);box-shadow:0 4px 0 var(--coral-dark);}
+  .ctrl button:active{transform:translateY(3px);box-shadow:none;}
+  .check{width:100%;}
+  .feedback{margin-top:1rem;padding:.8rem 1rem;border-radius:14px;font-weight:800;}
+  .feedback.ok{background:#E4F3EA;color:var(--ok);}
+  .feedback.bad{background:#FBE6E4;color:var(--bad);}
+  .feedback[hidden]{display:none;}
+  .next-row{text-align:right;margin-top:1rem;}
+
+  .diploma{background:#fff;border-radius:20px;padding:1.6rem;max-width:600px;margin:1.2rem auto;border:4px double var(--teal);text-align:left;}
+  .diploma h3{color:var(--teal-dark);}
+  .facts-list{padding-left:1.2rem;}
+  .facts-list li{margin-bottom:.4rem;}
+  .stars{font-size:2.4rem;letter-spacing:.2rem;}
+
+  .home-link{position:fixed;left:1rem;top:1rem;z-index:50;background:#fff;color:var(--ink);text-decoration:none;font-weight:800;font-size:.95rem;padding:.55rem 1rem;border-radius:999px;box-shadow:0 3px 0 #E8D6BE;}
+  .home-link:active{transform:translateY(3px);box-shadow:0 1px 0 #E8D6BE;}
+
+  @media (prefers-reduced-motion: reduce){
+    .screen.active{animation:none;}
+    .clock .hand{transition:none;}
+  }
+</style>
+</head>
+<body>
+
+<a href="../index.html" class="home-link" aria-label="Torna alla pagina dei giochi">🏠 Home</a>
+
+<main id="app">
+
+  <!-- COVER -->
+  <section id="screen-cover" class="screen active">
+    <div class="wrap center">
+      <svg class="clock" id="clockCover" viewBox="0 0 300 300" role="img" aria-label="Un orologio che segna le dieci e dieci"></svg>
+      <span class="eyebrow">🕒 Matematica · 2ª e 3ª elementare</span>
+      <h1 class="title">Che Ore Sono?</h1>
+      <p class="subtitle">Leo ha un orologio nuovo, ma non sa ancora leggerlo! Aiutalo a non arrivare in ritardo durante tutta la sua giornata: dalla sveglia fino alla nanna.</p>
+
+      <h2 style="font-size:1.2rem;margin-bottom:.6rem;">Scegli il livello</h2>
+      <div class="levels" id="levels"></div>
+      <button class="btn btn-punch" id="btnStart">Inizia la giornata ⏰</button>
+
+      <details class="howto">
+        <summary>Come si legge l'orologio</summary>
+        <ul>
+          <li>La <b>lancetta corta</b> indica le ore.</li>
+          <li>La <b>lancetta lunga</b> indica i minuti: ogni numero vale 5 minuti (sul 3 sono 15 minuti, sul 6 sono 30).</li>
+          <li>Quando la lancetta lunga è sul 12, è un'ora esatta: "le 3 in punto".</li>
+          <li>15 minuti = un quarto d'ora, 30 minuti = mezz'ora.</li>
+        </ul>
+      </details>
+    </div>
+  </section>
+
+  <!-- PLAY -->
+  <section id="screen-play" class="screen">
+    <div class="wrap">
+      <div class="hud">
+        <span class="pill" id="pill">1 di 8</span>
+        <button class="speak" id="btnSpeak" hidden>🔊 Ascolta</button>
+      </div>
+      <div class="layout">
+        <svg class="clock" id="clock" viewBox="0 0 300 300" role="img" aria-label="Orologio"></svg>
+        <div class="card" id="card"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- END -->
+  <section id="screen-end" class="screen">
+    <div class="wrap center">
+      <p class="eyebrow">Buonanotte, Leo! 🌙</p>
+      <h2 class="title">Sei un Maestro del Tempo!</h2>
+      <div class="stars" id="endStars"></div>
+      <div class="diploma">
+        <h3>🎖️ Diploma di Maestro del Tempo</h3>
+        <p id="endStory"></p>
+        <p><b>Ricorda:</b></p>
+        <ul class="facts-list">
+          <li>⏱️ Un'ora dura 60 minuti; mezz'ora dura 30 minuti; un quarto d'ora 15 minuti.</li>
+          <li>🕐 La lancetta corta (ore) fa il giro dell'orologio in 12 ore: due giri al giorno!</li>
+          <li>🗣️ Le 7:45 si possono dire anche "le otto meno un quarto".</li>
+          <li>☀️ Dopo mezzogiorno si continua a contare: le 2 del pomeriggio sono le 14.</li>
+        </ul>
+      </div>
+      <button class="btn btn-punch" id="btnAgain">Gioca ancora 🔁</button>
+    </div>
+  </section>
+
+</main>
+
+<script>
+(function(){
+  "use strict";
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var LEVELS = [
+    {id:'ore', ic:'3:00', label:'Ore intere', sub:'2ª elementare', step:60},
+    {id:'mezze', ic:'3:30', label:'Mezz\'ore e quarti', sub:'2ª – 3ª', step:15},
+    {id:'cinque', ic:'3:25', label:'Ogni 5 minuti', sub:'3ª elementare', step:5}
+  ];
+
+  /* La giornata di Leo: h è l'ora (sull'orologio da 12), "dopo" per il pomeriggio/sera */
+  var DAY = [
+    {emo:'⏰', what:'Leo si sveglia', h:7},
+    {emo:'🥣', what:'Leo fa colazione', h:7, plus:1},
+    {emo:'🏫', what:'Inizia la scuola', h:8},
+    {emo:'🍎', what:'C\'è la ricreazione', h:10},
+    {emo:'🍝', what:'Si mangia a casa con la nonna', h:12},
+    {emo:'📚', what:'Leo fa i compiti', h:2, pm:true},
+    {emo:'⚽', what:'Allenamento di calcio', h:4, pm:true},
+    {emo:'🛁', what:'È l\'ora del bagnetto', h:6, pm:true},
+    {emo:'🍲', what:'Cena con la famiglia', h:7, pm:true},
+    {emo:'🌙', what:'Nanna!', h:8, pm:true}
+  ];
+  var ROUNDS = 8;
+
+  var level = LEVELS[0], round = 0, mistakes = 0, plan = [], current = null, setH = 12, setM = 0;
+
+  function $(id){ return document.getElementById(id); }
+  function pick(a){ return a[Math.floor(Math.random() * a.length)]; }
+  function shuffle(a){
+    a = a.slice();
+    for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; }
+    return a;
+  }
+  function pad(m){ return (m < 10 ? '0' : '') + m; }
+  function digital(h, m){ return h + ':' + pad(m); }
+  function norm12(h){ h = ((h - 1) % 12 + 12) % 12 + 1; return h; }
+  var NUM = ['','una','due','tre','quattro','cinque','sei','sette','otto','nove','dieci','undici','dodici'];
+  /* come si dice in italiano */
+  function words(h, m){
+    var ore = function(x){ return x === 1 ? 'l\'una' : 'le ' + NUM[x]; };
+    if(m === 0) return ore(h) + ' in punto';
+    if(m === 15) return ore(h) + ' e un quarto';
+    if(m === 30) return ore(h) + ' e mezza';
+    if(m === 45) return ore(h) + ' e tre quarti';
+    return ore(h) + ' e ' + m;
+  }
+
+  document.addEventListener('click', function(e){
+    var btn = e.target.closest('.btn-punch');
+    if(!btn || reduceMotion) return;
+    var rect = btn.getBoundingClientRect();
+    var dot = document.createElement('span');
+    dot.className = 'punch-dot';
+    dot.style.left = (e.clientX - rect.left) + 'px';
+    dot.style.top = (e.clientY - rect.top) + 'px';
+    btn.appendChild(dot);
+    setTimeout(function(){ dot.remove(); }, 420);
+  });
+
+  function chime(ok){
+    try{
+      var Ctx = window.AudioContext || window.webkitAudioContext;
+      if(!chime.ctx) chime.ctx = new Ctx();
+      var ctx = chime.ctx;
+      var notes = ok ? [880, 1175] : [220];
+      notes.forEach(function(f, i){
+        var o = ctx.createOscillator(), g = ctx.createGain();
+        o.type = 'sine'; o.frequency.value = f;
+        o.connect(g); g.connect(ctx.destination);
+        var t = ctx.currentTime + i * 0.12;
+        g.gain.setValueAtTime(0.07, t);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.3);
+        o.start(t); o.stop(t + 0.32);
+      });
+    }catch(e){}
+  }
+
+  var canSpeak = 'speechSynthesis' in window && typeof SpeechSynthesisUtterance !== 'undefined';
+  function say(text){
+    if(!canSpeak) return;
+    try{
+      window.speechSynthesis.cancel();
+      var u = new SpeechSynthesisUtterance(text);
+      u.lang = 'it-IT'; u.rate = 0.9;
+      var v = window.speechSynthesis.getVoices().filter(function(v){ return /^it/i.test(v.lang); })[0];
+      if(v) u.voice = v;
+      window.speechSynthesis.speak(u);
+    }catch(e){}
+  }
+
+  function showScreen(id){
+    document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+    $(id).classList.add('active');
+    window.scrollTo(0,0);
+  }
+
+  /* ================= CLOCK ================= */
+  function buildClock(el){
+    var out = '<circle cx="150" cy="150" r="142" fill="#1C9AA8"/><circle cx="150" cy="150" r="128" fill="#fff"/>';
+    for(var i=0;i<60;i++){
+      var a = i * 6 * Math.PI / 180, big = i % 5 === 0;
+      var r1 = big ? 112 : 118, r2 = 124;
+      out += '<line x1="' + (150 + r1*Math.sin(a)).toFixed(1) + '" y1="' + (150 - r1*Math.cos(a)).toFixed(1) +
+        '" x2="' + (150 + r2*Math.sin(a)).toFixed(1) + '" y2="' + (150 - r2*Math.cos(a)).toFixed(1) +
+        '" stroke="' + (big ? '#24304A' : '#B8C0CF') + '" stroke-width="' + (big ? 4 : 2) + '" stroke-linecap="round"/>';
+    }
+    for(var n=1;n<=12;n++){
+      var b = n * 30 * Math.PI / 180;
+      out += '<text x="' + (150 + 92*Math.sin(b)).toFixed(1) + '" y="' + (150 - 92*Math.cos(b) + 10).toFixed(1) +
+        '" text-anchor="middle" font-family="Fredoka, sans-serif" font-weight="600" font-size="28" fill="#24304A">' + n + '</text>';
+    }
+    out += '<line class="hand hour" x1="150" y1="150" x2="150" y2="88" stroke="#24304A" stroke-width="11" stroke-linecap="round"/>';
+    out += '<line class="hand min" x1="150" y1="158" x2="150" y2="40" stroke="#F2705E" stroke-width="7" stroke-linecap="round"/>';
+    out += '<circle cx="150" cy="150" r="9" fill="#24304A"/><circle cx="150" cy="150" r="3.5" fill="#F2705E"/>';
+    el.innerHTML = out;
+  }
+  /* ruota una lancetta verso l'angolo più vicino, così da 11 a 12 va avanti e non fa il giro al contrario */
+  function turn(hand, deg){
+    var prev = hand._deg;
+    if(typeof prev === 'number'){
+      var d = ((deg - prev) % 360 + 540) % 360 - 180;
+      deg = prev + d;
+    }
+    hand._deg = deg;
+    hand.style.transform = 'rotate(' + deg + 'deg)';
+  }
+  function setClock(el, h, m){
+    turn(el.querySelector('.hour'), (h % 12) * 30 + m * 0.5);
+    turn(el.querySelector('.min'), m * 6);
+    el.setAttribute('aria-label', 'Orologio che segna ' + digital(h, m));
+  }
+
+  /* ================= SETUP ================= */
+  function renderLevels(){
+    var box = $('levels');
+    box.innerHTML = '';
+    LEVELS.forEach(function(l){
+      var b = document.createElement('button');
+      b.className = 'level';
+      b.setAttribute('aria-pressed', l === level ? 'true' : 'false');
+      b.innerHTML = '<span class="ic">' + l.ic + '</span><span>' + l.label + '</span><span class="sub">' + l.sub + '</span>';
+      b.addEventListener('click', function(){ level = l; renderLevels(); });
+      box.appendChild(b);
+    });
+  }
+
+  function minutesFor(lv){
+    if(lv.step === 60) return 0;
+    if(lv.step === 15) return pick([0,15,30,45,30,15]);
+    return pick([5,10,20,25,35,40,50,55,15,45]);
+  }
+
+  function buildPlan(){
+    // scelgo 8 momenti della giornata, in ordine, alternando "leggi" e "metti le lancette"
+    var idxs = shuffle(DAY.map(function(_, i){ return i; })).slice(0, ROUNDS).sort(function(a,b){ return a-b; });
+    return idxs.map(function(i, k){
+      var ev = DAY[i];
+      var m = minutesFor(level);
+      var h = ev.h;
+      if(ev.plus){ m = level.step === 60 ? 0 : Math.max(m, level.step); }
+      return {ev:ev, h:h, m:m, kind: k % 2 === 0 ? 'leggi' : 'metti'};
+    });
+  }
+
+  /* ================= ROUNDS ================= */
+  var card = $('card');
+
+  function distractors(h, m){
+    var set = [[h,m]];
+    var cands = [
+      [norm12(h+1), m], [norm12(h-1), m],
+      [h, (m + level.step) % 60], [h, (m + 60 - level.step) % 60],
+      // errore classico: scambiare le lancette
+      [m === 0 ? 12 : norm12(Math.round(m/5)), (h % 12) * 5],
+      [h, (m + 30) % 60]
+    ];
+    if(level.step === 60) cands = [[norm12(h+1),0],[norm12(h-1),0],[norm12(h+2),0],[norm12(h+6),0],[12, (h%12)*5]];
+    shuffle(cands).forEach(function(c){
+      if(set.length >= 3) return;
+      if(level.step === 60 && c[1] !== 0) return;
+      if(!set.some(function(s){ return s[0] === c[0] && s[1] === c[1]; })) set.push(c);
+    });
+    return shuffle(set);
+  }
+
+  function header(r){
+    var when = r.ev.pm ? '🌇 pomeriggio / sera' : r.ev.h === 12 ? '🌞 mezzogiorno' : '🌅 mattino';
+    return '<div class="event"><span class="emo" aria-hidden="true">' + r.ev.emo + '</span><p>' + r.ev.what + '<br><small style="color:var(--steel);font-weight:700;">' + when + '</small></p></div>';
+  }
+
+  function nextRound(){
+    var r = plan[round];
+    current = r;
+    $('pill').textContent = (round+1) + ' di ' + ROUNDS;
+    if(r.kind === 'leggi'){
+      setClock($('clock'), r.h, r.m);
+      current.q = r.ev.what + '. Che ore sono?';
+      card.innerHTML = header(r) + '<p class="question">Che ore sono sull\'orologio?</p><div class="options" id="opts"></div>' +
+        '<div class="feedback" id="fb" hidden aria-live="polite"></div><div class="next-row"><button class="btn btn-punch" id="btnNext" hidden></button></div>';
+      distractors(r.h, r.m).forEach(function(c){
+        var b = document.createElement('button');
+        b.className = 'opt-btn';
+        b.innerHTML = '<span class="digital">' + digital(c[0], c[1]) + '</span><span>' + words(c[0], c[1]) + '</span>';
+        b.addEventListener('click', function(){
+          if(c[0] === r.h && c[1] === r.m){
+            b.classList.add('correct');
+            $('opts').querySelectorAll('button').forEach(function(x){ x.disabled = true; });
+            win('Sono ' + words(r.h, r.m) + '!');
+          } else {
+            b.classList.add('wrong'); b.disabled = true;
+            lose('Guarda bene: la lancetta corta (nera) indica l\'ora, quella lunga (rossa) i minuti.');
+          }
+        });
+        $('opts').appendChild(b);
+      });
+    } else {
+      // metti le lancette: si parte dalle 12:00
+      setH = 12; setM = 0;
+      setClock($('clock'), setH, setM);
+      current.q = r.ev.what + ' ' + words(r.h, r.m).replace(/^le /, 'alle ').replace(/^l'/, 'all\'') + '. Sposta le lancette!';
+      card.innerHTML = header(r) +
+        '<p class="question">Metti le lancette all\'ora giusta:</p>' +
+        '<div class="target">' + digital(r.h, r.m) + '<small>' + words(r.h, r.m) + '</small></div>' +
+        '<div class="controls">' +
+          '<div class="ctrl hour"><span class="lbl">Lancetta corta (ore)</span><div class="row"><button id="hMinus" aria-label="Ora indietro">−</button><button id="hPlus" aria-label="Ora avanti">+</button></div></div>' +
+          (level.step < 60 ? '<div class="ctrl min"><span class="lbl">Lancetta lunga (minuti)</span><div class="row"><button id="mMinus" aria-label="Minuti indietro">−</button><button id="mPlus" aria-label="Minuti avanti">+</button></div></div>' : '<div class="ctrl min"><span class="lbl">Lancetta lunga</span><span style="font-size:.85rem;text-align:center;">resta sul 12 per le ore esatte</span></div>') +
+        '</div>' +
+        '<button class="btn btn-punch check" id="btnCheck">Controlla ✔</button>' +
+        '<div class="feedback" id="fb" hidden aria-live="polite"></div><div class="next-row"><button class="btn btn-punch" id="btnNext" hidden></button></div>';
+      $('hMinus').addEventListener('click', function(){ setH = norm12(setH - 1); setClock($('clock'), setH, setM); });
+      $('hPlus').addEventListener('click', function(){ setH = norm12(setH + 1); setClock($('clock'), setH, setM); });
+      if($('mPlus')){
+        $('mMinus').addEventListener('click', function(){ setM = (setM + 60 - level.step) % 60; setClock($('clock'), setH, setM); });
+        $('mPlus').addEventListener('click', function(){ setM = (setM + level.step) % 60; setClock($('clock'), setH, setM); });
+      }
+      $('btnCheck').addEventListener('click', function(){
+        if(setH === r.h && setM === r.m){
+          card.querySelectorAll('.controls button, #btnCheck').forEach(function(x){ x.disabled = true; });
+          win('Perfetto! L\'orologio segna ' + words(r.h, r.m) + '.');
+        } else if(setH !== r.h && setM === r.m){
+          lose('I minuti sono giusti, ma controlla la lancetta corta: deve indicare le ' + r.h + '.');
+        } else if(setH === r.h){
+          lose('L\'ora è giusta, ma sposta la lancetta lunga: ' + r.m + ' minuti.');
+        } else {
+          lose('Non ancora. Prima sistema la lancetta corta (ore), poi quella lunga (minuti).');
+        }
+      });
+    }
+    say(current.q);
+  }
+
+  function win(msg){
+    chime(true);
+    var fb = $('fb');
+    fb.hidden = false; fb.className = 'feedback ok';
+    fb.textContent = '✅ ' + msg;
+    say(msg);
+    round++;
+    var nx = $('btnNext');
+    nx.textContent = round >= ROUNDS ? 'Fine della giornata 🌙' : 'Avanti ➜';
+    nx.hidden = false; nx.focus();
+    nx.addEventListener('click', function(){ if(round >= ROUNDS) endGame(); else nextRound(); });
+  }
+  function lose(msg){
+    chime(false);
+    mistakes++;
+    var fb = $('fb');
+    fb.hidden = false; fb.className = 'feedback bad';
+    fb.textContent = '🤔 ' + msg;
+  }
+
+  function endGame(){
+    var stars = mistakes <= 1 ? 3 : mistakes <= 4 ? 2 : 1;
+    $('endStars').textContent = '⭐'.repeat(stars) + '☆'.repeat(3 - stars);
+    $('endStars').setAttribute('aria-label', stars + ' stelle su 3');
+    $('endStory').textContent = 'Grazie a te Leo non è mai arrivato in ritardo: dalla sveglia fino alla nanna! Livello: ' + level.label + '. ' +
+      (mistakes === 0 ? 'Nemmeno un errore!' : 'Hai fatto ' + mistakes + (mistakes === 1 ? ' errore' : ' errori') + ', ma alla fine hai sempre trovato l\'ora giusta.');
+    showScreen('screen-end');
+  }
+
+  /* ================= WIRING ================= */
+  renderLevels();
+  buildClock($('clockCover')); setClock($('clockCover'), 10, 10);
+  buildClock($('clock'));
+  if(canSpeak){ $('btnSpeak').hidden = false; try{ window.speechSynthesis.getVoices(); }catch(e){} }
+  $('btnSpeak').addEventListener('click', function(){ if(current) say(current.q); });
+  $('btnStart').addEventListener('click', function(){
+    round = 0; mistakes = 0;
+    plan = buildPlan();
+    showScreen('screen-play');
+    nextRound();
+  });
+  $('btnAgain').addEventListener('click', function(){ showScreen('screen-cover'); });
+})();
+</script>
+</body>
+</html>

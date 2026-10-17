@@ -138,10 +138,36 @@
     100%{transform:translate(-50%,-50%) scale(1);opacity:0;}
   }
 
-  /* ---------- filtro materie ---------- */
+  /* ---------- filtri classe e materia ---------- */
+  .filter-panel{
+    background:#fff;border-radius:22px;padding:1rem 1.1rem .4rem;margin:0 auto 1.6rem;
+    max-width:900px;box-shadow:0 4px 0 rgba(0,0,0,.05), 0 8px 20px rgba(43,37,64,.06);
+  }
+  .filter-row{display:flex;align-items:flex-start;gap:.8rem;margin-bottom:.7rem;}
+  .filter-row .row-label{
+    flex:none;width:5.2rem;padding-top:.5rem;font-family:var(--font-display);
+    font-size:1rem;color:var(--ink);text-align:right;
+  }
   .filters{
-    display:flex;flex-wrap:wrap;justify-content:center;gap:.5rem;
-    margin:0 0 1.8rem;padding:0;list-style:none;
+    display:flex;flex-wrap:wrap;gap:.5rem;margin:0;padding:0;list-style:none;flex:1;
+  }
+  @media (max-width:640px){
+    .filter-row{flex-direction:column;gap:.35rem;}
+    .filter-row .row-label{width:auto;padding-top:0;text-align:left;}
+  }
+  .filter-chip.grade{min-width:3.2rem;justify-content:center;}
+  .filter-chip:disabled{opacity:.4;cursor:default;transform:none;}
+  .grade-badge{
+    display:inline-block;font-size:.75rem;font-weight:800;color:var(--steel);
+    background:#F1F4F8;border-radius:999px;padding:.15rem .6rem;margin-left:.35rem;vertical-align:middle;
+  }
+  .card-tags{display:flex;flex-wrap:wrap;align-items:center;gap:.35rem;margin-bottom:.7rem;}
+  .card-tags .subject{margin-bottom:0;}
+  .card-tags .grade-badge{margin-left:0;}
+  .empty-state{grid-column:1/-1;text-align:center;color:var(--steel);padding:2rem 1rem;}
+  .empty-state button{
+    margin-top:.6rem;border:none;background:var(--purple);color:#fff;font-weight:800;
+    border-radius:999px;padding:.5rem 1.1rem;cursor:pointer;font-family:inherit;
   }
   .filter-chip{
     border:2px solid #DCD3EE;background:#fff;color:var(--ink);
@@ -160,7 +186,7 @@
     box-shadow:0 3px 0 #5F45A8;
   }
   .filter-chip[aria-pressed="true"] .count{background:rgba(255,255,255,.25);color:#fff;}
-  .filter-status{text-align:center;color:var(--steel);font-size:.9rem;margin:-1rem 0 1.4rem;min-height:1.2em;}
+  .filter-status{text-align:center;color:var(--steel);font-size:.9rem;margin:-.6rem 0 1.4rem;min-height:1.2em;}
 
   /* ---------- coming soon card ---------- */
   .game-card.coming-soon{
@@ -264,8 +290,17 @@
   <section class="games-section">
     <div class="wrap">
       <h2>I nostri giochi</h2>
-      <p class="lead">Scegli una materia, poi tocca una card per iniziare a giocare 👇</p>
-      <div class="filters" id="filters" role="group" aria-label="Filtra i giochi per materia"></div>
+      <p class="lead">Scegli la tua classe e la materia, poi tocca una card per iniziare a giocare 👇</p>
+      <div class="filter-panel">
+        <div class="filter-row">
+          <span class="row-label" id="lblClasse">🎒 Classe</span>
+          <div class="filters" id="filtersClasse" role="group" aria-labelledby="lblClasse"></div>
+        </div>
+        <div class="filter-row">
+          <span class="row-label" id="lblMateria">📚 Materia</span>
+          <div class="filters" id="filtersMateria" role="group" aria-labelledby="lblMateria"></div>
+        </div>
+      </div>
       <p class="filter-status" id="filterStatus" aria-live="polite"></p>
       <div class="games-grid" id="gamesGrid"></div>
     </div>
@@ -291,15 +326,18 @@
     Per aggiungere un nuovo gioco:
     1. Metti il file HTML del gioco dentro la cartella "giochi/".
     2. Aggiungi un nuovo oggetto qui sotto con i suoi dati.
-       "categorie" decide in quali filtri compare il gioco: usa le materie
-       gia' presenti (es. "Matematica") o una nuova, che apparira' da sola
-       tra i bottoni del filtro.
+       "classi" sono le classi delle elementari (da 1 a 5) per cui il gioco
+       e' adatto: decidono in quali bottoni del filtro "Classe" compare.
+       "categorie" decide in quali filtri "Materia" compare il gioco: usa le
+       materie gia' presenti (es. "Matematica") o una nuova, che apparira'
+       da sola tra i bottoni del filtro.
     Il colore serve solo per il bottone e l'icona della card: ogni gioco
     puo' avere la sua ambientazione grafica, indipendente dalle altre.
   */
   var GIOCHI = [
     {
       file: "giochi/il-mistero-del-treno.html",
+      classi: [4, 5],
       categorie: ["Geografia","Matematica"],
       titolo: "Il Mistero del Treno delle 15:42",
       materia: "Geografia e Matematica",
@@ -310,6 +348,7 @@
     },
     {
       file: "giochi/il-fantasma-della-ferrovia.html",
+      classi: [4, 5],
       categorie: ["Geografia","Matematica","Storia"],
       titolo: "Il Fantasma della Ferrovia",
       materia: "Geografia, Matematica e Storia",
@@ -320,6 +359,7 @@
     },
     {
       file: "giochi/caccia-sulla-mappa-della-svizzera.html",
+      classi: [4, 5],
       categorie: ["Geografia"],
       titolo: "Caccia sulla Mappa della Svizzera",
       materia: "Geografia",
@@ -330,6 +370,7 @@
     },
     {
       file: "giochi/il-quaderno-degli-enigmi.html",
+      classi: [3, 4, 5],
       categorie: ["Matematica"],
       titolo: "Il Quaderno degli Enigmi",
       materia: "Matematica e Logica",
@@ -340,6 +381,7 @@
     },
     {
       file: "giochi/il-segreto-dei-tre-castelli.html",
+      classi: [4, 5],
       categorie: ["Storia"],
       titolo: "Il Segreto dei Tre Castelli",
       materia: "Storia del Ticino",
@@ -350,6 +392,7 @@
     },
     {
       file: "giochi/la-biblioteca-incantata.html",
+      classi: [2, 3, 4],
       categorie: ["Italiano"],
       titolo: "La Biblioteca Incantata",
       materia: "Italiano",
@@ -360,6 +403,7 @@
     },
     {
       file: "giochi/la-spedizione-nel-bosco.html",
+      classi: [3, 4, 5],
       categorie: ["Scienze"],
       titolo: "La Spedizione nel Bosco",
       materia: "Scienze",
@@ -370,6 +414,7 @@
     },
     {
       file: "giochi/il-mercato-di-lugano.html",
+      classi: [3, 4],
       categorie: ["Matematica"],
       titolo: "Il Mercato di Lugano",
       materia: "Matematica con i soldi",
@@ -380,6 +425,7 @@
     },
     {
       file: "giochi/la-corsa-delle-tabelline.html",
+      classi: [2, 3, 4],
       categorie: ["Matematica"],
       titolo: "La Corsa delle Tabelline",
       materia: "Matematica",
@@ -390,6 +436,7 @@
     },
     {
       file: "giochi/il-laboratorio-delle-forme.html",
+      classi: [3, 4, 5],
       categorie: ["Matematica"],
       titolo: "Il Laboratorio delle Forme",
       materia: "Geometria",
@@ -400,6 +447,7 @@
     },
     {
       file: "giochi/bonjour-il-treno-per-ginevra.html",
+      classi: [3, 4, 5],
       categorie: ["Francese"],
       titolo: "Bonjour! Il Treno per Ginevra",
       materia: "Francese",
@@ -410,6 +458,7 @@
     },
     {
       file: "giochi/la-patente-della-bici.html",
+      classi: [4, 5],
       categorie: ["Educazione stradale"],
       titolo: "La Patente della Bici",
       materia: "Educazione stradale",
@@ -420,6 +469,7 @@
     },
     {
       file: "giochi/il-cestino-del-riciclo.html",
+      classi: [2, 3, 4, 5],
       categorie: ["Ambiente"],
       titolo: "Il Cestino del Riciclo",
       materia: "Ambiente",
@@ -427,6 +477,72 @@
       colore: "#21A179",
       coloreScuro: "#16775A",
       descrizione: "Il nastro dell'ecocentro è impazzito! Metti carta, vetro, PET, pile e scarti nel contenitore giusto prima che arrivino in fondo."
+    },
+    {
+      file: "giochi/conta-con-la-marmotta.html",
+      classi: [1, 2],
+      categorie: ["Matematica"],
+      titolo: "Conta con la Marmotta",
+      materia: "Matematica",
+      icona: "🐿️",
+      colore: "#C98A3E",
+      coloreScuro: "#8A6234",
+      descrizione: "Aiuta la marmotta Mia a preparare la tana: conta fiori e ghiande, scopri dove ce ne sono di più e fai le prime addizioni e sottrazioni."
+    },
+    {
+      file: "giochi/il-bruco-sillabino.html",
+      classi: [1, 2],
+      categorie: ["Italiano"],
+      titolo: "Il Bruco Sillabino",
+      materia: "Italiano",
+      icona: "🐛",
+      colore: "#5FA83B",
+      coloreScuro: "#3F7A24",
+      descrizione: "Sillabino mangia le sillabe! Trova la prima lettera, componi le parole e batti le mani per contare le sillabe: il bruco diventa sempre più lungo."
+    },
+    {
+      file: "giochi/i-cinque-sensi.html",
+      classi: [1, 2],
+      categorie: ["Scienze"],
+      titolo: "I Cinque Sensi",
+      materia: "Scienze",
+      icona: "👀",
+      colore: "#9B7BE8",
+      coloreScuro: "#6D4FC0",
+      descrizione: "In gita alla fattoria con Nina: il gallo canta, i fiori profumano, il cactus punge… Quale senso usa Nina in ogni momento?"
+    },
+    {
+      file: "giochi/che-ore-sono.html",
+      classi: [2, 3],
+      categorie: ["Matematica"],
+      titolo: "Che Ore Sono?",
+      materia: "Matematica · L'orologio",
+      icona: "🕒",
+      colore: "#1C9AA8",
+      coloreScuro: "#127480",
+      descrizione: "Leo ha un orologio nuovo! Leggi l'ora e sposta le lancette per accompagnarlo dalla sveglia alla nanna: ore intere, mezz'ore, quarti e minuti."
+    },
+    {
+      file: "giochi/la-macchina-del-tempo.html",
+      classi: [3],
+      categorie: ["Storia"],
+      titolo: "La Macchina del Tempo",
+      materia: "Storia · La preistoria",
+      icona: "🦕",
+      colore: "#C4623A",
+      coloreScuro: "#8F4224",
+      descrizione: "Rimetti in ordine la linea del tempo, distingui Paleolitico e Neolitico e scopri i fossili del Monte San Giorgio per tornare nel presente."
+    },
+    {
+      file: "giochi/le-campane-del-campanile.html",
+      classi: [1, 2, 3, 4, 5],
+      categorie: ["Musica"],
+      titolo: "Le Campane del Campanile",
+      materia: "Musica",
+      icona: "🔔",
+      colore: "#4C3E86",
+      coloreScuro: "#2F2560",
+      descrizione: "Il campanaro è raffreddato! Ascolta le campane Do, Re, Mi, Fa, Sol e ripeti melodie sempre più lunghe, oppure scopri quale suono è più acuto."
     }
   ];
 
@@ -435,11 +551,12 @@
     return 'rgba(' + r + ',' + g + ',' + b + ',' + alpha + ')';
   }
 
-  var TUTTI = 'Tutti';
-  var filtro = TUTTI;
+  var TUTTE = 'tutte';
+  var CLASSI = [1, 2, 3, 4, 5];
+  var filtro = {classe: TUTTE, materia: TUTTE};
 
   function slug(t){
-    return t.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    return t.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
   }
 
   function elencoCategorie(){
@@ -450,69 +567,126 @@
     return lista.sort(function(a, b){ return a.localeCompare(b, 'it'); });
   }
 
-  function contaGiochi(cat){
-    if(cat === TUTTI) return GIOCHI.length;
-    return GIOCHI.filter(function(g){ return g.categorie.indexOf(cat) >= 0; }).length;
+  function passa(g, f){
+    return (f.classe === TUTTE || g.classi.indexOf(f.classe) >= 0) &&
+           (f.materia === TUTTE || g.categorie.indexOf(f.materia) >= 0);
+  }
+
+  // quanti giochi si vedrebbero scegliendo questo bottone (tenendo fisso l'altro filtro)
+  function conta(campo, valore){
+    var f = {classe: filtro.classe, materia: filtro.materia};
+    f[campo] = valore;
+    return GIOCHI.filter(function(g){ return passa(g, f); }).length;
+  }
+
+  function etichettaClassi(cl){
+    var c = cl.slice().sort();
+    if(c.length === 5) return 'Tutte le classi';
+    if(c.length === 1) return c[0] + 'ª elementare';
+    var consecutive = c[c.length-1] - c[0] === c.length - 1;
+    return consecutive ? c[0] + 'ª – ' + c[c.length-1] + 'ª elementare' : c.map(function(x){ return x + 'ª'; }).join(', ') + ' elementare';
+  }
+
+  function chip(testo, valore, campo, extraClass){
+    var n = conta(campo, valore);
+    var attivo = filtro[campo] === valore;
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'filter-chip' + (extraClass ? ' ' + extraClass : '');
+    b.setAttribute('aria-pressed', attivo ? 'true' : 'false');
+    b.innerHTML = '<span></span><span class="count" aria-hidden="true">' + n + '</span>';
+    b.firstChild.textContent = testo;
+    b.setAttribute('aria-label', testo + ', ' + n + (n === 1 ? ' gioco' : ' giochi'));
+    // un bottone che porterebbe a zero giochi resta visibile ma disattivato
+    if(n === 0 && !attivo) b.disabled = true;
+    b.addEventListener('click', function(){
+      var nuovo = {classe: filtro.classe, materia: filtro.materia};
+      nuovo[campo] = valore;
+      applica(nuovo, true);
+    });
+    return b;
   }
 
   function renderFilters(){
-    var box = document.getElementById('filters');
-    box.innerHTML = '';
-    [TUTTI].concat(elencoCategorie()).forEach(function(cat){
-      var b = document.createElement('button');
-      b.type = 'button';
-      b.className = 'filter-chip';
-      b.setAttribute('aria-pressed', cat === filtro ? 'true' : 'false');
-      b.innerHTML = '<span></span><span class="count" aria-hidden="true">' + contaGiochi(cat) + '</span>';
-      b.firstChild.textContent = cat;
-      b.setAttribute('aria-label', cat + ', ' + contaGiochi(cat) + (contaGiochi(cat) === 1 ? ' gioco' : ' giochi'));
-      b.addEventListener('click', function(){ scegliFiltro(cat, true); });
-      box.appendChild(b);
-    });
+    var bc = document.getElementById('filtersClasse');
+    bc.innerHTML = '';
+    bc.appendChild(chip('Tutte', TUTTE, 'classe'));
+    CLASSI.forEach(function(c){ bc.appendChild(chip(c + 'ª', c, 'classe', 'grade')); });
+
+    var bm = document.getElementById('filtersMateria');
+    bm.innerHTML = '';
+    bm.appendChild(chip('Tutte', TUTTE, 'materia'));
+    elencoCategorie().forEach(function(m){ bm.appendChild(chip(m, m, 'materia')); });
   }
 
-  function scegliFiltro(cat, aggiornaUrl){
-    filtro = cat;
+  function hashDa(f){
+    var parti = [];
+    if(f.classe !== TUTTE) parti.push('classe-' + f.classe);
+    if(f.materia !== TUTTE) parti.push(slug(f.materia));
+    return parti.length ? '#' + parti.join('/') : '';
+  }
+
+  function filtroDaUrl(){
+    var f = {classe: TUTTE, materia: TUTTE};
+    var h = decodeURIComponent(location.hash.replace(/^#/, ''));
+    if(!h) return f;
+    h.split('/').forEach(function(p){
+      var m = /^classe-([1-5])$/.exec(p);
+      if(m){ f.classe = +m[1]; return; }
+      var cat = elencoCategorie().filter(function(c){ return slug(c) === p; })[0];
+      if(cat) f.materia = cat;
+    });
+    return f;
+  }
+
+  function applica(f, aggiornaUrl){
+    filtro = f;
     if(aggiornaUrl){
-      var hash = cat === TUTTI ? '' : '#' + slug(cat);
-      try{ history.replaceState(null, '', location.pathname + location.search + hash); }catch(e){}
+      try{ history.replaceState(null, '', location.pathname + location.search + hashDa(f)); }catch(e){}
     }
     renderFilters();
     renderGames();
   }
 
-  function filtroDaUrl(){
-    var h = decodeURIComponent(location.hash.replace(/^#/, ''));
-    if(!h) return TUTTI;
-    var trovata = elencoCategorie().filter(function(c){ return slug(c) === h; })[0];
-    return trovata || TUTTI;
-  }
-
   function renderGames(){
     var grid = document.getElementById('gamesGrid');
     grid.innerHTML = '';
-    var visibili = GIOCHI.filter(function(g){ return filtro === TUTTI || g.categorie.indexOf(filtro) >= 0; });
+    var visibili = GIOCHI.filter(function(g){ return passa(g, filtro); });
     visibili.forEach(function(g, i){
       var card = document.createElement('article');
       card.className = 'game-card';
-      card.style.animationDelay = (i * 0.06) + 's';
+      card.style.animationDelay = (i * 0.05) + 's';
       card.innerHTML =
         '<div class="badge-icon" style="background:' + hexToRgba(g.colore, .16) + ';">' + g.icona + '</div>' +
-        '<span class="subject" style="background:' + hexToRgba(g.colore, .14) + ';color:' + g.coloreScuro + ';">' + g.materia + '</span>' +
+        '<div class="card-tags">' +
+          '<span class="subject" style="background:' + hexToRgba(g.colore, .14) + ';color:' + g.coloreScuro + ';">' + g.materia + '</span>' +
+          '<span class="grade-badge">🎒 ' + etichettaClassi(g.classi) + '</span>' +
+        '</div>' +
         '<h3>' + g.titolo + '</h3>' +
         '<p class="desc">' + g.descrizione + '</p>' +
         '<a class="play-btn btn-punch" style="--card-color:' + g.colore + ';--card-color-dark:' + g.coloreScuro + ';" href="' + g.file + '">Gioca ▶</a>';
       grid.appendChild(card);
     });
 
-    document.getElementById('filterStatus').textContent = filtro === TUTTI
-      ? ''
-      : (visibili.length === 1 ? '1 gioco' : visibili.length + ' giochi') + ' di ' + filtro;
+    var parti = [];
+    if(filtro.classe !== TUTTE) parti.push('per la ' + filtro.classe + 'ª');
+    if(filtro.materia !== TUTTE) parti.push('di ' + filtro.materia);
+    document.getElementById('filterStatus').textContent = parti.length
+      ? (visibili.length === 1 ? '1 gioco ' : visibili.length + ' giochi ') + parti.join(' ')
+      : '';
 
-    if(filtro === TUTTI){
+    if(!visibili.length){
+      var vuoto = document.createElement('div');
+      vuoto.className = 'empty-state';
+      vuoto.innerHTML = '<p>Per ora non ci sono giochi con questi filtri. 🙈</p><button type="button">Mostra tutti i giochi</button>';
+      vuoto.querySelector('button').addEventListener('click', function(){ applica({classe: TUTTE, materia: TUTTE}, true); });
+      grid.appendChild(vuoto);
+    }
+
+    if(filtro.classe === TUTTE && filtro.materia === TUTTE){
       var soon = document.createElement('article');
       soon.className = 'game-card coming-soon';
-      soon.style.animationDelay = (visibili.length * 0.06) + 's';
+      soon.style.animationDelay = (visibili.length * 0.05) + 's';
       soon.innerHTML = '<div class="badge-icon">✨</div><h3>Presto...</h3><p class="desc">Nuovi giochi sono in preparazione. Torna a trovarci!</p>';
       grid.appendChild(soon);
     }
@@ -530,8 +704,8 @@
     setTimeout(function(){ dot.remove(); }, 420);
   });
 
-  window.addEventListener('hashchange', function(){ scegliFiltro(filtroDaUrl(), false); });
-  scegliFiltro(filtroDaUrl(), false);
+  window.addEventListener('hashchange', function(){ applica(filtroDaUrl(), false); });
+  applica(filtroDaUrl(), false);
 })();
 </script>
 <script src="ads.js"></script>

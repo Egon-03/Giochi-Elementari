@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>La Macchina del Tempo — Viaggio nella Preistoria</title>
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --stone:#5B4A3A;
+    --stone-dark:#3E3127;
+    --ochre:#D9902F;
+    --ochre-dark:#A86A1B;
+    --clay:#C4623A;
+    --sand:#F6E7CB;
+    --cave:#2A2220;
+    --glow:#7FE3FF;
+    --ink:#2B2420;
+    --steel:#6E6259;
+    --ok:#2E7D4F;
+    --bad:#B3261E;
+    --font-display:'Luckiest Guy',cursive;
+    --font-body:'Nunito',sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:var(--font-body);background:var(--cave);color:var(--sand);line-height:1.5;}
+  h1,h2,h3{font-family:var(--font-display);font-weight:400;letter-spacing:.03em;margin:0;}
+  button{font-family:inherit;cursor:pointer;}
+  :focus-visible{outline:3px solid var(--glow);outline-offset:3px;}
+
+  .screen{display:none;min-height:100vh;padding:4.5rem 1.25rem 3rem;}
+  .screen.active{display:block;animation:fadein .3s ease;}
+  @keyframes fadein{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+  .wrap{max-width:880px;margin:0 auto;}
+  .center{text-align:center;}
+  .eyebrow{color:var(--ochre);font-weight:800;font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;margin:0 0 .4rem;}
+  .title{font-size:clamp(2.2rem,7vw,3.4rem);color:var(--ochre);margin:.3rem 0 .5rem;text-shadow:3px 3px 0 var(--stone-dark);}
+  .subtitle{font-size:1.05rem;color:#E8D9BD;max-width:600px;margin:0 auto 1.4rem;}
+
+  .btn{display:inline-block;border:none;border-radius:12px;padding:.9rem 1.6rem;font-weight:800;font-size:1rem;background:var(--ochre);color:var(--ink);box-shadow:0 4px 0 var(--ochre-dark);}
+  .btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ochre-dark);}
+  .btn[hidden]{display:none;}
+  .btn-punch{position:relative;overflow:hidden;}
+  .punch-dot{position:absolute;width:10px;height:10px;border-radius:50%;background:#fff;transform:translate(-50%,-50%) scale(0);animation:punch .4s ease-out forwards;pointer-events:none;}
+  @keyframes punch{0%{transform:translate(-50%,-50%) scale(0);opacity:1;}70%{transform:translate(-50%,-50%) scale(1);opacity:1;}100%{transform:translate(-50%,-50%) scale(1);opacity:0;}}
+
+  .howto{max-width:620px;margin:1.5rem auto 0;background:var(--stone-dark);border-radius:14px;padding:1rem 1.3rem;text-align:left;color:#E8D9BD;}
+  .howto summary{cursor:pointer;font-weight:800;color:#fff;}
+  .howto ul{margin:.7rem 0 0;padding-left:1.2rem;}
+
+  .machine{width:min(300px,80vw);height:auto;display:block;margin:0 auto .6rem;}
+  .machine .spin{transform-origin:150px 90px;animation:spin 6s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  /* --- dial --- */
+  .dial{display:flex;align-items:center;justify-content:space-between;gap:.6rem;flex-wrap:wrap;background:#1A1513;border:2px solid var(--stone);border-radius:14px;padding:.6rem 1rem;margin-bottom:1rem;}
+  .dial .screen-txt{font-family:'Courier New',monospace;color:var(--glow);font-weight:700;font-size:1rem;}
+  .stages{display:flex;gap:.4rem;}
+  .stage-dot{width:34px;height:34px;border-radius:50%;background:var(--stone);display:flex;align-items:center;justify-content:center;font-size:1rem;}
+  .stage-dot.done{background:var(--ok);}
+  .stage-dot.now{background:var(--ochre);}
+
+  .card{background:var(--sand);color:var(--ink);border-radius:18px;padding:1.4rem;box-shadow:0 6px 0 var(--stone);}
+  .card h2{color:var(--clay);font-size:1.6rem;}
+  .card .intro{color:var(--steel);margin:.3rem 0 1rem;}
+
+  /* timeline */
+  .timeline{display:grid;gap:.5rem;margin-bottom:1rem;}
+  .t-slot{display:flex;align-items:center;gap:.6rem;min-height:56px;border:2px dashed #CDB894;border-radius:12px;padding:.4rem .7rem;background:#fff;}
+  .t-slot .k{flex:none;width:34px;height:34px;border-radius:50%;background:var(--ochre);color:var(--ink);font-weight:800;display:flex;align-items:center;justify-content:center;}
+  .t-slot.filled{border-style:solid;border-color:var(--ochre);}
+  .t-slot button{border:none;background:none;text-align:left;font-weight:700;font-size:1rem;color:var(--ink);flex:1;padding:0;}
+  .t-slot .when{font-size:.8rem;color:var(--steel);display:block;font-weight:700;}
+  .arrow-note{display:flex;justify-content:space-between;font-size:.8rem;font-weight:800;color:var(--steel);margin:-.2rem .2rem .4rem;}
+  .pool{display:flex;flex-wrap:wrap;gap:.5rem;}
+  .chip{border:none;background:var(--stone);color:var(--sand);border-radius:12px;padding:.6rem .8rem;font-weight:800;font-size:.98rem;box-shadow:0 3px 0 var(--stone-dark);}
+
+  /* sort */
+  .current{text-align:center;margin:.4rem 0 1rem;}
+  .current .big{font-size:3.4rem;line-height:1.1;}
+  .current .name{font-weight:800;font-size:1.2rem;}
+  .bins{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;}
+  .bin{border:none;border-radius:16px;padding:1rem .6rem;color:#fff;font-weight:800;font-size:1.05rem;display:flex;flex-direction:column;align-items:center;gap:.2rem;box-shadow:0 5px 0 rgba(0,0,0,.3);}
+  .bin.paleo{background:var(--stone);}
+  .bin.neo{background:#5E8C3A;}
+  .bin .sub{font-size:.8rem;font-weight:700;opacity:.9;}
+  .bin .placed{font-size:1.4rem;min-height:1.6rem;}
+  .bin:disabled{opacity:.6;cursor:default;}
+
+  /* quiz */
+  .question{font-weight:800;font-size:1.15rem;margin:.4rem 0 .9rem;}
+  .options{display:grid;gap:.5rem;}
+  .opt-btn{background:#fff;border:2px solid var(--ink);border-radius:12px;padding:.7rem .9rem;font-weight:700;font-size:1rem;color:var(--ink);text-align:left;}
+  .opt-btn.correct{border-color:var(--ok);background:#E4F3EA;}
+  .opt-btn.wrong{border-color:var(--bad);background:#FBE6E4;}
+  .q-count{font-weight:800;color:var(--clay);font-size:.85rem;}
+
+  .feedback{margin-top:1rem;padding:.8rem 1rem;border-radius:10px;font-weight:700;}
+  .feedback.ok{background:#E4F3EA;color:var(--ok);}
+  .feedback.bad{background:#FBE6E4;color:var(--bad);}
+  .feedback[hidden]{display:none;}
+  .next-row{text-align:right;margin-top:1rem;}
+
+  .diploma{background:var(--sand);color:var(--ink);border-radius:16px;padding:1.8rem;max-width:640px;margin:1.5rem auto;border:4px double var(--ochre-dark);text-align:left;}
+  .diploma h3{color:var(--clay);}
+  .facts-list{padding-left:1.2rem;}
+  .facts-list li{margin-bottom:.45rem;}
+  .stars{font-size:2rem;letter-spacing:.2rem;}
+
+  .home-link{position:fixed;left:1rem;top:1rem;z-index:50;background:var(--sand);color:var(--ink);text-decoration:none;font-weight:800;font-size:.9rem;padding:.55rem 1rem;border-radius:999px;box-shadow:0 3px 0 var(--stone);}
+  .home-link:active{transform:translateY(3px);box-shadow:0 1px 0 var(--stone);}
+
+  @media (prefers-reduced-motion: reduce){
+    .screen.active,.machine .spin{animation:none;}
+  }
+</style>
+</head>
+<body>
+
+<a href="../index.html" class="home-link" aria-label="Torna alla pagina dei giochi">🏠 Home</a>
+
+<main id="app">
+
+  <!-- COVER -->
+  <section id="screen-cover" class="screen active">
+    <div class="wrap center">
+      <svg class="machine" viewBox="0 0 300 200" role="img" aria-label="Una macchina del tempo con un grande ingranaggio luminoso">
+        <ellipse cx="150" cy="186" rx="110" ry="10" fill="#000" opacity=".35"/>
+        <rect x="60" y="120" width="180" height="58" rx="14" fill="#5B4A3A"/>
+        <rect x="74" y="132" width="70" height="30" rx="6" fill="#1A1513"/>
+        <text x="109" y="153" text-anchor="middle" font-family="Courier New, monospace" font-weight="700" font-size="14" fill="#7FE3FF">-65 MLN</text>
+        <circle cx="180" cy="148" r="10" fill="#D9902F"/><circle cx="210" cy="148" r="10" fill="#C4623A"/>
+        <g class="spin">
+          <circle cx="150" cy="90" r="46" fill="none" stroke="#D9902F" stroke-width="12" stroke-dasharray="14 10"/>
+          <circle cx="150" cy="90" r="30" fill="#7FE3FF" opacity=".85"/>
+        </g>
+        <text x="150" y="98" text-anchor="middle" font-size="26">🦕</text>
+        <rect x="140" y="118" width="20" height="10" fill="#3E3127"/>
+      </svg>
+      <span class="eyebrow">🦴 Storia · 3ª elementare</span>
+      <h1 class="title">La Macchina del Tempo</h1>
+      <p class="subtitle">La professoressa Fossilina ha costruito una macchina del tempo, ma i comandi sono tutti mescolati! Rimetti in ordine le epoche, scopri come vivevano i primi esseri umani e torna sano e salvo nel presente.</p>
+      <button class="btn btn-punch" id="btnStart">Accendi la macchina ⚙️</button>
+      <details class="howto">
+        <summary>Come si gioca</summary>
+        <ul>
+          <li><b>Tappa 1:</b> metti le epoche in ordine, dalla più antica alla più recente.</li>
+          <li><b>Tappa 2:</b> decidi se ogni attività è del Paleolitico (pietra antica) o del Neolitico (pietra nuova).</li>
+          <li><b>Tappa 3:</b> rispondi alle domande della professoressa per tornare nel presente.</li>
+        </ul>
+      </details>
+    </div>
+  </section>
+
+  <!-- PLAY -->
+  <section id="screen-play" class="screen">
+    <div class="wrap">
+      <div class="dial">
+        <span class="screen-txt" id="dialTxt">ANNO: ????</span>
+        <span class="stages" id="stages" aria-hidden="true"></span>
+      </div>
+      <div class="card" id="card"></div>
+    </div>
+  </section>
+
+  <!-- END -->
+  <section id="screen-end" class="screen">
+    <div class="wrap center">
+      <p class="eyebrow">Ritorno al presente!</p>
+      <h2 class="title">Benvenuto a casa, viaggiatore!</h2>
+      <div class="stars" id="endStars"></div>
+      <div class="diploma">
+        <h3>🎖️ Diploma di Viaggiatore nel Tempo</h3>
+        <p id="endStory"></p>
+        <p><b>Cosa hai imparato:</b></p>
+        <ul class="facts-list">
+          <li>🦕 I dinosauri si sono estinti circa 66 milioni di anni fa: molto, molto prima che arrivassero gli esseri umani.</li>
+          <li>🪨 Nel <b>Paleolitico</b> gli esseri umani erano <b>nomadi</b>: cacciavano, pescavano e raccoglievano frutti e bacche.</li>
+          <li>🌾 Nel <b>Neolitico</b> scoprono l'agricoltura e l'allevamento: diventano <b>sedentari</b> e costruiscono villaggi.</li>
+          <li>✍️ Con l'invenzione della <b>scrittura</b>, circa 5000 anni fa, finisce la preistoria e comincia la storia.</li>
+          <li>🏔️ Sul <b>Monte San Giorgio</b>, in Ticino, ci sono fossili di animali marini vissuti circa 240 milioni di anni fa: è Patrimonio mondiale dell'UNESCO!</li>
+        </ul>
+      </div>
+      <button class="btn btn-punch" id="btnAgain">Rifai il viaggio 🔁</button>
+    </div>
+  </section>
+
+</main>
+
+<script>
+(function(){
+  "use strict";
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ================= DATA ================= */
+  var TIMELINE = [
+    {emo:'🌋', text:'La Terra è appena nata: vulcani dappertutto', when:'circa 4,5 miliardi di anni fa'},
+    {emo:'🦠', text:'Nei mari compaiono i primi esseri viventi', when:'circa 3,5 miliardi di anni fa'},
+    {emo:'🦕', text:'Sulla Terra vivono i dinosauri', when:'da 230 a 66 milioni di anni fa'},
+    {emo:'🔥', text:'I primi esseri umani cacciano e usano il fuoco', when:'Paleolitico'},
+    {emo:'🌾', text:'Gli esseri umani coltivano i campi e costruiscono villaggi', when:'Neolitico'},
+    {emo:'✍️', text:'Viene inventata la scrittura', when:'circa 5000 anni fa'}
+  ];
+
+  var SORT = [
+    {emo:'🦣', name:'Cacciare il mammut', bin:'paleo', why:'Nel Paleolitico si viveva di caccia.'},
+    {emo:'🫐', name:'Raccogliere bacche e radici', bin:'paleo', why:'I cacciatori-raccoglitori cercavano il cibo in natura.'},
+    {emo:'⛺', name:'Spostarsi sempre per seguire gli animali', bin:'paleo', why:'Nel Paleolitico gli esseri umani erano nomadi.'},
+    {emo:'🎨', name:'Dipingere animali sulle pareti delle grotte', bin:'paleo', why:'Le pitture rupestri più famose sono del Paleolitico.'},
+    {emo:'🌾', name:'Seminare e coltivare il grano', bin:'neo', why:'L\'agricoltura nasce nel Neolitico.'},
+    {emo:'🐑', name:'Allevare pecore e capre', bin:'neo', why:'Nel Neolitico gli animali vengono addomesticati.'},
+    {emo:'🏺', name:'Fare vasi di terracotta', bin:'neo', why:'Servivano per conservare i raccolti.'},
+    {emo:'🛖', name:'Vivere in un villaggio di capanne', bin:'neo', why:'Con l\'agricoltura si diventa sedentari.'}
+  ];
+
+  var QUIZ = [
+    {q:'Gli esseri umani hanno mai vissuto insieme ai dinosauri?',
+     options:['No, i dinosauri erano già estinti da milioni di anni','Sì, cacciavano i dinosauri','Sì, li usavano come cavalli','Solo nel Neolitico'],
+     correct:'No, i dinosauri erano già estinti da milioni di anni', explain:'Nei cartoni animati succede, ma nella realtà no!'},
+    {q:'Cos\'è un fossile?',
+     options:['Il resto o l\'impronta di un essere vivente rimasto nella roccia','Un sasso a forma di animale','Un attrezzo dei primi uomini','Un tipo di dinosauro'],
+     correct:'Il resto o l\'impronta di un essere vivente rimasto nella roccia', explain:'Ossa, gusci, foglie e impronte possono diventare fossili in milioni di anni.'},
+    {q:'Chi studia i fossili degli animali e delle piante antichi?',
+     options:['Il paleontologo','Il farmacista','L\'astronauta','Il geometra'],
+     correct:'Il paleontologo', explain:'Il paleontologo studia la vita del passato attraverso i fossili.'},
+    {q:'Sul Monte San Giorgio, in Ticino, si trovano fossili famosi in tutto il mondo. Di che animali sono?',
+     options:['Rettili e pesci di un antico mare','Mammut e orsi delle caverne','Cavalli e mucche','Pinguini'],
+     correct:'Rettili e pesci di un antico mare', explain:'Circa 240 milioni di anni fa lì c\'era un mare caldo. Il sito è Patrimonio UNESCO.'},
+    {q:'A cosa serviva il fuoco ai primi esseri umani?',
+     options:['A scaldarsi, cuocere il cibo e tenere lontani gli animali','Solo a giocare','A fare la doccia','A guardare la TV'],
+     correct:'A scaldarsi, cuocere il cibo e tenere lontani gli animali', explain:'Il fuoco ha cambiato la vita degli esseri umani!'},
+    {q:'Perché la storia comincia con l\'invenzione della scrittura?',
+     options:['Perché da allora abbiamo documenti scritti che ci raccontano il passato','Perché prima non c\'erano persone','Perché prima non esisteva il tempo','Perché la scuola è nata quel giorno'],
+     correct:'Perché da allora abbiamo documenti scritti che ci raccontano il passato', explain:'Per la preistoria, invece, gli storici studiano oggetti, ossa e resti trovati negli scavi.'}
+  ];
+
+  var stage = 0, mistakes = 0;
+
+  /* ================= HELPERS ================= */
+  function $(id){ return document.getElementById(id); }
+  function shuffle(a){
+    a = a.slice();
+    for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; }
+    return a;
+  }
+
+  document.addEventListener('click', function(e){
+    var btn = e.target.closest('.btn-punch');
+    if(!btn || reduceMotion) return;
+    var rect = btn.getBoundingClientRect();
+    var dot = document.createElement('span');
+    dot.className = 'punch-dot';
+    dot.style.left = (e.clientX - rect.left) + 'px';
+    dot.style.top = (e.clientY - rect.top) + 'px';
+    btn.appendChild(dot);
+    setTimeout(function(){ dot.remove(); }, 420);
+  });
+
+  function chime(ok){
+    try{
+      var Ctx = window.AudioContext || window.webkitAudioContext;
+      if(!chime.ctx) chime.ctx = new Ctx();
+      var ctx = chime.ctx;
+      var o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = ok ? 'sawtooth' : 'sine';
+      o.frequency.value = ok ? 440 : 160;
+      if(ok) o.frequency.exponentialRampToValueAtTime(1320, ctx.currentTime + 0.2);
+      g.gain.value = 0.04;
+      o.connect(g); g.connect(ctx.destination);
+      o.start();
+      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.3);
+      o.stop(ctx.currentTime + 0.32);
+    }catch(e){}
+  }
+
+  function showScreen(id){
+    document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+    $(id).classList.add('active');
+    window.scrollTo(0,0);
+  }
+
+  function renderDial(txt){
+    $('dialTxt').textContent = txt;
+    var st = $('stages');
+    st.innerHTML = '';
+    ['🕰️','🪨','❓'].forEach(function(ic, i){
+      var d = document.createElement('span');
+      d.className = 'stage-dot' + (i < stage ? ' done' : i === stage ? ' now' : '');
+      d.textContent = i < stage ? '✓' : ic;
+      st.appendChild(d);
+    });
+  }
+
+  var card = $('card');
+  function nextButton(label, fn){
+    var row = document.createElement('div');
+    row.className = 'next-row';
+    var b = document.createElement('button');
+    b.className = 'btn btn-punch';
+    b.textContent = label;
+    b.addEventListener('click', fn);
+    row.appendChild(b);
+    card.appendChild(row);
+    b.focus();
+  }
+
+  /* ================= TAPPA 1: LINEA DEL TEMPO ================= */
+  function stageTimeline(){
+    stage = 0;
+    renderDial('ANNO: ???? — COMANDI IN DISORDINE');
+    var pool = shuffle(TIMELINE);
+    if(pool.every(function(p, i){ return p === TIMELINE[i]; })) pool.reverse();
+    var placed = [];
+    var solved = false;
+    card.innerHTML = '<p class="eyebrow" style="color:var(--clay);">Tappa 1 di 3</p><h2>La linea del tempo</h2>' +
+      '<p class="intro">Tocca le epoche in ordine: dalla più <b>antica</b> (in alto) alla più <b>recente</b> (in basso). Tocca una riga per togliere una scelta.</p>' +
+      '<div class="pool" id="pool" style="margin-bottom:1rem;"></div>' +
+      '<div class="arrow-note"><span>⬆ più antico</span></div><div class="timeline" id="tl"></div><div class="arrow-note"><span>⬇ più recente</span></div>' +
+      '<div class="feedback" id="fb" hidden aria-live="polite"></div>';
+    function render(){
+      var tl = $('tl'), pl = $('pool');
+      tl.innerHTML = ''; pl.innerHTML = '';
+      TIMELINE.forEach(function(_, k){
+        var s = document.createElement('div');
+        s.className = 't-slot' + (placed[k] ? ' filled' : '');
+        s.innerHTML = '<span class="k">' + (k+1) + '</span>';
+        if(placed[k]){
+          var b = document.createElement('button');
+          b.innerHTML = placed[k].emo + ' ' + placed[k].text + (solved ? '<span class="when">' + placed[k].when + '</span>' : '');
+          b.disabled = solved;
+          b.setAttribute('aria-label', 'Togli: ' + placed[k].text);
+          b.addEventListener('click', function(){ pool.push(placed.splice(k,1)[0]); render(); });
+          s.appendChild(b);
+        }
+        tl.appendChild(s);
+      });
+      pool.forEach(function(p, k){
+        var c = document.createElement('button');
+        c.className = 'chip';
+        c.textContent = p.emo + ' ' + p.text;
+        c.addEventListener('click', function(){
+          placed.push(pool.splice(k,1)[0]);
+          render();
+          if(!pool.length) check();
+        });
+        pl.appendChild(c);
+      });
+    }
+    function check(){
+      var fb = $('fb');
+      fb.hidden = false;
+      if(placed.every(function(p, i){ return p === TIMELINE[i]; })){
+        chime(true);
+        solved = true;
+        render();
+        fb.className = 'feedback ok';
+        fb.textContent = '✅ Comandi sistemati! Ora vedi anche quando è successo ogni evento.';
+        renderDial('ANNO: −4.500.000.000 → OGGI ✔');
+        nextButton('Viaggia nella preistoria 🪨', stageSort);
+      } else {
+        chime(false);
+        mistakes++;
+        var firstWrong = placed.findIndex(function(p, i){ return p !== TIMELINE[i]; });
+        fb.className = 'feedback bad';
+        fb.textContent = '❌ Qualcosa non torna a partire dalla riga ' + (firstWrong + 1) + '. Tocca le righe per togliere le scelte sbagliate e riprova!';
+      }
+    }
+    render();
+  }
+
+  /* ================= TAPPA 2: PALEOLITICO O NEOLITICO ================= */
+  function stageSort(){
+    stage = 1;
+    renderDial('ANNO: −20.000 … −5.000');
+    var queue = shuffle(SORT);
+    var placed = {paleo:[], neo:[]};
+    card.innerHTML = '<p class="eyebrow" style="color:var(--clay);">Tappa 2 di 3</p><h2>Paleolitico o Neolitico?</h2>' +
+      '<p class="intro">La macchina ti porta tra i primi esseri umani. Ogni attività è tipica del Paleolitico o del Neolitico?</p>' +
+      '<div class="current" id="cur" aria-live="polite"></div>' +
+      '<div class="bins"><button class="bin paleo" id="binPaleo"><span>🪨 Paleolitico</span><span class="sub">pietra antica · nomadi</span><span class="placed" id="pPaleo"></span></button>' +
+      '<button class="bin neo" id="binNeo"><span>🌾 Neolitico</span><span class="sub">pietra nuova · villaggi</span><span class="placed" id="pNeo"></span></button></div>' +
+      '<div class="feedback" id="fb" hidden aria-live="polite"></div>';
+    function renderCur(){
+      var c = $('cur');
+      if(!queue.length){ c.innerHTML = '<div class="big">🎉</div><div class="name">Tutte le attività sono al posto giusto!</div>'; return; }
+      c.innerHTML = '<div class="big" aria-hidden="true">' + queue[0].emo + '</div><div class="name"></div><div style="color:var(--steel);font-size:.9rem;">Ancora ' + queue.length + '</div>';
+      c.querySelector('.name').textContent = queue[0].name;
+    }
+    function choose(bin){
+      if(!queue.length) return;
+      var it = queue[0], fb = $('fb');
+      fb.hidden = false;
+      if(it.bin === bin){
+        chime(true);
+        placed[bin].push(it.emo);
+        queue.shift();
+        $('pPaleo').textContent = placed.paleo.join(' ');
+        $('pNeo').textContent = placed.neo.join(' ');
+        fb.className = 'feedback ok';
+        fb.textContent = '✅ ' + it.why;
+        if(!queue.length){
+          $('binPaleo').disabled = true; $('binNeo').disabled = true;
+          nextButton('Ultima tappa ❓', stageQuiz);
+        }
+      } else {
+        chime(false);
+        mistakes++;
+        fb.className = 'feedback bad';
+        fb.textContent = '❌ Pensa: nel Paleolitico si viaggiava sempre, nel Neolitico si restava in un villaggio a coltivare.';
+      }
+      renderCur();
+    }
+    $('binPaleo').addEventListener('click', function(){ choose('paleo'); });
+    $('binNeo').addEventListener('click', function(){ choose('neo'); });
+    renderCur();
+  }
+
+  /* ================= TAPPA 3: QUIZ ================= */
+  function stageQuiz(){
+    stage = 2;
+    var order = shuffle(QUIZ);
+    var i = 0;
+    function show(){
+      var q = order[i];
+      renderDial('RITORNO: ' + (order.length - i) + ' DOMANDE AL PRESENTE');
+      card.innerHTML = '<p class="eyebrow" style="color:var(--clay);">Tappa 3 di 3</p><h2>Le domande di Fossilina</h2>' +
+        '<p class="q-count">Domanda ' + (i+1) + ' di ' + order.length + '</p><p class="question"></p><div class="options" id="opts"></div>' +
+        '<div class="feedback" id="fb" hidden aria-live="polite"></div>';
+      card.querySelector('.question').textContent = q.q;
+      shuffle(q.options).forEach(function(o){
+        var b = document.createElement('button');
+        b.className = 'opt-btn';
+        b.textContent = o;
+        b.addEventListener('click', function(){
+          var fb = $('fb');
+          fb.hidden = false;
+          if(o === q.correct){
+            chime(true);
+            b.classList.add('correct');
+            $('opts').querySelectorAll('button').forEach(function(x){ x.disabled = true; });
+            fb.className = 'feedback ok';
+            fb.textContent = '✅ Esatto! ' + q.explain;
+            i++;
+            nextButton(i >= order.length ? 'Torna nel presente 🏠' : 'Avanti ➜', function(){ if(i >= order.length) endGame(); else show(); });
+          } else {
+            chime(false);
+            mistakes++;
+            b.classList.add('wrong'); b.disabled = true;
+            fb.className = 'feedback bad';
+            fb.textContent = '❌ Non è giusto, riprova!';
+          }
+        });
+        $('opts').appendChild(b);
+      });
+    }
+    show();
+  }
+
+  function endGame(){
+    stage = 3;
+    var stars = mistakes <= 2 ? 3 : mistakes <= 6 ? 2 : 1;
+    $('endStars').textContent = '⭐'.repeat(stars) + '☆'.repeat(3 - stars);
+    $('endStars').setAttribute('aria-label', stars + ' stelle su 3');
+    $('endStory').textContent = 'Hai viaggiato dalla nascita della Terra fino all\'invenzione della scrittura, hai conosciuto i primi esseri umani e sei tornato sano e salvo nel presente. ' +
+      (mistakes === 0 ? 'Senza nemmeno un errore: la professoressa Fossilina è senza parole!' : 'Hai fatto ' + mistakes + (mistakes === 1 ? ' errore' : ' errori') + ' durante il viaggio, ma hai sempre trovato la strada giusta.');
+    showScreen('screen-end');
+  }
+
+  $('btnStart').addEventListener('click', function(){ mistakes = 0; showScreen('screen-play'); stageTimeline(); });
+  $('btnAgain').addEventListener('click', function(){ showScreen('screen-cover'); });
+})();
+</script>
+</body>
+</html>
