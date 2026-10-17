@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bonjour! Il Treno per Ginevra — Avventura di Francese</title>
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bleu:#2B59C3;
+    --bleu-dark:#1C3F91;
+    --rouge:#E23D4B;
+    --rouge-dark:#A92733;
+    --lake:#9AD8F0;
+    --cream:#FFF9EF;
+    --ink:#1D2340;
+    --steel:#626987;
+    --ok:#2E7D4F;
+    --bad:#B3261E;
+    --font-display:'Pacifico',cursive;
+    --font-body:'Nunito',sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:var(--font-body);background:var(--cream);color:var(--ink);line-height:1.5;}
+  h1,h2,h3{margin:0;}
+  h1,.script{font-family:var(--font-display);font-weight:400;}
+  h2,h3{font-family:var(--font-body);font-weight:800;}
+  button{font-family:inherit;cursor:pointer;}
+  :focus-visible{outline:3px solid var(--rouge);outline-offset:3px;}
+
+  .screen{display:none;min-height:100vh;padding:4.5rem 1.25rem 3rem;}
+  .screen.active{display:block;animation:fadein .3s ease;}
+  @keyframes fadein{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+  .wrap{max-width:860px;margin:0 auto;}
+  .center{text-align:center;}
+  .eyebrow{color:var(--rouge);font-weight:800;font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;margin:0 0 .4rem;}
+  .title{font-size:clamp(2rem,6vw,3.2rem);color:var(--bleu);margin:.2rem 0 .6rem;}
+  .subtitle{font-size:1.05rem;color:var(--steel);max-width:600px;margin:0 auto 1.4rem;}
+
+  .btn{display:inline-block;border:none;border-radius:12px;padding:.9rem 1.6rem;font-weight:800;font-size:1rem;background:var(--bleu);color:#fff;box-shadow:0 4px 0 var(--bleu-dark);}
+  .btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--bleu-dark);}
+  .btn[hidden]{display:none;}
+  .btn:disabled{opacity:.4;cursor:not-allowed;box-shadow:none;transform:none;}
+  .btn.red{background:var(--rouge);box-shadow:0 4px 0 var(--rouge-dark);}
+  .btn-punch{position:relative;overflow:hidden;}
+  .punch-dot{position:absolute;width:10px;height:10px;border-radius:50%;background:#fff;transform:translate(-50%,-50%) scale(0);animation:punch .4s ease-out forwards;pointer-events:none;}
+  @keyframes punch{0%{transform:translate(-50%,-50%) scale(0);opacity:1;}70%{transform:translate(-50%,-50%) scale(1);opacity:1;}100%{transform:translate(-50%,-50%) scale(1);opacity:0;}}
+
+  .howto{max-width:620px;margin:1.5rem auto 0;background:#fff;border:2px solid #E6E1F5;border-radius:14px;padding:1rem 1.3rem;text-align:left;}
+  .howto summary{cursor:pointer;font-weight:800;}
+  .howto ul{margin:.7rem 0 0;padding-left:1.2rem;}
+
+  .banner{width:100%;max-width:640px;height:auto;display:block;margin:0 auto 1rem;}
+  .train{animation:chug 1.2s ease-in-out infinite;}
+  @keyframes chug{50%{transform:translateY(-2px);}}
+
+  /* --- route --- */
+  .route{display:flex;align-items:center;justify-content:space-between;position:relative;margin:1.5rem 0 .5rem;padding:0 .5rem;}
+  .route::before{content:"";position:absolute;left:1.5rem;right:1.5rem;top:22px;height:6px;background:repeating-linear-gradient(90deg,#8B8FA8 0 10px,transparent 10px 16px);}
+  .station{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:.3rem;width:20%;}
+  .station .dot{width:50px;height:50px;border-radius:50%;background:#fff;border:4px solid #C3C6D6;display:flex;align-items:center;justify-content:center;font-size:1.4rem;}
+  .station.done .dot{border-color:var(--ok);background:#E4F3EA;}
+  .station.here .dot{border-color:var(--rouge);background:#FFE8EA;}
+  .station .nm{font-weight:800;font-size:.8rem;text-align:center;line-height:1.2;}
+  @media (max-width:520px){.station .dot{width:40px;height:40px;font-size:1.1rem;} .station .nm{font-size:.68rem;} .route::before{top:18px;}}
+
+  /* --- memory --- */
+  .panel{background:#fff;border-radius:18px;padding:1.4rem;box-shadow:0 6px 0 #E6E1F5;}
+  .panel h2{color:var(--bleu);font-size:1.4rem;}
+  .panel .intro{color:var(--steel);margin:.3rem 0 1rem;}
+  .memory{display:grid;grid-template-columns:repeat(4,1fr);gap:.6rem;}
+  @media (max-width:520px){.memory{grid-template-columns:repeat(2,1fr);}}
+  .mcard{position:relative;height:96px;border:none;background:none;padding:0;perspective:600px;}
+  .mcard .inner{position:absolute;inset:0;transition:transform .35s ease;transform-style:preserve-3d;}
+  .mcard.flipped .inner,.mcard.matched .inner{transform:rotateY(180deg);}
+  .mcard .face{position:absolute;inset:0;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;backface-visibility:hidden;font-weight:800;padding:.3rem;}
+  .mcard .back{background:repeating-linear-gradient(45deg,var(--bleu) 0 10px,#3A6AD6 10px 20px);color:#fff;font-size:1.8rem;box-shadow:0 4px 0 var(--bleu-dark);}
+  .mcard .front{background:#fff;border:3px solid var(--ink);transform:rotateY(180deg);font-size:1.05rem;}
+  .mcard .front .emo{font-size:1.6rem;line-height:1.1;}
+  .mcard .front.fr{border-color:var(--rouge);color:var(--rouge-dark);}
+  .mcard .front .lang{font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;color:var(--steel);}
+  .mcard.matched .front{background:#E4F3EA;border-color:var(--ok);}
+  .mem-info{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem;margin-top:1rem;}
+  .speak{border:2px solid var(--bleu);background:#fff;color:var(--bleu);border-radius:999px;padding:.35rem .8rem;font-weight:800;font-size:.85rem;}
+  .speak[hidden]{display:none;}
+  .learned{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.8rem;}
+  .learned span{background:#EEF2FF;border-radius:999px;padding:.2rem .7rem;font-size:.85rem;font-weight:700;}
+
+  /* --- dialog --- */
+  .chat{display:flex;flex-direction:column;gap:.6rem;margin-bottom:1rem;}
+  .msg{max-width:80%;padding:.6rem .9rem;border-radius:16px;font-weight:700;}
+  .msg.them{background:#EEF2FF;align-self:flex-start;border-bottom-left-radius:4px;}
+  .msg.me{background:var(--bleu);color:#fff;align-self:flex-end;border-bottom-right-radius:4px;}
+  .msg small{display:block;font-weight:600;opacity:.75;font-size:.8rem;}
+  .options{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;}
+  @media (max-width:420px){.options{grid-template-columns:1fr;}}
+  .opt-btn{background:#fff;border:2px solid var(--ink);border-radius:12px;padding:.7rem .9rem;font-weight:800;font-size:1.05rem;color:var(--ink);}
+  .opt-btn.wrong{border-color:var(--bad);background:#FBE6E4;}
+  .feedback{margin-top:1rem;padding:.8rem 1rem;border-radius:10px;font-weight:700;}
+  .feedback.ok{background:#E4F3EA;color:var(--ok);}
+  .feedback.bad{background:#FBE6E4;color:var(--bad);}
+  .feedback[hidden]{display:none;}
+
+  /* --- end --- */
+  .diploma{background:#fff;border-radius:16px;padding:1.8rem;max-width:640px;margin:1.5rem auto;border:4px double var(--bleu);text-align:left;}
+  .diploma h3{color:var(--bleu);}
+  .facts-list{margin:1rem 0;padding-left:1.2rem;}
+  .facts-list li{margin-bottom:.5rem;}
+  .stars{font-size:2rem;letter-spacing:.2rem;}
+
+  .home-link{position:fixed;left:1rem;top:1rem;z-index:50;background:#fff;color:var(--ink);text-decoration:none;font-weight:800;font-size:.9rem;padding:.55rem 1rem;border-radius:999px;box-shadow:0 3px 0 #D9D5E8;}
+  .home-link:active{transform:translateY(3px);box-shadow:0 1px 0 #D9D5E8;}
+
+  @media (prefers-reduced-motion: reduce){
+    .screen.active,.train{animation:none;}
+    .mcard .inner{transition:none;}
+  }
+</style>
+</head>
+<body>
+
+<a href="../index.html" class="home-link" aria-label="Torna alla pagina dei giochi">🏠 Home</a>
+
+<main id="app">
+
+  <!-- COVER -->
+  <section id="screen-cover" class="screen active">
+    <div class="wrap center">
+      <svg class="banner" viewBox="0 0 640 200" role="img" aria-label="Un treno rosso viaggia lungo il lago di Ginevra con il getto d'acqua sullo sfondo">
+        <rect x="0" y="0" width="640" height="200" rx="18" fill="#DDF3FF"/>
+        <polygon points="0,110 90,50 170,110" fill="#B9C7D6"/>
+        <polygon points="120,110 230,40 330,110" fill="#A5B6C8"/>
+        <polygon points="205,56 230,40 255,56 240,62 230,54 218,62" fill="#fff"/>
+        <rect x="0" y="110" width="640" height="50" fill="#9AD8F0"/>
+        <path d="M470,110 Q472,40 476,20 Q480,40 482,110 Z" fill="#fff" opacity=".9"/>
+        <circle cx="476" cy="22" r="8" fill="#fff"/>
+        <rect x="0" y="160" width="640" height="40" fill="#8BC34A"/>
+        <rect x="0" y="168" width="640" height="5" fill="#6B6F80"/>
+        <g class="train">
+          <rect x="70" y="128" width="200" height="40" rx="10" fill="#E23D4B"/>
+          <rect x="270" y="128" width="170" height="40" rx="10" fill="#E23D4B"/>
+          <path d="M440,128 L470,128 Q500,140 500,168 L440,168 Z" fill="#E23D4B"/>
+          <g fill="#DDF3FF"><rect x="85" y="136" width="30" height="16" rx="3"/><rect x="125" y="136" width="30" height="16" rx="3"/><rect x="165" y="136" width="30" height="16" rx="3"/><rect x="205" y="136" width="30" height="16" rx="3"/>
+          <rect x="285" y="136" width="30" height="16" rx="3"/><rect x="325" y="136" width="30" height="16" rx="3"/><rect x="365" y="136" width="30" height="16" rx="3"/><path d="M452,136 L472,136 Q486,142 488,152 L452,152 Z"/></g>
+          <rect x="240" y="138" width="8" height="8" fill="#fff"/><rect x="236" y="141" width="16" height="2" fill="#fff"/><rect x="243" y="134" width="2" height="16" fill="#fff"/>
+        </g>
+      </svg>
+
+      <span class="eyebrow">🇫🇷 Avventura di Francese</span>
+      <h1 class="title">Bonjour! Il Treno per Ginevra</h1>
+      <p class="subtitle">La tua classe va in gita nella Svizzera romanda, dove si parla francese! A ogni stazione impari parole nuove giocando a memory. Arrivato a Ginevra, dovrai parlare in francese da solo!</p>
+      <button class="btn btn-punch" id="btnStart">En voiture! Si parte 🚆</button>
+
+      <details class="howto">
+        <summary>Come si gioca</summary>
+        <ul>
+          <li>A ogni stazione c'è un memory: gira due carte e trova la coppia italiano–francese.</li>
+          <li>Le carte francesi sono rosse. Tocca 🔊 per sentire come si pronunciano (se il tuo dispositivo lo permette).</li>
+          <li>Trova tutte le coppie per ripartire verso la prossima stazione.</li>
+          <li>A Ginevra rispondi in francese alle persone che incontri!</li>
+        </ul>
+      </details>
+    </div>
+  </section>
+
+  <!-- STATION -->
+  <section id="screen-station" class="screen">
+    <div class="wrap">
+      <div class="route" id="route"></div>
+      <div class="panel" id="panel"></div>
+    </div>
+  </section>
+
+  <!-- END -->
+  <section id="screen-end" class="screen">
+    <div class="wrap center">
+      <p class="eyebrow">Arrivés à Genève!</p>
+      <h2 class="title script" style="font-family:var(--font-display);font-weight:400;">Bravo, tu parles français!</h2>
+      <div class="stars" id="endStars"></div>
+      <div class="diploma">
+        <h3>🎖️ Diploma di Piccolo Viaggiatore Romando</h3>
+        <p id="endStory"></p>
+        <p><b>Cosa hai imparato:</b></p>
+        <ul class="facts-list">
+          <li>🇨🇭 In Svizzera si parlano 4 lingue nazionali: tedesco, francese, italiano e romancio.</li>
+          <li>🗺️ La parte della Svizzera dove si parla francese si chiama <b>Svizzera romanda</b>: Ginevra, Losanna e Neuchâtel ne fanno parte.</li>
+          <li>🧀 In francese le parole hanno l'articolo davanti: <i>le</i> per il maschile (le chat), <i>la</i> per il femminile (la pomme).</li>
+          <li>👋 <i>Bonjour</i> si usa di giorno, <i>Salut</i> con gli amici, <i>Au revoir</i> per salutare quando te ne vai.</li>
+        </ul>
+        <div class="learned" id="learned"></div>
+      </div>
+      <button class="btn btn-punch" id="btnRestart">Gioca di nuovo 🔁</button>
+    </div>
+  </section>
+
+</main>
+
+<script>
+(function(){
+  "use strict";
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ================= DATA ================= */
+  var STATIONS = [
+    {name:'Neuchâtel', icon:'👋', theme:'I saluti', pairs:[
+      {it:'Buongiorno', fr:'Bonjour', emo:'☀️'},
+      {it:'Ciao', fr:'Salut', emo:'👋'},
+      {it:'Grazie', fr:'Merci', emo:'🙏'},
+      {it:'Arrivederci', fr:'Au revoir', emo:'🚪'}]},
+    {name:'Friborgo', icon:'🔢', theme:'I numeri', pairs:[
+      {it:'uno', fr:'un', emo:'1️⃣'},
+      {it:'due', fr:'deux', emo:'2️⃣'},
+      {it:'tre', fr:'trois', emo:'3️⃣'},
+      {it:'quattro', fr:'quatre', emo:'4️⃣'}]},
+    {name:'Losanna', icon:'🎨', theme:'I colori', pairs:[
+      {it:'rosso', fr:'rouge', emo:'🟥'},
+      {it:'blu', fr:'bleu', emo:'🟦'},
+      {it:'verde', fr:'vert', emo:'🟩'},
+      {it:'giallo', fr:'jaune', emo:'🟨'}]},
+    {name:'Montreux', icon:'🐾', theme:'Gli animali', pairs:[
+      {it:'il gatto', fr:'le chat', emo:'🐱'},
+      {it:'il cane', fr:'le chien', emo:'🐶'},
+      {it:'il cavallo', fr:'le cheval', emo:'🐴'},
+      {it:'l\'uccello', fr:'l\'oiseau', emo:'🐦'}]},
+    {name:'Ginevra', icon:'🥖', theme:'Il cibo', pairs:[
+      {it:'il pane', fr:'le pain', emo:'🥖'},
+      {it:'il formaggio', fr:'le fromage', emo:'🧀'},
+      {it:'la mela', fr:'la pomme', emo:'🍎'},
+      {it:'il latte', fr:'le lait', emo:'🥛'}]}
+  ];
+
+  var DIALOG = [
+    {who:'👩‍✈️ La capotreno', fr:'Bonjour! Bienvenue à Genève!', it:'Buongiorno! Benvenuto a Ginevra!',
+     options:['Bonjour!','Au revoir!','Merci, le chat!','Trois!'], correct:'Bonjour!',
+     explain:'Quando qualcuno ti saluta di giorno, rispondi "Bonjour!".'},
+    {who:'🧑‍🍳 Il panettiere', fr:'Tu veux le pain ou le fromage?', it:'Vuoi il pane o il formaggio?',
+     options:['Le pain, merci!','Le chien, merci!','Rouge, merci!','Salut, deux!'], correct:'Le pain, merci!',
+     explain:'"Le pain" è il pane, e "merci" vuol dire grazie: perfetto e gentile!'},
+    {who:'🧑‍🍳 Il panettiere', fr:'Combien? Un, deux ou trois?', it:'Quanti? Uno, due o tre?',
+     options:['Deux, s\'il te plaît.','Vert, s\'il te plaît.','Le chat, s\'il te plaît.','Au revoir, s\'il te plaît.'], correct:'Deux, s\'il te plaît.',
+     explain:'"Deux" è due e "s\'il te plaît" vuol dire per favore.'},
+    {who:'👧 Una bambina al parco', fr:'J\'ai un chien! Et toi?', it:'Io ho un cane! E tu?',
+     options:['J\'ai un chat!','J\'ai un jaune!','J\'ai un merci!','J\'ai un bonjour!'], correct:'J\'ai un chat!',
+     explain:'"J\'ai un chat" vuol dire "ho un gatto".'},
+    {who:'👩‍✈️ La capotreno', fr:'Le train part! Au revoir!', it:'Il treno parte! Arrivederci!',
+     options:['Au revoir et merci!','Bonjour et quatre!','Le lait et rouge!','Salut le cheval!'], correct:'Au revoir et merci!',
+     explain:'Si saluta con "Au revoir" e si ringrazia con "merci". Très bien!'}
+  ];
+
+  var stationIdx = 0, flips = 0, mistakes = 0;
+
+  /* ================= HELPERS ================= */
+  function $(id){ return document.getElementById(id); }
+  function shuffle(a){
+    a = a.slice();
+    for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; }
+    return a;
+  }
+
+  document.addEventListener('click', function(e){
+    var btn = e.target.closest('.btn-punch');
+    if(!btn || reduceMotion) return;
+    var rect = btn.getBoundingClientRect();
+    var dot = document.createElement('span');
+    dot.className = 'punch-dot';
+    dot.style.left = (e.clientX - rect.left) + 'px';
+    dot.style.top = (e.clientY - rect.top) + 'px';
+    btn.appendChild(dot);
+    setTimeout(function(){ dot.remove(); }, 420);
+  });
+
+  function chime(ok){
+    try{
+      var Ctx = window.AudioContext || window.webkitAudioContext;
+      if(!chime.ctx) chime.ctx = new Ctx();
+      var ctx = chime.ctx;
+      var o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = 'sine';
+      o.frequency.value = ok ? 880 : 220;
+      g.gain.value = 0.07;
+      o.connect(g); g.connect(ctx.destination);
+      o.start();
+      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.3);
+      o.stop(ctx.currentTime + 0.32);
+    }catch(e){}
+  }
+
+  var canSpeak = 'speechSynthesis' in window && typeof SpeechSynthesisUtterance !== 'undefined';
+  function speak(text){
+    if(!canSpeak) return;
+    try{
+      window.speechSynthesis.cancel();
+      var u = new SpeechSynthesisUtterance(text);
+      u.lang = 'fr-FR';
+      u.rate = 0.85;
+      var v = window.speechSynthesis.getVoices().filter(function(v){ return /^fr/i.test(v.lang); })[0];
+      if(v) u.voice = v;
+      window.speechSynthesis.speak(u);
+    }catch(e){}
+  }
+
+  function showScreen(id){
+    document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+    $(id).classList.add('active');
+    window.scrollTo(0,0);
+  }
+
+  function renderRoute(hereIdx){
+    var r = $('route');
+    r.innerHTML = '';
+    STATIONS.forEach(function(s, i){
+      var d = document.createElement('div');
+      d.className = 'station' + (i < hereIdx ? ' done' : i === hereIdx ? ' here' : '');
+      d.innerHTML = '<span class="dot" aria-hidden="true">' + (i < hereIdx ? '✅' : i === hereIdx ? '🚆' : s.icon) + '</span><span class="nm">' + s.name + '</span>';
+      r.appendChild(d);
+    });
+  }
+
+  /* ================= MEMORY ================= */
+  var panel = $('panel');
+
+  function startStation(){
+    var st = STATIONS[stationIdx];
+    renderRoute(stationIdx);
+    panel.innerHTML =
+      '<p class="eyebrow">Stazione ' + (stationIdx+1) + ' di ' + STATIONS.length + ' · ' + st.name + '</p>' +
+      '<h2>' + st.theme + '</h2>' +
+      '<p class="intro">Gira le carte e trova le coppie: ogni parola italiana ha la sua amica francese!</p>' +
+      '<div class="memory" id="memory"></div>' +
+      '<div class="mem-info"><span id="memInfo" aria-live="polite">Coppie trovate: 0/4</span>' +
+      '<button class="speak" id="btnSpeak" hidden>🔊 Ascolta</button></div>' +
+      '<div style="text-align:right;margin-top:1rem;"><button class="btn red btn-punch" id="btnGo" hidden>' +
+      (stationIdx === STATIONS.length - 1 ? 'Scendi a Ginevra 🇨🇭' : 'Riparti verso ' + STATIONS[stationIdx+1].name + ' 🚆') + '</button></div>';
+
+    var cards = [];
+    st.pairs.forEach(function(p, k){
+      cards.push({k:k, lang:'it', text:p.it, emo:p.emo});
+      cards.push({k:k, lang:'fr', text:p.fr, emo:p.emo});
+    });
+    cards = shuffle(cards);
+
+    var open = [], found = 0, lock = false, lastFr = null;
+    var mem = $('memory');
+    cards.forEach(function(c){
+      var b = document.createElement('button');
+      b.className = 'mcard';
+      b.setAttribute('aria-label', 'Carta coperta');
+      b.innerHTML = '<span class="inner"><span class="face back" aria-hidden="true">?</span>' +
+        '<span class="face front ' + c.lang + '"><span class="emo">' + (c.lang === 'fr' ? '💬' : c.emo) + '</span><span></span><span class="lang">' + (c.lang === 'fr' ? 'français' : 'italiano') + '</span></span></span>';
+      b.querySelector('.front span:nth-child(2)').textContent = c.text;
+      b.addEventListener('click', function(){
+        if(lock || b.classList.contains('flipped') || b.classList.contains('matched')) return;
+        b.classList.add('flipped');
+        b.setAttribute('aria-label', c.text + ' (' + (c.lang === 'fr' ? 'francese' : 'italiano') + ')');
+        flips++;
+        if(c.lang === 'fr'){ lastFr = c.text; $('btnSpeak').hidden = !canSpeak; speak(c.text); }
+        open.push({b:b, c:c});
+        if(open.length < 2) return;
+        var a = open[0], z = open[1];
+        open = [];
+        if(a.c.k === z.c.k && a.c.lang !== z.c.lang){
+          chime(true);
+          a.b.classList.add('matched'); z.b.classList.add('matched');
+          a.b.classList.remove('flipped'); z.b.classList.remove('flipped');
+          found++;
+          var p = st.pairs[a.c.k];
+          $('memInfo').textContent = '✅ ' + p.it + ' = ' + p.fr + ' · Coppie trovate: ' + found + '/4';
+          if(found === st.pairs.length){
+            var go = $('btnGo'); go.hidden = false; go.focus();
+          }
+        } else {
+          lock = true;
+          setTimeout(function(){
+            a.b.classList.remove('flipped'); z.b.classList.remove('flipped');
+            a.b.setAttribute('aria-label','Carta coperta'); z.b.setAttribute('aria-label','Carta coperta');
+            lock = false;
+          }, reduceMotion ? 700 : 1000);
+        }
+      });
+      mem.appendChild(b);
+    });
+
+    $('btnSpeak').addEventListener('click', function(){ if(lastFr) speak(lastFr); });
+    $('btnGo').addEventListener('click', function(){
+      stationIdx++;
+      if(stationIdx >= STATIONS.length) startDialog(0); else startStation();
+    });
+  }
+
+  /* ================= DIALOG ================= */
+  function startDialog(step){
+    renderRoute(STATIONS.length);
+    var d = DIALOG[step];
+    var last = step === DIALOG.length - 1;
+    panel.innerHTML =
+      '<p class="eyebrow">A Ginevra · conversazione ' + (step+1) + ' di ' + DIALOG.length + '</p>' +
+      '<h2>Rispondi in francese!</h2>' +
+      '<p class="intro">Leggi cosa ti dicono (sotto c\'è la traduzione) e scegli la risposta giusta.</p>' +
+      '<div class="chat" id="chat"><div class="msg them"></div></div>' +
+      '<div class="options" id="opts"></div>' +
+      '<div class="feedback" id="fb" hidden aria-live="polite"></div>' +
+      '<div style="text-align:right;margin-top:1rem;"><button class="btn red btn-punch" id="btnNext" hidden>' + (last ? 'Fine del viaggio 🎉' : 'Continua →') + '</button></div>';
+    var them = panel.querySelector('.msg.them');
+    them.textContent = d.who + ': ' + d.fr + ' ';
+    var sm = document.createElement('small'); sm.textContent = '(' + d.it + ')'; them.appendChild(sm);
+    if(canSpeak){
+      var sp = document.createElement('button');
+      sp.className = 'speak'; sp.style.marginTop = '.4rem'; sp.textContent = '🔊 Ascolta';
+      sp.addEventListener('click', function(){ speak(d.fr); });
+      them.appendChild(sp);
+    }
+    var opts = $('opts');
+    shuffle(d.options).forEach(function(o){
+      var b = document.createElement('button');
+      b.className = 'opt-btn';
+      b.textContent = o;
+      b.addEventListener('click', function(){
+        var fb = $('fb');
+        fb.hidden = false;
+        if(o === d.correct){
+          chime(true);
+          speak(o);
+          var me = document.createElement('div');
+          me.className = 'msg me';
+          me.textContent = o;
+          $('chat').appendChild(me);
+          opts.remove();
+          fb.className = 'feedback ok';
+          fb.textContent = '✅ Très bien! ' + d.explain;
+          var nx = $('btnNext'); nx.hidden = false; nx.focus();
+        } else {
+          chime(false);
+          mistakes++;
+          b.classList.add('wrong');
+          b.disabled = true;
+          fb.className = 'feedback bad';
+          fb.textContent = '❌ Hmm, questa risposta non ha senso qui. Riprova!';
+        }
+      });
+      opts.appendChild(b);
+    });
+    $('btnNext').addEventListener('click', function(){ if(last) endGame(); else startDialog(step+1); });
+  }
+
+  /* ================= END ================= */
+  function endGame(){
+    var minFlips = STATIONS.length * 8;
+    var extra = Math.max(0, flips - minFlips) / 2;
+    var score = extra + mistakes * 2;
+    var stars = score <= 10 ? 3 : score <= 22 ? 2 : 1;
+    $('endStars').textContent = '⭐'.repeat(stars) + '☆'.repeat(3 - stars);
+    $('endStars').setAttribute('aria-label', stars + ' stelle su 3');
+    $('endStory').textContent = 'Hai viaggiato da Neuchâtel fino a Ginevra, imparato 20 parole francesi e chiacchierato in francese con la capotreno, il panettiere e una bambina al parco. Félicitations! ' +
+      (mistakes === 0 ? 'Nelle conversazioni non hai sbagliato nemmeno una risposta!' : 'Nelle conversazioni hai fatto ' + mistakes + (mistakes === 1 ? ' errore' : ' errori') + ', ma hai sempre trovato le parole giuste.');
+    var l = $('learned');
+    l.innerHTML = '';
+    STATIONS.forEach(function(s){ s.pairs.forEach(function(p){ var sp = document.createElement('span'); sp.textContent = p.emo + ' ' + p.fr; l.appendChild(sp); }); });
+    showScreen('screen-end');
+  }
+
+  /* ================= WIRING ================= */
+  if(canSpeak){ try{ window.speechSynthesis.getVoices(); }catch(e){} }
+  $('btnStart').addEventListener('click', function(){
+    stationIdx = 0; flips = 0; mistakes = 0;
+    startStation();
+    showScreen('screen-station');
+  });
+  $('btnRestart').addEventListener('click', function(){ showScreen('screen-cover'); });
+})();
+</script>
+</body>
+</html>
