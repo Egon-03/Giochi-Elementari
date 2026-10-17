@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>La Spedizione nel Bosco — Avventura di Scienze</title>
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --forest:#2E6B3F;
+    --forest-dark:#1F4A2B;
+    --moss:#8BC34A;
+    --leaf:#CFE8B4;
+    --bark:#7A5330;
+    --sun:#FFD54F;
+    --sun-dark:#E0A92A;
+    --sky:#D9F1FF;
+    --paper:#FFFDF4;
+    --ink:#22301F;
+    --steel:#5F6B5A;
+    --ok:#2E7D4F;
+    --bad:#B3261E;
+    --font-display:'Fredoka',sans-serif;
+    --font-body:'Nunito',sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:var(--font-body);background:#EEF7E4;color:var(--ink);line-height:1.5;}
+  h1,h2,h3{font-family:var(--font-display);margin:0;}
+  button{font-family:inherit;cursor:pointer;}
+  :focus-visible{outline:3px solid #F2792B;outline-offset:3px;}
+
+  .screen{display:none;min-height:100vh;padding:4.5rem 1.25rem 4rem;}
+  .screen.active{display:block;animation:fadein .35s ease;}
+  @keyframes fadein{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+  .wrap{max-width:860px;margin:0 auto;}
+  .center{text-align:center;}
+  .eyebrow{color:var(--forest);font-weight:800;font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;margin:0 0 .4rem;}
+
+  #screen-cover{background:linear-gradient(180deg,var(--sky) 0%,#EEF7E4 70%);}
+  .title{font-size:clamp(2rem,6vw,3.2rem);color:var(--forest-dark);margin:.4rem 0 .6rem;}
+  .subtitle{font-size:1.05rem;color:var(--steel);max-width:600px;margin:0 auto 1.6rem;}
+
+  .btn{display:inline-block;border:none;border-radius:14px;padding:.9rem 1.6rem;font-weight:800;font-size:1rem;background:var(--forest);color:#fff;box-shadow:0 4px 0 var(--forest-dark);}
+  .btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--forest-dark);}
+  .btn[hidden]{display:none;}
+  .btn:disabled{opacity:.4;cursor:not-allowed;box-shadow:none;transform:none;}
+  .btn.plain{background:#fff;color:var(--ink);box-shadow:0 4px 0 #C9D6BE;}
+  .btn.plain:active{box-shadow:0 1px 0 #C9D6BE;}
+  .btn-punch{position:relative;overflow:hidden;}
+  .punch-dot{position:absolute;width:10px;height:10px;border-radius:50%;background:#fff;transform:translate(-50%,-50%) scale(0);animation:punch .4s ease-out forwards;pointer-events:none;}
+  @keyframes punch{0%{transform:translate(-50%,-50%) scale(0);opacity:1;}70%{transform:translate(-50%,-50%) scale(1);opacity:1;}100%{transform:translate(-50%,-50%) scale(1);opacity:0;}}
+
+  .howto{max-width:620px;margin:1.5rem auto 0;background:#fff;border:2px solid var(--leaf);border-radius:14px;padding:1rem 1.3rem;text-align:left;}
+  .howto summary{cursor:pointer;font-weight:800;}
+  .howto ul{margin:.7rem 0 0;padding-left:1.2rem;}
+  .howto li{margin-bottom:.4rem;}
+
+  .banner{width:100%;max-width:680px;height:auto;display:block;margin:0 auto 1rem;}
+  .bird{animation:fly 6s ease-in-out infinite;}
+  @keyframes fly{0%,100%{transform:translate(0,0);}50%{transform:translate(18px,-8px);}}
+
+  /* --- trail map --- */
+  .map-card{background:#fff;border-radius:20px;padding:1rem;box-shadow:0 6px 0 #D6E5C8;}
+  .trail{position:relative;width:100%;}
+  .trail::before{content:"";display:block;padding-top:56%;}
+  .trail svg.bg{position:absolute;inset:0;width:100%;height:100%;}
+  .stop{position:absolute;transform:translate(-50%,-50%);width:74px;height:74px;border-radius:50%;border:4px solid #fff;
+    background:var(--forest);color:#fff;font-size:1.8rem;display:flex;align-items:center;justify-content:center;
+    box-shadow:0 4px 0 rgba(0,0,0,.2);}
+  .stop .n{position:absolute;top:-8px;right:-8px;background:var(--sun);color:var(--ink);font-family:var(--font-display);font-size:.85rem;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+  .stop:disabled{background:#9AA595;cursor:not-allowed;}
+  .stop.done{background:var(--sun-dark);}
+  .stop.next{animation:pulse 1.4s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(46,107,63,.5),0 4px 0 rgba(0,0,0,.2);}50%{box-shadow:0 0 0 12px rgba(46,107,63,0),0 4px 0 rgba(0,0,0,.2);}}
+  @media (max-width:560px){.stop{width:54px;height:54px;font-size:1.3rem;}}
+
+  .badges{display:flex;flex-wrap:wrap;justify-content:center;gap:.6rem;margin:1.2rem 0;}
+  .badge-chip{background:#fff;border:2px dashed #B9CBA9;border-radius:999px;padding:.35rem .8rem;font-weight:800;font-size:.85rem;color:#9AA595;}
+  .badge-chip.got{border-style:solid;border-color:var(--sun-dark);color:var(--ink);background:#FFF5D1;}
+
+  /* --- stage --- */
+  .stage{background:var(--paper);border-radius:20px;padding:1.6rem;box-shadow:0 6px 0 #D6E5C8,0 12px 26px rgba(34,48,31,.1);}
+  .stage h2{color:var(--forest-dark);font-size:1.5rem;}
+  .stage .intro{color:var(--steel);margin:.3rem 0 1rem;}
+  .q-count{font-weight:800;color:var(--forest);font-size:.85rem;}
+  .riddle{font-size:1.15rem;font-weight:700;margin:.6rem 0 1rem;background:#F2F8EA;border-left:5px solid var(--moss);padding:.8rem 1rem;border-radius:0 12px 12px 0;}
+  .options{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;}
+  @media (max-width:480px){.options{grid-template-columns:1fr;}}
+  .opt-btn{background:#fff;border:2px solid var(--ink);border-radius:12px;padding:.75rem .9rem;font-weight:700;font-size:1.02rem;color:var(--ink);text-align:left;}
+  .opt-btn:hover:not(:disabled){background:#F2F8EA;}
+  .opt-btn.correct{border-color:var(--ok);background:#E4F3EA;}
+  .opt-btn.wrong{border-color:var(--bad);background:#FBE6E4;}
+  .feedback{margin-top:1rem;padding:.8rem 1rem;border-radius:10px;font-weight:700;}
+  .feedback.ok{background:#E4F3EA;color:var(--ok);}
+  .feedback.bad{background:#FBE6E4;color:var(--bad);}
+  .feedback[hidden]{display:none;}
+  .stage-actions{margin-top:1.2rem;display:flex;justify-content:space-between;gap:.6rem;flex-wrap:wrap;}
+
+  /* sort */
+  .current-animal{text-align:center;margin:.5rem 0 1rem;}
+  .current-animal .big{font-size:3.4rem;line-height:1;}
+  .current-animal .name{font-family:var(--font-display);font-size:1.4rem;}
+  .current-animal .hint{color:var(--steel);font-size:.92rem;}
+  .bins{display:grid;grid-template-columns:repeat(4,1fr);gap:.6rem;}
+  @media (max-width:640px){.bins{grid-template-columns:1fr 1fr;}}
+  .bin{background:#fff;border:3px solid var(--bin,#2E6B3F);border-radius:14px;padding:.7rem .5rem;min-height:120px;display:flex;flex-direction:column;align-items:center;gap:.3rem;}
+  .bin-btn{border:none;background:var(--bin,#2E6B3F);color:#fff;font-weight:800;border-radius:10px;padding:.5rem .7rem;width:100%;font-size:.95rem;}
+  .bin .placed{font-size:1.5rem;letter-spacing:.1rem;text-align:center;}
+  .bin .desc{font-size:.75rem;color:var(--steel);text-align:center;}
+
+  /* order */
+  .seq{display:flex;flex-direction:column;gap:.5rem;margin-bottom:1rem;}
+  .seq-slot{min-height:52px;border:2px dashed #B9CBA9;border-radius:12px;display:flex;align-items:center;padding:.4rem .7rem;gap:.6rem;background:#fff;}
+  .seq-slot .k{font-family:var(--font-display);background:var(--leaf);color:var(--forest-dark);width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex:none;}
+  .seq-slot.filled{border-style:solid;border-color:var(--moss);}
+  .seq-slot button{border:none;background:none;font-weight:700;font-size:1rem;color:var(--ink);text-align:left;padding:0;flex:1;}
+  .cards{display:flex;flex-wrap:wrap;gap:.5rem;}
+  .card-btn{background:var(--forest);color:#fff;border:none;border-radius:12px;padding:.6rem .9rem;font-weight:800;font-size:1rem;box-shadow:0 3px 0 var(--forest-dark);}
+
+  /* end */
+  #screen-end{background:linear-gradient(180deg,#FFF5D1 0%,#EEF7E4 60%);}
+  .diploma{background:#fff;border-radius:16px;padding:1.8rem;max-width:640px;margin:1.5rem auto;border:4px double var(--forest);text-align:left;}
+  .diploma h3{color:var(--forest-dark);}
+  .facts-list{margin:1rem 0;padding-left:1.2rem;}
+  .facts-list li{margin-bottom:.5rem;}
+  .stars{font-size:2rem;letter-spacing:.2rem;}
+
+  .home-link{position:fixed;left:1rem;top:1rem;z-index:50;background:#fff;color:var(--ink);text-decoration:none;font-weight:800;font-size:.9rem;padding:.55rem 1rem;border-radius:999px;box-shadow:0 3px 0 #C9D6BE;}
+  .home-link:active{transform:translateY(3px);box-shadow:0 1px 0 #C9D6BE;}
+
+  @media (prefers-reduced-motion: reduce){
+    .screen.active,.bird,.stop.next{animation:none;}
+  }
+</style>
+</head>
+<body>
+
+<a href="../index.html" class="home-link" aria-label="Torna alla pagina dei giochi">🏠 Home</a>
+
+<main id="app">
+
+  <!-- COVER -->
+  <section id="screen-cover" class="screen active">
+    <div class="wrap center">
+      <svg class="banner" viewBox="0 0 680 210" role="img" aria-label="Un bosco di castagni con un ruscello, una montagna e uno zaino da esploratore">
+        <rect x="0" y="0" width="680" height="210" rx="18" fill="#D9F1FF"/>
+        <circle cx="580" cy="50" r="28" fill="#FFD54F"/>
+        <polygon points="300,150 410,40 520,150" fill="#93A8B8"/>
+        <polygon points="385,65 410,40 435,65 420,72 410,62 398,72" fill="#fff"/>
+        <rect x="0" y="150" width="680" height="60" fill="#8BC34A"/>
+        <path d="M0,185 Q120,165 240,185 T480,180 T680,188 L680,210 L0,210 Z" fill="#5EC1F0"/>
+        <g class="bird"><path d="M180,50 q8,-8 16,0 q8,-8 16,0" stroke="#2B2540" stroke-width="3" fill="none" stroke-linecap="round"/></g>
+        <g>
+          <rect x="70" y="105" width="14" height="50" fill="#7A5330"/>
+          <circle cx="77" cy="90" r="34" fill="#2E6B3F"/><circle cx="58" cy="102" r="22" fill="#3C8150"/><circle cx="98" cy="100" r="22" fill="#3C8150"/>
+          <circle cx="66" cy="86" r="4" fill="#B5793D"/><circle cx="88" cy="96" r="4" fill="#B5793D"/>
+        </g>
+        <g>
+          <rect x="190" y="115" width="12" height="40" fill="#7A5330"/>
+          <circle cx="196" cy="100" r="28" fill="#3C8150"/><circle cx="180" cy="110" r="18" fill="#2E6B3F"/><circle cx="214" cy="108" r="18" fill="#2E6B3F"/>
+        </g>
+        <g>
+          <polygon points="600,155 615,95 630,155" fill="#1F4A2B"/>
+          <polygon points="635,158 652,85 669,158" fill="#2E6B3F"/>
+        </g>
+        <g transform="translate(470,135)">
+          <rect x="-22" y="-10" width="44" height="40" rx="10" fill="#F2792B"/>
+          <rect x="-14" y="2" width="28" height="14" rx="4" fill="#C95E1C"/>
+          <path d="M-12,-10 Q0,-26 12,-10" stroke="#C95E1C" stroke-width="5" fill="none"/>
+          <circle cx="0" cy="9" r="2.5" fill="#FFD54F"/>
+        </g>
+      </svg>
+
+      <span class="eyebrow">🔬 Avventura di Scienze</span>
+      <h1 class="title">La Spedizione nel Bosco</h1>
+      <p class="subtitle">La guardiaparco Lucia ti ha scelto come esploratore junior! Percorri il sentiero del bosco ticinese, supera 5 tappe e conquista tutte le spille da Guardiaparco.</p>
+      <button class="btn btn-punch" id="btnStart">Zaino in spalla, si parte! 🎒</button>
+
+      <details class="howto">
+        <summary>Come si gioca</summary>
+        <ul>
+          <li>Sulla mappa del sentiero ci sono 5 tappe: si sbloccano una dopo l'altra.</li>
+          <li>A ogni tappa c'è una prova: indovinelli sugli animali, mettere gli animali nella famiglia giusta, la catena alimentare, il viaggio dell'acqua e il castagno.</li>
+          <li>Ogni tappa superata ti regala una spilla 🏅.</li>
+          <li>Con tutte e 5 le spille diventi Guardiaparco Junior!</li>
+        </ul>
+      </details>
+    </div>
+  </section>
+
+  <!-- MAP -->
+  <section id="screen-map" class="screen">
+    <div class="wrap center">
+      <p class="eyebrow">Il sentiero</p>
+      <h2 style="font-size:1.8rem;margin-bottom:1rem;">Tocca la prossima tappa</h2>
+      <div class="map-card">
+        <div class="trail" id="trail">
+          <svg class="bg" viewBox="0 0 100 56" preserveAspectRatio="none" aria-hidden="true">
+            <rect x="0" y="0" width="100" height="56" rx="3" fill="#E3F1D3"/>
+            <path d="M0,46 Q20,40 40,48 T100,44 L100,56 L0,56 Z" fill="#BFE3F5"/>
+            <path d="M10,42 C22,40 18,14 32,16 S48,40 55,36 S64,12 74,14 S88,34 90,26" stroke="#C9A36B" stroke-width="2.4" fill="none" stroke-dasharray="1.6 1.2" stroke-linecap="round"/>
+            <g fill="#3C8150"><circle cx="6" cy="10" r="4"/><circle cx="22" cy="30" r="3"/><circle cx="46" cy="10" r="3.5"/><circle cx="64" cy="30" r="3"/><circle cx="94" cy="10" r="4"/><circle cx="82" cy="40" r="3"/></g>
+          </svg>
+        </div>
+      </div>
+      <div class="badges" id="badges"></div>
+      <button class="btn btn-punch" id="btnFinish" disabled>Ritira il diploma 🎖️</button>
+    </div>
+  </section>
+
+  <!-- STAGE -->
+  <section id="screen-stage" class="screen">
+    <div class="wrap">
+      <div class="stage" id="stage"></div>
+    </div>
+  </section>
+
+  <!-- END -->
+  <section id="screen-end" class="screen">
+    <div class="wrap center">
+      <p class="eyebrow">Spedizione completata!</p>
+      <h2 class="title">Sei un Guardiaparco Junior!</h2>
+      <div class="stars" id="endStars"></div>
+      <div class="diploma">
+        <h3>🎖️ Diploma di Guardiaparco Junior</h3>
+        <p id="endStory"></p>
+        <p><b>Cosa hai imparato nel bosco:</b></p>
+        <ul class="facts-list">
+          <li>🦫 La <b>marmotta</b> va in letargo d'inverno e fischia per avvisare le compagne del pericolo.</li>
+          <li>🦇 Il <b>pipistrello</b> vola, ma è un mammifero: allatta i suoi piccoli!</li>
+          <li>🐸 Gli <b>anfibi</b>, come la rana e la salamandra, nascono nell'acqua e da grandi vivono anche sulla terra.</li>
+          <li>🌿 In una <b>catena alimentare</b> si parte sempre da una pianta, che produce il cibo con la luce del sole.</li>
+          <li>💧 L'acqua fa un viaggio senza fine: evapora, forma le nuvole, cade come pioggia e torna al lago.</li>
+          <li>🌰 Il <b>castagno</b> era chiamato "l'albero del pane": per secoli le castagne hanno sfamato le famiglie del Ticino.</li>
+        </ul>
+      </div>
+      <button class="btn btn-punch" id="btnRestart">Gioca di nuovo 🔁</button>
+    </div>
+  </section>
+
+</main>
+
+<script>
+(function(){
+  "use strict";
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ================= DATA ================= */
+  var STAGES = [
+    {
+      id:'animali', icon:'🐾', x:10, y:75, badge:'Spilla Occhio di Lince', type:'choice',
+      title:'Tappa 1 — Chi vive in montagna?',
+      intro:'Lucia ti legge degli indovinelli sugli animali delle Alpi ticinesi. Chi è?',
+      items:[
+        {text:'Vivo in una tana sotto i prati alpini. Quando vedo un\'aquila faccio un fischio fortissimo, e d\'inverno dormo per mesi!', options:['Marmotta','Scoiattolo','Volpe','Riccio'], correct:'Marmotta', explain:'La marmotta va in letargo da ottobre fino alla primavera.'},
+        {text:'Ho due corna lunghissime e ricurve all\'indietro e mi arrampico sulle rocce più ripide.', options:['Stambecco','Cervo','Mucca','Lupo'], correct:'Stambecco', explain:'Lo stambecco ha zoccoli speciali che fanno presa sulla roccia.'},
+        {text:'Sono un uccello e batto il becco sui tronchi degli alberi per cercare gli insetti: toc toc toc!', options:['Picchio','Passero','Gufo','Aquila'], correct:'Picchio', explain:'Il picchio scava buchi nella corteccia con il suo becco forte.'},
+        {text:'Ho la pelle nera a macchie gialle e dopo la pioggia passeggio lentamente nel bosco umido.', options:['Salamandra pezzata','Vipera','Lucertola','Lumaca'], correct:'Salamandra pezzata', explain:'La salamandra pezzata è un anfibio: ama l\'umidità e i boschi.'}
+      ]
+    },
+    {
+      id:'famiglie', icon:'🗂️', x:32, y:28, badge:'Spilla Naturalista', type:'sort',
+      title:'Tappa 2 — Ogni animale nella sua famiglia',
+      intro:'Nello zaino hai delle schede di animali tutte mescolate. Metti ogni animale nel gruppo giusto!',
+      bins:[
+        {id:'mammiferi', label:'Mammiferi', color:'#B5793D', desc:'Hanno il pelo e allattano i piccoli'},
+        {id:'uccelli', label:'Uccelli', color:'#2F8FC4', desc:'Hanno le piume e depongono le uova'},
+        {id:'rettili', label:'Rettili', color:'#6FA83A', desc:'Hanno le squame, pelle asciutta'},
+        {id:'anfibi', label:'Anfibi', color:'#8C6FE0', desc:'Pelle umida, nascono nell\'acqua'}
+      ],
+      items:[
+        {name:'Ghiro', emoji:'🐭', bin:'mammiferi', hint:'Ha la coda pelosa e dorme tutto l\'inverno.'},
+        {name:'Pipistrello', emoji:'🦇', bin:'mammiferi', hint:'Vola di notte… ma allatta i suoi piccoli!'},
+        {name:'Gufo', emoji:'🦉', bin:'uccelli', hint:'Ha le piume e caccia di notte.'},
+        {name:'Airone', emoji:'🪶', bin:'uccelli', hint:'Ha le zampe lunghe e pesca nelle Bolle di Magadino.'},
+        {name:'Vipera', emoji:'🐍', bin:'rettili', hint:'Ha le squame e striscia tra i sassi.'},
+        {name:'Ramarro', emoji:'🦎', bin:'rettili', hint:'Una grossa lucertola verde che prende il sole.'},
+        {name:'Rana', emoji:'🐸', bin:'anfibi', hint:'Da piccola è un girino che nuota nello stagno.'},
+        {name:'Rospo', emoji:'🐸', bin:'anfibi', hint:'Ha la pelle bitorzoluta e depone le uova nell\'acqua.'}
+      ]
+    },
+    {
+      id:'catena', icon:'🌿', x:55, y:64, badge:'Spilla Catena d\'Oro', type:'order',
+      title:'Tappa 3 — Chi mangia chi?',
+      intro:'Vicino allo stagno Lucia ti chiede di costruire una catena alimentare. Metti gli esseri viventi in ordine: da chi produce il cibo fino a chi mangia per ultimo.',
+      items:[
+        {steps:['🌱 Erba','🦗 Cavalletta','🐸 Rana','🪶 Airone'], explain:'L\'erba usa la luce del sole, la cavalletta mangia l\'erba, la rana mangia la cavalletta e l\'airone mangia la rana.'},
+        {steps:['🌰 Ghiande e semi','🐿️ Scoiattolo','🦊 Volpe'], explain:'Lo scoiattolo mangia i semi, la volpe a volte caccia lo scoiattolo.'}
+      ]
+    },
+    {
+      id:'acqua', icon:'💧', x:74, y:25, badge:'Spilla Goccia Viaggiatrice', type:'order',
+      title:'Tappa 4 — Il viaggio della goccia d\'acqua',
+      intro:'Una goccia del Lago Maggiore vuole fare il giro del mondo. Metti in ordine le fasi del suo viaggio, partendo dal lago.',
+      items:[
+        {steps:['☀️ Il sole scalda il lago e la goccia evapora','☁️ Il vapore sale, si raffredda e forma una nuvola','🌧️ La nuvola è pesante: la goccia cade come pioggia','🏞️ La pioggia scorre nei fiumi e torna nel lago'], explain:'Evaporazione, condensazione, precipitazione e scorrimento: è il ciclo dell\'acqua!'}
+      ]
+    },
+    {
+      id:'castagno', icon:'🌰', x:90, y:53, badge:'Spilla del Castagno', type:'choice',
+      title:'Tappa 5 — L\'albero del pane',
+      intro:'L\'ultima tappa è sotto un enorme castagno secolare. Rispondi alle domande di Lucia.',
+      items:[
+        {text:'In che stagione cadono le castagne dagli alberi?', options:['Autunno','Primavera','Estate','Inverno'], correct:'Autunno', explain:'Le castagne maturano e cadono tra settembre e novembre.'},
+        {text:'Il frutto del castagno è protetto da un involucro pieno di spine. Come si chiama?', options:['Riccio','Guscio d\'uovo','Pigna','Baccello'], correct:'Riccio', explain:'Il riccio protegge le castagne finché non sono mature.'},
+        {text:'Perché il castagno era chiamato "l\'albero del pane" in Ticino?', options:['Perché con le castagne si sfamavano le famiglie','Perché le foglie sembrano pane','Perché cresceva vicino ai forni','Perché il legno profuma di pane'], correct:'Perché con le castagne si sfamavano le famiglie', explain:'Con le castagne si facevano farina, minestre e pane: erano il cibo dell\'inverno.'},
+        {text:'Le piante producono il loro cibo usando…', options:['la luce del sole','la luce della luna','i sassi','il vento'], correct:'la luce del sole', explain:'Con la luce del sole, l\'acqua e l\'aria le foglie producono il nutrimento per la pianta.'}
+      ]
+    }
+  ];
+
+  var done = {};
+  var mistakes = 0;
+
+  /* ================= HELPERS ================= */
+  function $(id){ return document.getElementById(id); }
+  function shuffle(a){
+    a = a.slice();
+    for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; }
+    return a;
+  }
+
+  document.addEventListener('click', function(e){
+    var btn = e.target.closest('.btn-punch');
+    if(!btn || reduceMotion) return;
+    var rect = btn.getBoundingClientRect();
+    var dot = document.createElement('span');
+    dot.className = 'punch-dot';
+    dot.style.left = (e.clientX - rect.left) + 'px';
+    dot.style.top = (e.clientY - rect.top) + 'px';
+    btn.appendChild(dot);
+    setTimeout(function(){ dot.remove(); }, 420);
+  });
+
+  function chime(ok){
+    try{
+      var Ctx = window.AudioContext || window.webkitAudioContext;
+      if(!chime.ctx) chime.ctx = new Ctx();
+      var ctx = chime.ctx;
+      var o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = 'sine';
+      o.frequency.value = ok ? 784 : 220;
+      g.gain.value = 0.07;
+      o.connect(g); g.connect(ctx.destination);
+      o.start();
+      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.3);
+      o.stop(ctx.currentTime + 0.32);
+    }catch(e){}
+  }
+
+  function showScreen(id){
+    document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+    $(id).classList.add('active');
+    window.scrollTo(0,0);
+  }
+
+  /* ================= MAP ================= */
+  function renderMap(){
+    var trail = $('trail');
+    trail.querySelectorAll('.stop').forEach(function(s){ s.remove(); });
+    var nextIdx = -1;
+    STAGES.forEach(function(s, i){
+      var unlocked = i === 0 || done[STAGES[i-1].id];
+      if(unlocked && !done[s.id] && nextIdx < 0) nextIdx = i;
+      var b = document.createElement('button');
+      b.className = 'stop' + (done[s.id] ? ' done' : '') + (i === nextIdx ? ' next' : '');
+      b.style.left = s.x + '%';
+      b.style.top = s.y + '%';
+      b.disabled = !unlocked;
+      b.setAttribute('aria-label', 'Tappa ' + (i+1) + (done[s.id] ? ' (completata)' : unlocked ? '' : ' (bloccata)'));
+      b.innerHTML = (done[s.id] ? '🏅' : unlocked ? s.icon : '🔒') + '<span class="n">' + (i+1) + '</span>';
+      b.addEventListener('click', function(){ openStage(i); });
+      trail.appendChild(b);
+    });
+
+    var badges = $('badges');
+    badges.innerHTML = '';
+    STAGES.forEach(function(s){
+      var c = document.createElement('span');
+      c.className = 'badge-chip' + (done[s.id] ? ' got' : '');
+      c.textContent = (done[s.id] ? '🏅 ' : '◌ ') + s.badge;
+      badges.appendChild(c);
+    });
+    $('btnFinish').disabled = !STAGES.every(function(s){ return done[s.id]; });
+  }
+
+  /* ================= STAGE ENGINE ================= */
+  var stage = $('stage');
+
+  function openStage(i){
+    var s = STAGES[i];
+    showScreen('screen-stage');
+    if(s.type === 'choice') runChoice(s, 0);
+    else if(s.type === 'sort') runSort(s);
+    else runOrder(s, 0);
+  }
+
+  function header(s, step, total){
+    return '<p class="eyebrow">' + s.icon + ' Tappa ' + (STAGES.indexOf(s)+1) + ' di ' + STAGES.length + '</p>' +
+      '<h2>' + s.title + '</h2>' +
+      '<p class="intro">' + s.intro + '</p>' +
+      (total > 1 ? '<p class="q-count">Prova ' + (step+1) + ' di ' + total + '</p>' : '');
+  }
+
+  function actions(nextLabel){
+    return '<div class="stage-actions"><button class="btn plain btn-punch" data-act="map">← Torna alla mappa</button>' +
+      '<button class="btn btn-punch" data-act="next" hidden>' + nextLabel + '</button></div>';
+  }
+
+  function bindActions(onNext){
+    stage.querySelector('[data-act="map"]').addEventListener('click', function(){ renderMap(); showScreen('screen-map'); });
+    stage.querySelector('[data-act="next"]').addEventListener('click', onNext);
+  }
+
+  function showNext(){
+    var nx = stage.querySelector('[data-act="next"]');
+    nx.hidden = false; nx.focus();
+  }
+
+  function finishStage(s){
+    done[s.id] = true;
+    stage.innerHTML = '<div class="center"><p class="eyebrow">Tappa superata!</p>' +
+      '<div style="font-size:4rem;line-height:1.2;">🏅</div>' +
+      '<h2>Hai conquistato la ' + s.badge + '!</h2>' +
+      '<p class="intro">Lucia è fiera di te. Avanti verso la prossima tappa!</p>' +
+      '<button class="btn btn-punch" id="btnBackMap">Torna alla mappa 🗺️</button></div>';
+    $('btnBackMap').addEventListener('click', function(){ renderMap(); showScreen('screen-map'); });
+    $('btnBackMap').focus();
+  }
+
+  /* --- choice --- */
+  function runChoice(s, step){
+    var it = s.items[step];
+    var last = step === s.items.length - 1;
+    stage.innerHTML = header(s, step, s.items.length) +
+      '<p class="riddle"></p>' +
+      '<div class="options" id="opts"></div>' +
+      '<div class="feedback" id="fb" hidden aria-live="polite"></div>' +
+      actions(last ? 'Completa la tappa 🏅' : 'Avanti →');
+    stage.querySelector('.riddle').textContent = it.text;
+    var opts = $('opts');
+    shuffle(it.options).forEach(function(o){
+      var btn = document.createElement('button');
+      btn.className = 'opt-btn';
+      btn.textContent = o;
+      btn.addEventListener('click', function(){
+        var fb = $('fb');
+        fb.hidden = false;
+        if(o === it.correct){
+          chime(true);
+          btn.classList.add('correct');
+          opts.querySelectorAll('button').forEach(function(x){ x.disabled = true; });
+          fb.className = 'feedback ok';
+          fb.textContent = '✅ Esatto! ' + it.explain;
+          showNext();
+        } else {
+          chime(false);
+          mistakes++;
+          btn.classList.add('wrong');
+          btn.disabled = true;
+          fb.className = 'feedback bad';
+          fb.textContent = '❌ Non è questo. Rileggi bene l\'indizio e riprova!';
+        }
+      });
+      opts.appendChild(btn);
+    });
+    bindActions(function(){ if(last) finishStage(s); else runChoice(s, step+1); });
+  }
+
+  /* --- sort --- */
+  function runSort(s){
+    var queue = shuffle(s.items);
+    var placed = {};
+    s.bins.forEach(function(b){ placed[b.id] = []; });
+
+    stage.innerHTML = header(s, 0, 1) +
+      '<div class="current-animal" id="cur" aria-live="polite"></div>' +
+      '<div class="bins" id="bins"></div>' +
+      '<div class="feedback" id="fb" hidden aria-live="polite"></div>' +
+      actions('Completa la tappa 🏅');
+
+    function renderBins(){
+      var bins = $('bins');
+      bins.innerHTML = '';
+      s.bins.forEach(function(b){
+        var d = document.createElement('div');
+        d.className = 'bin';
+        d.style.setProperty('--bin', b.color);
+        d.innerHTML = '<button class="bin-btn">' + b.label + '</button><span class="desc">' + b.desc + '</span><span class="placed">' + placed[b.id].map(function(it){ return it.emoji; }).join('') + '</span>';
+        d.querySelector('button').disabled = queue.length === 0;
+        d.querySelector('button').addEventListener('click', function(){ choose(b); });
+        bins.appendChild(d);
+      });
+    }
+    function renderCur(){
+      var cur = $('cur');
+      if(!queue.length){
+        cur.innerHTML = '<div class="big">🎉</div><div class="name">Tutti gli animali sono al loro posto!</div>';
+        return;
+      }
+      var it = queue[0];
+      cur.innerHTML = '<div class="big" aria-hidden="true">' + it.emoji + '</div><div class="name">' + it.name + '</div><div class="hint">' + it.hint + '</div>' +
+        '<div class="hint" style="margin-top:.3rem;">Ancora ' + queue.length + ' ' + (queue.length === 1 ? 'animale' : 'animali') + ' da sistemare</div>';
+    }
+    function choose(b){
+      var it = queue[0];
+      var fb = $('fb');
+      fb.hidden = false;
+      if(it.bin === b.id){
+        chime(true);
+        placed[b.id].push(it);
+        queue.shift();
+        fb.className = 'feedback ok';
+        fb.textContent = '✅ Giusto: ' + it.name + ' è tra i ' + b.label.toLowerCase() + '!';
+        if(!queue.length) showNext();
+      } else {
+        chime(false);
+        mistakes++;
+        fb.className = 'feedback bad';
+        fb.textContent = '❌ ' + it.name + ' non è tra i ' + b.label.toLowerCase() + '. Leggi l\'indizio sotto il nome e guarda le descrizioni dei gruppi.';
+      }
+      renderCur(); renderBins();
+    }
+    renderCur(); renderBins();
+    bindActions(function(){ finishStage(s); });
+  }
+
+  /* --- order --- */
+  function runOrder(s, step){
+    var it = s.items[step];
+    var last = step === s.items.length - 1;
+    var pool = shuffle(it.steps);
+    if(pool.join('|') === it.steps.join('|')) pool.push(pool.shift());
+    var seq = [];
+
+    stage.innerHTML = header(s, step, s.items.length) +
+      '<div class="seq" id="seq"></div>' +
+      '<div class="cards" id="cards"></div>' +
+      '<div class="feedback" id="fb" hidden aria-live="polite"></div>' +
+      actions(last ? 'Completa la tappa 🏅' : 'Avanti →');
+
+    var solved = false;
+    function render(){
+      var seqEl = $('seq'), cards = $('cards');
+      seqEl.innerHTML = ''; cards.innerHTML = '';
+      it.steps.forEach(function(_, k){
+        var slot = document.createElement('div');
+        slot.className = 'seq-slot' + (seq[k] ? ' filled' : '');
+        slot.innerHTML = '<span class="k">' + (k+1) + '</span>';
+        if(seq[k]){
+          var b = document.createElement('button');
+          b.textContent = seq[k];
+          b.disabled = solved;
+          b.setAttribute('aria-label', 'Togli: ' + seq[k]);
+          b.addEventListener('click', function(){ pool.push(seq.splice(k,1)[0]); render(); });
+          slot.appendChild(b);
+        } else {
+          var e = document.createElement('span');
+          e.style.color = '#9AA595';
+          e.textContent = '…';
+          slot.appendChild(e);
+        }
+        seqEl.appendChild(slot);
+      });
+      pool.forEach(function(p, k){
+        var c = document.createElement('button');
+        c.className = 'card-btn';
+        c.textContent = p;
+        c.addEventListener('click', function(){
+          seq.push(pool.splice(k,1)[0]);
+          render();
+          if(!pool.length) check();
+        });
+        cards.appendChild(c);
+      });
+    }
+    function check(){
+      var fb = $('fb');
+      fb.hidden = false;
+      if(seq.join('|') === it.steps.join('|')){
+        chime(true);
+        solved = true;
+        render();
+        fb.className = 'feedback ok';
+        fb.textContent = '✅ Perfetto! ' + it.explain;
+        showNext();
+      } else {
+        chime(false);
+        mistakes++;
+        fb.className = 'feedback bad';
+        fb.textContent = '❌ L\'ordine non è giusto. Tocca una riga numerata per togliere quel passaggio e riprova.';
+      }
+    }
+    render();
+    bindActions(function(){ if(last) finishStage(s); else runOrder(s, step+1); });
+  }
+
+  /* ================= END ================= */
+  function endGame(){
+    var stars = mistakes <= 2 ? 3 : mistakes <= 6 ? 2 : 1;
+    $('endStars').textContent = '⭐'.repeat(stars) + '☆'.repeat(3 - stars);
+    $('endStars').setAttribute('aria-label', stars + ' stelle su 3');
+    $('endStory').textContent = 'Hai percorso tutto il sentiero, superato 5 tappe e conquistato tutte le spille. La guardiaparco Lucia ti nomina ufficialmente Guardiaparco Junior del bosco ticinese! ' +
+      (mistakes === 0 ? 'Zero errori: sei un vero esperto della natura!' : 'Hai fatto ' + mistakes + (mistakes === 1 ? ' errore' : ' errori') + ' lungo la strada, ma hai sempre trovato la risposta giusta.');
+    showScreen('screen-end');
+  }
+
+  /* ================= WIRING ================= */
+  $('btnStart').addEventListener('click', function(){ renderMap(); showScreen('screen-map'); });
+  $('btnFinish').addEventListener('click', endGame);
+  $('btnRestart').addEventListener('click', function(){
+    done = {}; mistakes = 0;
+    showScreen('screen-cover');
+  });
+})();
+</script>
+</body>
+</html>

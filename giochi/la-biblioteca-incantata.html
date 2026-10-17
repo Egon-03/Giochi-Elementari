@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>La Biblioteca Incantata — Avventura di Italiano</title>
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --night:#231A3D;
+    --night-2:#2F2452;
+    --plum:#6C4BC9;
+    --plum-dark:#4A2F96;
+    --gold:#F5C542;
+    --gold-dark:#C99A1E;
+    --parchment:#FBF3DF;
+    --parchment-2:#F1E3BF;
+    --ink:#2B2540;
+    --steel:#6B6480;
+    --ok:#2E7D4F;
+    --bad:#B3261E;
+    --font-display:'Baloo 2',sans-serif;
+    --font-body:'Nunito',sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:var(--font-body);background:var(--night);color:var(--parchment);line-height:1.5;}
+  h1,h2,h3{font-family:var(--font-display);margin:0;}
+  button{font-family:inherit;cursor:pointer;}
+  :focus-visible{outline:3px solid var(--gold);outline-offset:3px;}
+
+  .screen{display:none;min-height:100vh;padding:4.5rem 1.25rem 4rem;}
+  .screen.active{display:block;animation:fadein .35s ease;}
+  @keyframes fadein{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+  .wrap{max-width:820px;margin:0 auto;}
+  .center{text-align:center;}
+  .eyebrow{color:var(--gold);font-weight:800;font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;margin:0 0 .4rem;}
+
+  .title{font-size:clamp(2rem,6vw,3.2rem);color:var(--gold);text-shadow:0 3px 0 rgba(0,0,0,.25);margin:.4rem 0 .6rem;}
+  .subtitle{font-size:1.05rem;color:#DCD3F2;max-width:600px;margin:0 auto 1.6rem;}
+
+  .btn{display:inline-block;border:none;border-radius:12px;padding:.9rem 1.6rem;font-weight:800;font-size:1rem;background:var(--gold);color:var(--ink);box-shadow:0 4px 0 var(--gold-dark);}
+  .btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--gold-dark);}
+  .btn[hidden]{display:none;}
+  .btn:disabled{opacity:.4;cursor:not-allowed;box-shadow:none;transform:none;}
+  .btn-punch{position:relative;overflow:hidden;}
+  .punch-dot{position:absolute;width:10px;height:10px;border-radius:50%;background:#fff;transform:translate(-50%,-50%) scale(0);animation:punch .4s ease-out forwards;pointer-events:none;}
+  @keyframes punch{0%{transform:translate(-50%,-50%) scale(0);opacity:1;}70%{transform:translate(-50%,-50%) scale(1);opacity:1;}100%{transform:translate(-50%,-50%) scale(1);opacity:0;}}
+
+  .howto{max-width:620px;margin:1.5rem auto 0;background:var(--night-2);border:1px solid #43376B;border-radius:14px;padding:1rem 1.3rem;text-align:left;color:#DCD3F2;}
+  .howto summary{cursor:pointer;font-weight:800;color:var(--parchment);}
+  .howto ul{margin:.7rem 0 0;padding-left:1.2rem;}
+  .howto li{margin-bottom:.4rem;}
+
+  .banner{width:100%;max-width:640px;height:auto;display:block;margin:0 auto 1rem;}
+  .sparkle{animation:twinkle 2.4s ease-in-out infinite;}
+  .sparkle:nth-of-type(2n){animation-delay:.8s;}
+  .sparkle:nth-of-type(3n){animation-delay:1.6s;}
+  @keyframes twinkle{0%,100%{opacity:.25;}50%{opacity:1;}}
+
+  /* --- scaffale (shelf) --- */
+  .shelf{display:grid;grid-template-columns:repeat(5,1fr);gap:.7rem;margin:1.5rem 0;align-items:end;
+    padding:1rem 1rem 0;background:linear-gradient(180deg,transparent 0 calc(100% - 18px),#7A5330 calc(100% - 18px));border-radius:8px;}
+  .book{border:none;border-radius:8px 8px 2px 2px;min-height:170px;padding:.8rem .4rem;color:#fff;font-weight:800;
+    display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:.4rem;
+    box-shadow:inset -6px 0 0 rgba(0,0,0,.18),0 4px 0 rgba(0,0,0,.3);margin-bottom:18px;transition:transform .15s ease;}
+  .book:hover:not(:disabled){transform:translateY(-6px);}
+  .book .num{font-family:var(--font-display);font-size:1.6rem;line-height:1;}
+  .book .lbl{font-size:.75rem;line-height:1.2;text-align:center;}
+  .book .state{font-size:1.3rem;}
+  .book:disabled{filter:grayscale(.8) brightness(.7);cursor:not-allowed;}
+  .book.done{outline:3px solid var(--gold);}
+  @media (max-width:560px){.shelf{grid-template-columns:repeat(3,1fr);} .book{min-height:130px;}}
+
+  .letters{display:flex;justify-content:center;gap:.5rem;margin:1rem 0;}
+  .letter-slot{width:46px;height:54px;border-radius:10px;border:2px dashed #6E5FA0;display:flex;align-items:center;justify-content:center;
+    font-family:var(--font-display);font-size:1.6rem;color:var(--gold);}
+  .letter-slot.got{border-style:solid;border-color:var(--gold);background:var(--night-2);}
+
+  /* --- page --- */
+  .page{background:var(--parchment);color:var(--ink);border-radius:18px;padding:1.6rem;box-shadow:0 8px 0 var(--parchment-2),0 14px 30px rgba(0,0,0,.35);}
+  .page h2{color:var(--plum-dark);font-size:1.5rem;}
+  .page .intro{color:var(--steel);margin:.3rem 0 1rem;}
+  .q-count{font-weight:800;color:var(--plum);font-size:.85rem;}
+  .sentence{font-size:1.25rem;font-weight:700;margin:.8rem 0 1rem;}
+  .blank{display:inline-block;min-width:3.5em;border-bottom:3px solid var(--plum);text-align:center;color:var(--plum-dark);}
+  .options{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;}
+  @media (max-width:480px){.options{grid-template-columns:1fr;}}
+  .opt-btn{background:#fff;border:2px solid var(--ink);border-radius:12px;padding:.75rem .9rem;font-weight:700;font-size:1.05rem;color:var(--ink);text-align:left;}
+  .opt-btn:hover:not(:disabled){background:#F3EEFF;}
+  .opt-btn.correct{border-color:var(--ok);background:#E4F3EA;}
+  .opt-btn.wrong{border-color:var(--bad);background:#FBE6E4;}
+  .feedback{margin-top:1rem;padding:.8rem 1rem;border-radius:10px;font-weight:700;}
+  .feedback.ok{background:#E4F3EA;color:var(--ok);}
+  .feedback.bad{background:#FBE6E4;color:var(--bad);}
+  .feedback[hidden]{display:none;}
+  .page-actions{margin-top:1.2rem;display:flex;justify-content:space-between;gap:.6rem;flex-wrap:wrap;}
+  .btn.plain{background:#fff;color:var(--ink);box-shadow:0 4px 0 #CFC6B0;}
+  .btn.plain:active{box-shadow:0 1px 0 #CFC6B0;}
+
+  /* pairs */
+  .pairs{display:grid;grid-template-columns:1fr 1fr;gap:.6rem 1.2rem;}
+  .pairs .col{display:flex;flex-direction:column;gap:.6rem;}
+  .pair-btn{background:#fff;border:2px solid var(--ink);border-radius:12px;padding:.7rem;font-weight:700;font-size:1rem;color:var(--ink);}
+  .pair-btn.selected{border-color:var(--plum);background:#EDE6FF;}
+  .pair-btn.matched{border-color:var(--ok);background:#E4F3EA;color:var(--ok);cursor:default;}
+  .pair-btn.shake{animation:shake .35s ease;}
+  @keyframes shake{0%,100%{transform:none;}25%{transform:translateX(-5px);}75%{transform:translateX(5px);}}
+
+  /* order */
+  .built{min-height:62px;border:2px dashed var(--plum);border-radius:12px;padding:.6rem;display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem;background:#fff;}
+  .built:empty::before{content:"Tocca le parole nell'ordine giusto…";color:var(--steel);font-style:italic;align-self:center;}
+  .tiles{display:flex;flex-wrap:wrap;gap:.5rem;}
+  .tile{background:var(--plum);color:#fff;border:none;border-radius:10px;padding:.55rem .85rem;font-weight:800;font-size:1.05rem;box-shadow:0 3px 0 var(--plum-dark);}
+  .built .tile{background:var(--gold);color:var(--ink);box-shadow:0 3px 0 var(--gold-dark);}
+
+  /* final */
+  .final-letters{display:flex;justify-content:center;gap:.6rem;flex-wrap:wrap;margin:1.2rem 0;}
+  .final-letters .tile{font-size:1.6rem;width:56px;height:60px;padding:0;}
+
+  /* end */
+  .diploma{background:var(--parchment);color:var(--ink);border-radius:16px;padding:1.8rem;max-width:640px;margin:1.5rem auto;border:4px double var(--gold-dark);text-align:left;}
+  .diploma h3{color:var(--plum-dark);}
+  .facts-list{margin:1rem 0;padding-left:1.2rem;}
+  .facts-list li{margin-bottom:.5rem;}
+  .stars{font-size:2rem;letter-spacing:.2rem;}
+
+  .home-link{position:fixed;left:1rem;top:1rem;z-index:50;background:var(--parchment);color:var(--ink);text-decoration:none;font-weight:800;font-size:.9rem;padding:.55rem 1rem;border-radius:999px;box-shadow:0 3px 0 #CFC6B0;}
+  .home-link:active{transform:translateY(3px);box-shadow:0 1px 0 #CFC6B0;}
+
+  @media (prefers-reduced-motion: reduce){
+    .screen.active,.sparkle,.pair-btn.shake{animation:none;}
+    .book{transition:none;}
+  }
+</style>
+</head>
+<body>
+
+<a href="../index.html" class="home-link" aria-label="Torna alla pagina dei giochi">🏠 Home</a>
+
+<main id="app">
+
+  <!-- COVER -->
+  <section id="screen-cover" class="screen active">
+    <div class="wrap center">
+      <svg class="banner" viewBox="0 0 640 200" role="img" aria-label="Un grande libro magico aperto con le lettere che volano via">
+        <rect x="0" y="0" width="640" height="200" rx="16" fill="#2F2452"/>
+        <circle class="sparkle" cx="70" cy="40" r="3" fill="#F5C542"/>
+        <circle class="sparkle" cx="560" cy="30" r="4" fill="#F5C542"/>
+        <circle class="sparkle" cx="600" cy="120" r="2.5" fill="#fff"/>
+        <circle class="sparkle" cx="40" cy="140" r="2.5" fill="#fff"/>
+        <circle class="sparkle" cx="480" cy="60" r="3" fill="#fff"/>
+        <path d="M320,170 L170,150 L170,60 L320,80 Z" fill="#FBF3DF"/>
+        <path d="M320,170 L470,150 L470,60 L320,80 Z" fill="#F1E3BF"/>
+        <path d="M170,150 L320,170 L470,150 L470,158 L320,178 L170,158 Z" fill="#6C4BC9"/>
+        <g stroke="#C9B992" stroke-width="3" stroke-linecap="round">
+          <line x1="190" y1="88" x2="300" y2="102"/><line x1="190" y1="104" x2="300" y2="118"/><line x1="190" y1="120" x2="280" y2="132"/>
+          <line x1="340" y1="102" x2="450" y2="88"/><line x1="340" y1="118" x2="450" y2="104"/>
+        </g>
+        <g font-family="Baloo 2, sans-serif" font-weight="800" fill="#F5C542">
+          <text x="350" y="70" font-size="26" transform="rotate(-12 350 70)">A</text>
+          <text x="395" y="48" font-size="22" transform="rotate(10 395 48)">b</text>
+          <text x="440" y="34" font-size="28" transform="rotate(-6 440 34)">C</text>
+          <text x="490" y="22" font-size="20">è</text>
+        </g>
+        <g transform="translate(110,95)">
+          <ellipse cx="0" cy="48" rx="22" ry="6" fill="#000" opacity=".2"/>
+          <path d="M-18,44 Q0,-6 18,44 Z" fill="#1FB49A"/>
+          <polygon points="-14,4 0,-40 14,4" fill="#8C6FE0"/>
+          <circle cx="0" cy="12" r="12" fill="#F4C9A0"/>
+          <circle cx="-4" cy="10" r="1.8" fill="#2B2540"/>
+          <circle cx="4" cy="10" r="1.8" fill="#2B2540"/>
+          <path d="M-4,16 Q0,20 4,16" stroke="#2B2540" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+          <circle cx="0" cy="-40" r="3.5" fill="#F5C542"/>
+        </g>
+      </svg>
+
+      <span class="eyebrow">📚 Avventura di Italiano</span>
+      <h1 class="title">La Biblioteca Incantata</h1>
+      <p class="subtitle">Il Folletto Pasticcione ha fatto un incantesimo nella biblioteca della scuola: le parole dei libri sono tutte in disordine! Sistema i 5 libri magici, raccogli le lettere d'oro e scopri la parola che spezza l'incantesimo.</p>
+      <button class="btn btn-punch" id="btnStart">Entra in biblioteca 📖</button>
+
+      <details class="howto">
+        <summary>Come si gioca</summary>
+        <ul>
+          <li>Sullo scaffale ci sono 5 libri: aprili uno dopo l'altro.</li>
+          <li>Ogni libro ha una sfida di italiano: ortografia, doppie, verbi, parole amiche e frasi in disordine.</li>
+          <li>Ogni libro sistemato ti regala una lettera d'oro ✨.</li>
+          <li>Alla fine metti in ordine le lettere per formare la parola magica!</li>
+        </ul>
+      </details>
+    </div>
+  </section>
+
+  <!-- SHELF -->
+  <section id="screen-shelf" class="screen">
+    <div class="wrap center">
+      <p class="eyebrow">Lo scaffale magico</p>
+      <h2 style="font-size:1.8rem;">Scegli il prossimo libro</h2>
+      <div class="shelf" id="shelf"></div>
+      <p style="margin:0;color:#DCD3F2;">Lettere d'oro raccolte:</p>
+      <div class="letters" id="letters"></div>
+      <button class="btn btn-punch" id="btnToFinal" disabled>Pronuncia la parola magica 🪄</button>
+    </div>
+  </section>
+
+  <!-- PAGE -->
+  <section id="screen-page" class="screen">
+    <div class="wrap">
+      <div class="page" id="page"></div>
+    </div>
+  </section>
+
+  <!-- FINAL -->
+  <section id="screen-final" class="screen">
+    <div class="wrap center">
+      <p class="eyebrow">L'ultimo incantesimo</p>
+      <h2 style="font-size:1.8rem;">Forma la parola magica</h2>
+      <p style="color:#DCD3F2;">Tocca le lettere d'oro nell'ordine giusto. Indizio: è la cosa che trovi su ogni scaffale di una biblioteca!</p>
+      <div class="built" id="finalBuilt" style="justify-content:center;max-width:420px;margin:1rem auto;"></div>
+      <div class="final-letters" id="finalLetters"></div>
+      <div class="feedback" id="finalFeedback" hidden style="max-width:420px;margin:0 auto;"></div>
+      <div style="margin-top:1.2rem;display:flex;gap:.6rem;justify-content:center;">
+        <button class="btn plain btn-punch" id="btnFinalReset">Ricomincia la parola ↺</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- END -->
+  <section id="screen-end" class="screen">
+    <div class="wrap center">
+      <p class="eyebrow">Incantesimo spezzato!</p>
+      <h2 class="title">Brava/o, Maga/o delle Parole!</h2>
+      <div class="stars" id="endStars" aria-live="polite"></div>
+      <div class="diploma">
+        <h3>🎖️ Diploma di Custode della Biblioteca</h3>
+        <p id="endStory"></p>
+        <p><b>Cosa hai ripassato in questa avventura:</b></p>
+        <ul class="facts-list">
+          <li>✏️ <b>c'è</b> (= ci è) si scrive con l'apostrofo; <b>ha</b> con l'acca quando è il verbo avere.</li>
+          <li>🔤 Le <b>doppie</b> cambiano il significato: <i>pala</i> e <i>palla</i> sono due cose diverse!</li>
+          <li>⏳ Il <b>passato prossimo</b> si forma con <i>avere</i> o <i>essere</i>: <i>ho mangiato</i>, <i>sono andato</i>.</li>
+          <li>🤝 I <b>sinonimi</b> hanno lo stesso significato, i <b>contrari</b> il significato opposto.</li>
+          <li>🧩 Una frase ha un ordine: di solito prima chi fa l'azione (soggetto), poi il verbo.</li>
+        </ul>
+      </div>
+      <button class="btn btn-punch" id="btnRestart">Gioca di nuovo 🔁</button>
+    </div>
+  </section>
+
+</main>
+
+<script>
+(function(){
+  "use strict";
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ================= DATA ================= */
+  var MAGIC_WORD = 'LIBRO';
+
+  var BOOKS = [
+    {
+      id:'ortografia', color:'#E4572E', icon:'✏️', label:'Ortografia', letter:'L', type:'choice',
+      title:'Libro 1 — Le paroline furbe',
+      intro:'Il Folletto ha cancellato alcune paroline. Scegli quella giusta!',
+      items:[
+        {text:'Oggi ___ il sole sul lago di Lugano.', options:['c\'è','ce','c\'e','cè'], correct:'c\'è', explain:'"C\'è" vuol dire "ci è": serve l\'apostrofo e l\'accento.'},
+        {text:'Marco ___ un cane che si chiama Briciola.', options:['ha','a','ah','hà'], correct:'ha', explain:'"Ha" con l\'acca è il verbo avere: Marco possiede un cane.'},
+        {text:'Domani vado ___ scuola in bicicletta.', options:['a','ha','ah','à'], correct:'a', explain:'Qui "a" è una preposizione (vado a…), quindi senza acca.'},
+        {text:'I bambini ___ giocato tutto il pomeriggio.', options:['hanno','anno','hano','ànno'], correct:'hanno', explain:'"Hanno" è il verbo avere. "Anno" senza acca è l\'anno del calendario!'}
+      ]
+    },
+    {
+      id:'doppie', color:'#1FB49A', icon:'🔤', label:'Le doppie', letter:'I', type:'choice',
+      title:'Libro 2 — La caccia alle doppie',
+      intro:'Alcune parole hanno perso o guadagnato una lettera. Quale è scritta bene?',
+      items:[
+        {text:'Ai giardinetti giochiamo con il ___.', options:['palone','pallone','pallonne','paloone'], correct:'pallone', explain:'Pallone ha la doppia L, come palla.'},
+        {text:'In autunno raccogliamo le ___ nel bosco.', options:['castagne','casstagne','castagnne','cattagne'], correct:'castagne', explain:'Castagne non ha doppie: si scrive come si pronuncia.'},
+        {text:'Il ___ del treno fischia forte.', options:['machinista','macchinista','maccinista','macchinnista'], correct:'macchinista', explain:'Macchinista viene da macchina, con la doppia C e la H.'},
+        {text:'La nonna prepara una ___ di mele.', options:['tora','tortta','torta','ttorta'], correct:'torta', explain:'Torta non ha doppie.'}
+      ]
+    },
+    {
+      id:'verbi', color:'#F2792B', icon:'⏳', label:'I verbi', letter:'B', type:'choice',
+      title:'Libro 3 — Il viaggio nel tempo',
+      intro:'L\'incantesimo ha confuso passato, presente e futuro. Scegli il verbo giusto!',
+      items:[
+        {text:'Ieri io ___ una pizza buonissima.', options:['mangio','ho mangiato','mangerò','mangiare'], correct:'ho mangiato', explain:'"Ieri" indica il passato: io ho mangiato.'},
+        {text:'Domani noi ___ al Monte San Salvatore.', options:['siamo andati','andiamo','andremo','andavamo'], correct:'andremo', explain:'"Domani" indica il futuro: noi andremo.'},
+        {text:'Adesso Giulia ___ un libro di avventure.', options:['legge','leggerà','ha letto','leggeva'], correct:'legge', explain:'"Adesso" indica il presente: Giulia legge.'},
+        {text:'La settimana scorsa Luca e Sara ___ al museo.', options:['vanno','sono andati','andranno','andare'], correct:'sono andati', explain:'Il verbo andare usa l\'ausiliare essere: sono andati.'}
+      ]
+    },
+    {
+      id:'amici', color:'#8C6FE0', icon:'🤝', label:'Parole amiche', letter:'R', type:'pairs',
+      title:'Libro 4 — Sinonimi e contrari',
+      intro:'Collega ogni parola a sinistra con la sua compagna a destra. Prima tocca una parola a sinistra, poi quella giusta a destra.',
+      groups:[
+        {heading:'Trova il SINONIMO (stesso significato)', pairs:[['felice','contento'],['veloce','rapido'],['bello','carino'],['casa','abitazione']]},
+        {heading:'Trova il CONTRARIO (significato opposto)', pairs:[['caldo','freddo'],['alto','basso'],['aperto','chiuso'],['giorno','notte']]}
+      ]
+    },
+    {
+      id:'frasi', color:'#C9A227', icon:'🧩', label:'Frasi in disordine', letter:'O', type:'order',
+      title:'Libro 5 — Le frasi sottosopra',
+      intro:'Le parole sono scappate dalla frase! Toccale nell\'ordine giusto per ricostruirla. Se sbagli, tocca una parola nella riga in alto per toglierla.',
+      items:[
+        {words:['Il','gatto','dorme','sul','divano.']},
+        {words:['La','maestra','legge','una','storia.']},
+        {words:['In','inverno','sciamo','in','montagna.']},
+        {words:['Il','treno','arriva','a','Bellinzona.']}
+      ]
+    }
+  ];
+
+  var done = {};
+  var mistakes = 0;
+
+  /* ================= HELPERS ================= */
+  function $(id){ return document.getElementById(id); }
+  function shuffle(a){
+    a = a.slice();
+    for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; }
+    return a;
+  }
+  function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+
+  document.addEventListener('click', function(e){
+    var btn = e.target.closest('.btn-punch');
+    if(!btn || reduceMotion) return;
+    var rect = btn.getBoundingClientRect();
+    var dot = document.createElement('span');
+    dot.className = 'punch-dot';
+    dot.style.left = (e.clientX - rect.left) + 'px';
+    dot.style.top = (e.clientY - rect.top) + 'px';
+    btn.appendChild(dot);
+    setTimeout(function(){ dot.remove(); }, 420);
+  });
+
+  function chime(ok){
+    try{
+      var Ctx = window.AudioContext || window.webkitAudioContext;
+      if(!chime.ctx) chime.ctx = new Ctx();
+      var ctx = chime.ctx;
+      var o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = 'triangle';
+      o.frequency.value = ok ? 988 : 196;
+      g.gain.value = 0.07;
+      o.connect(g); g.connect(ctx.destination);
+      o.start();
+      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.3);
+      o.stop(ctx.currentTime + 0.32);
+    }catch(e){}
+  }
+
+  function showScreen(id){
+    document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+    $(id).classList.add('active');
+    window.scrollTo(0,0);
+  }
+
+  /* ================= SHELF ================= */
+  function renderShelf(){
+    var shelf = $('shelf');
+    shelf.innerHTML = '';
+    BOOKS.forEach(function(b, i){
+      var unlocked = i === 0 || done[BOOKS[i-1].id];
+      var btn = document.createElement('button');
+      btn.className = 'book' + (done[b.id] ? ' done' : '');
+      btn.style.background = b.color;
+      btn.disabled = !unlocked;
+      btn.setAttribute('aria-label', 'Libro ' + (i+1) + ': ' + b.label + (done[b.id] ? ' (completato)' : unlocked ? '' : ' (bloccato)'));
+      btn.innerHTML = '<span class="num">' + (i+1) + '</span><span class="lbl">' + b.icon + '<br>' + b.label + '</span><span class="state">' + (done[b.id] ? '✨' : unlocked ? '📖' : '🔒') + '</span>';
+      btn.addEventListener('click', function(){ openBook(i); });
+      shelf.appendChild(btn);
+    });
+
+    var letters = $('letters');
+    letters.innerHTML = '';
+    BOOKS.forEach(function(b){
+      var s = document.createElement('div');
+      s.className = 'letter-slot' + (done[b.id] ? ' got' : '');
+      s.textContent = done[b.id] ? b.letter : '?';
+      letters.appendChild(s);
+    });
+
+    var all = BOOKS.every(function(b){ return done[b.id]; });
+    $('btnToFinal').disabled = !all;
+  }
+
+  /* ================= BOOK ENGINE ================= */
+  var page = $('page');
+
+  function openBook(i){
+    var b = BOOKS[i];
+    showScreen('screen-page');
+    if(b.type === 'choice') runChoice(b, 0);
+    else if(b.type === 'pairs') runPairs(b, 0);
+    else runOrder(b, 0);
+  }
+
+  function header(b, step, total){
+    return '<p class="eyebrow" style="color:' + b.color + ';">' + b.icon + ' ' + b.label + '</p>' +
+      '<h2>' + b.title + '</h2>' +
+      '<p class="intro">' + b.intro + '</p>' +
+      '<p class="q-count">Sfida ' + (step+1) + ' di ' + total + '</p>';
+  }
+
+  function actions(nextLabel){
+    return '<div class="page-actions"><button class="btn plain btn-punch" data-act="shelf">← Torna allo scaffale</button>' +
+      '<button class="btn btn-punch" data-act="next" hidden>' + nextLabel + '</button></div>';
+  }
+
+  function bindActions(onNext){
+    page.querySelector('[data-act="shelf"]').addEventListener('click', function(){ renderShelf(); showScreen('screen-shelf'); });
+    page.querySelector('[data-act="next"]').addEventListener('click', onNext);
+  }
+
+  function finishBook(b){
+    done[b.id] = true;
+    page.innerHTML = '<div class="center"><p class="eyebrow" style="color:' + b.color + ';">Libro sistemato!</p>' +
+      '<h2>✨ Hai trovato una lettera d\'oro ✨</h2>' +
+      '<div class="letters"><div class="letter-slot got" style="width:80px;height:90px;font-size:3rem;">' + b.letter + '</div></div>' +
+      '<p class="intro">Le parole di questo libro sono tornate al loro posto.</p>' +
+      '<button class="btn btn-punch" id="btnBackShelf">Torna allo scaffale 📚</button></div>';
+    $('btnBackShelf').addEventListener('click', function(){ renderShelf(); showScreen('screen-shelf'); });
+    $('btnBackShelf').focus();
+  }
+
+  /* --- choice --- */
+  function runChoice(b, step){
+    var it = b.items[step];
+    var last = step === b.items.length - 1;
+    var parts = it.text.split('___');
+    page.innerHTML = header(b, step, b.items.length) +
+      '<p class="sentence">' + esc(parts[0]) + '<span class="blank" id="blank">?</span>' + esc(parts[1]) + '</p>' +
+      '<div class="options" id="opts"></div>' +
+      '<div class="feedback" id="fb" hidden aria-live="polite"></div>' +
+      actions(last ? 'Chiudi il libro ✨' : 'Avanti →');
+    var opts = $('opts');
+    shuffle(it.options).forEach(function(o){
+      var btn = document.createElement('button');
+      btn.className = 'opt-btn';
+      btn.textContent = o;
+      btn.addEventListener('click', function(){
+        var fb = $('fb');
+        fb.hidden = false;
+        if(o === it.correct){
+          chime(true);
+          btn.classList.add('correct');
+          $('blank').textContent = o;
+          opts.querySelectorAll('button').forEach(function(x){ x.disabled = true; });
+          fb.className = 'feedback ok';
+          fb.textContent = '✅ Giusto! ' + it.explain;
+          var nx = page.querySelector('[data-act="next"]');
+          nx.hidden = false; nx.focus();
+        } else {
+          chime(false);
+          mistakes++;
+          btn.classList.add('wrong');
+          btn.disabled = true;
+          fb.className = 'feedback bad';
+          fb.textContent = '❌ Non ancora: rileggi la frase e prova un\'altra parolina.';
+        }
+      });
+      opts.appendChild(btn);
+    });
+    bindActions(function(){ if(last) finishBook(b); else runChoice(b, step+1); });
+  }
+
+  /* --- pairs --- */
+  function runPairs(b, step){
+    var g = b.groups[step];
+    var last = step === b.groups.length - 1;
+    page.innerHTML = header(b, step, b.groups.length) +
+      '<p class="sentence" style="font-size:1.05rem;">' + g.heading + '</p>' +
+      '<div class="pairs"><div class="col" id="colL"></div><div class="col" id="colR"></div></div>' +
+      '<div class="feedback" id="fb" hidden aria-live="polite"></div>' +
+      actions(last ? 'Chiudi il libro ✨' : 'Avanti →');
+    var selected = null, matched = 0;
+    var map = {};
+    g.pairs.forEach(function(p){ map[p[0]] = p[1]; });
+
+    function mk(word, side){
+      var btn = document.createElement('button');
+      btn.className = 'pair-btn';
+      btn.textContent = word;
+      btn.dataset.word = word;
+      btn.addEventListener('click', function(){
+        if(btn.classList.contains('matched')) return;
+        if(side === 'L'){
+          page.querySelectorAll('#colL .pair-btn').forEach(function(x){ x.classList.remove('selected'); x.setAttribute('aria-pressed','false'); });
+          btn.classList.add('selected'); btn.setAttribute('aria-pressed','true');
+          selected = btn;
+          return;
+        }
+        var fb = $('fb');
+        if(!selected){
+          fb.hidden = false; fb.className = 'feedback bad';
+          fb.textContent = 'Prima tocca una parola nella colonna di sinistra 👈';
+          return;
+        }
+        if(map[selected.dataset.word] === word){
+          chime(true);
+          selected.classList.remove('selected');
+          selected.classList.add('matched'); btn.classList.add('matched');
+          selected.disabled = true; btn.disabled = true;
+          fb.hidden = false; fb.className = 'feedback ok';
+          fb.textContent = '✅ "' + selected.dataset.word + '" e "' + word + '": coppia giusta!';
+          selected = null;
+          matched++;
+          if(matched === g.pairs.length){
+            var nx = page.querySelector('[data-act="next"]');
+            nx.hidden = false; nx.focus();
+          }
+        } else {
+          chime(false);
+          mistakes++;
+          fb.hidden = false; fb.className = 'feedback bad';
+          fb.textContent = '❌ "' + selected.dataset.word + '" e "' + word + '" non vanno insieme. Riprova!';
+          if(!reduceMotion){
+            btn.classList.add('shake');
+            setTimeout(function(){ btn.classList.remove('shake'); }, 360);
+          }
+        }
+      });
+      if(side === 'L') btn.setAttribute('aria-pressed','false');
+      return btn;
+    }
+    var L = $('colL'), R = $('colR');
+    shuffle(g.pairs).forEach(function(p){ L.appendChild(mk(p[0],'L')); });
+    shuffle(g.pairs).forEach(function(p){ R.appendChild(mk(p[1],'R')); });
+    bindActions(function(){ if(last) finishBook(b); else runPairs(b, step+1); });
+  }
+
+  /* --- order --- */
+  function buildOrderGame(opts){
+    // opts: words (array in correct order), builtEl, tilesEl, onSolved, onWrong
+    var pool = shuffle(opts.words.map(function(w, i){ return {w:w, i:i}; }));
+    // make sure the shuffle is not already the solution
+    if(pool.every(function(p, k){ return p.i === k; }) && pool.length > 1){ pool.push(pool.shift()); }
+    var built = [];
+    function render(){
+      opts.builtEl.innerHTML = '';
+      opts.tilesEl.innerHTML = '';
+      built.forEach(function(p, k){
+        var t = document.createElement('button');
+        t.className = 'tile';
+        t.textContent = p.w;
+        t.setAttribute('aria-label', 'Togli ' + p.w);
+        t.addEventListener('click', function(){ built.splice(k,1); pool.push(p); render(); });
+        opts.builtEl.appendChild(t);
+      });
+      pool.forEach(function(p, k){
+        var t = document.createElement('button');
+        t.className = 'tile';
+        t.textContent = p.w;
+        t.addEventListener('click', function(){
+          pool.splice(k,1); built.push(p); render();
+          if(pool.length === 0) check();
+        });
+        opts.tilesEl.appendChild(t);
+      });
+    }
+    function check(){
+      var text = built.map(function(p){ return p.w; }).join(' ');
+      if(text === opts.words.join(' ')){
+        opts.builtEl.querySelectorAll('button').forEach(function(x){ x.disabled = true; });
+        opts.onSolved();
+      } else {
+        opts.onWrong();
+      }
+    }
+    render();
+    return { reset:function(){ pool = pool.concat(built); built = []; render(); } };
+  }
+
+  function runOrder(b, step){
+    var it = b.items[step];
+    var last = step === b.items.length - 1;
+    page.innerHTML = header(b, step, b.items.length) +
+      '<div class="built" id="built"></div>' +
+      '<div class="tiles" id="tiles"></div>' +
+      '<div class="feedback" id="fb" hidden aria-live="polite"></div>' +
+      actions(last ? 'Chiudi il libro ✨' : 'Avanti →');
+    var fb = $('fb');
+    buildOrderGame({
+      words: it.words,
+      builtEl: $('built'),
+      tilesEl: $('tiles'),
+      onSolved: function(){
+        chime(true);
+        fb.hidden = false; fb.className = 'feedback ok';
+        fb.textContent = '✅ Perfetto! La frase è tornata in ordine.';
+        var nx = page.querySelector('[data-act="next"]');
+        nx.hidden = false; nx.focus();
+      },
+      onWrong: function(){
+        chime(false);
+        mistakes++;
+        fb.hidden = false; fb.className = 'feedback bad';
+        fb.textContent = '❌ Qualcosa non torna. Tocca le parole in alto per toglierle e riprova. Ricorda: la frase inizia con la maiuscola e finisce col punto!';
+      }
+    });
+    bindActions(function(){ if(last) finishBook(b); else runOrder(b, step+1); });
+  }
+
+  /* ================= FINAL ================= */
+  var finalGame = null;
+  function startFinal(){
+    showScreen('screen-final');
+    var fb = $('finalFeedback');
+    fb.hidden = true;
+    finalGame = buildOrderGame({
+      words: MAGIC_WORD.split(''),
+      builtEl: $('finalBuilt'),
+      tilesEl: $('finalLetters'),
+      onSolved: function(){
+        chime(true);
+        fb.hidden = false; fb.className = 'feedback ok';
+        fb.textContent = '✨ LIBRO! L\'incantesimo è spezzato! ✨';
+        setTimeout(endGame, reduceMotion ? 300 : 1300);
+      },
+      onWrong: function(){
+        chime(false);
+        mistakes++;
+        fb.hidden = false; fb.className = 'feedback bad';
+        fb.textContent = 'Non è la parola giusta. Tocca le lettere in alto per toglierle e riprova!';
+      }
+    });
+  }
+
+  function endGame(){
+    var stars = mistakes <= 2 ? 3 : mistakes <= 6 ? 2 : 1;
+    $('endStars').textContent = '⭐'.repeat(stars) + '☆'.repeat(3 - stars);
+    $('endStars').setAttribute('aria-label', stars + ' stelle su 3');
+    $('endStory').textContent = 'Hai sistemato tutti e 5 i libri magici e pronunciato la parola LIBRO: il Folletto Pasticcione è scappato e la biblioteca è di nuovo in ordine! ' +
+      (mistakes === 0 ? 'Non hai fatto nemmeno un errore: incredibile!' : 'Hai fatto ' + mistakes + (mistakes === 1 ? ' errore' : ' errori') + ', ma non ti sei mai arresa/o.');
+    showScreen('screen-end');
+  }
+
+  /* ================= WIRING ================= */
+  $('btnStart').addEventListener('click', function(){ renderShelf(); showScreen('screen-shelf'); });
+  $('btnToFinal').addEventListener('click', startFinal);
+  $('btnFinalReset').addEventListener('click', function(){ if(finalGame){ finalGame.reset(); $('finalFeedback').hidden = true; } });
+  $('btnRestart').addEventListener('click', function(){
+    done = {}; mistakes = 0;
+    showScreen('screen-cover');
+  });
+})();
+</script>
+</body>
+</html>
