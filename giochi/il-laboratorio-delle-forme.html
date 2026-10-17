@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Il Laboratorio delle Forme — Avventura di Geometria</title>
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --blueprint:#1D4E89;
+    --blueprint-2:#25609F;
+    --grid:#3D78B8;
+    --cyan:#7FDBFF;
+    --lime:#B6F36B;
+    --coral:#FF7B6B;
+    --paper:#F4F8FF;
+    --ink:#14243A;
+    --steel:#55657A;
+    --ok:#2E7D4F;
+    --bad:#B3261E;
+    --font-display:'Chakra Petch',sans-serif;
+    --font-body:'Nunito',sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:var(--font-body);color:#fff;line-height:1.5;
+    background-color:var(--blueprint);
+    background-image:linear-gradient(var(--blueprint-2) 1px,transparent 1px),linear-gradient(90deg,var(--blueprint-2) 1px,transparent 1px);
+    background-size:24px 24px;}
+  h1,h2,h3{font-family:var(--font-display);margin:0;}
+  button{font-family:inherit;cursor:pointer;}
+  :focus-visible{outline:3px solid var(--lime);outline-offset:3px;}
+
+  .screen{display:none;min-height:100vh;padding:4.5rem 1.25rem 3rem;}
+  .screen.active{display:block;animation:fadein .3s ease;}
+  @keyframes fadein{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+  .wrap{max-width:900px;margin:0 auto;}
+  .center{text-align:center;}
+  .eyebrow{color:var(--cyan);font-weight:800;font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;margin:0 0 .4rem;}
+  .title{font-size:clamp(2rem,6vw,3.2rem);color:#fff;margin:.4rem 0 .6rem;text-shadow:0 0 18px rgba(127,219,255,.5);}
+  .subtitle{font-size:1.05rem;color:#D4E6FF;max-width:600px;margin:0 auto 1.4rem;}
+
+  .btn{display:inline-block;border:none;border-radius:12px;padding:.9rem 1.6rem;font-weight:800;font-size:1rem;background:var(--lime);color:var(--ink);box-shadow:0 4px 0 #7DB43A;}
+  .btn:active{transform:translateY(3px);box-shadow:0 1px 0 #7DB43A;}
+  .btn[hidden]{display:none;}
+  .btn-punch{position:relative;overflow:hidden;}
+  .punch-dot{position:absolute;width:10px;height:10px;border-radius:50%;background:#fff;transform:translate(-50%,-50%) scale(0);animation:punch .4s ease-out forwards;pointer-events:none;}
+  @keyframes punch{0%{transform:translate(-50%,-50%) scale(0);opacity:1;}70%{transform:translate(-50%,-50%) scale(1);opacity:1;}100%{transform:translate(-50%,-50%) scale(1);opacity:0;}}
+
+  .howto{max-width:620px;margin:1.5rem auto 0;background:rgba(10,30,60,.6);border:1px solid var(--grid);border-radius:14px;padding:1rem 1.3rem;text-align:left;color:#D4E6FF;}
+  .howto summary{cursor:pointer;font-weight:800;color:#fff;}
+  .howto ul{margin:.7rem 0 0;padding-left:1.2rem;}
+
+  /* --- robot --- */
+  .robot{width:180px;height:auto;display:block;margin:0 auto;}
+  .robot .part{opacity:.12;transition:opacity .4s ease;}
+  .robot .part.on{opacity:1;}
+  .robot .eye.on{animation:blink 3s infinite;}
+  @keyframes blink{0%,92%,100%{transform:scaleY(1);}96%{transform:scaleY(.1);}}
+  .robot .eye{transform-origin:center;transform-box:fill-box;}
+
+  /* --- lab --- */
+  .lab{display:grid;grid-template-columns:200px 1fr;gap:1.2rem;align-items:start;}
+  @media (max-width:700px){.lab{grid-template-columns:1fr;} .side .robot{width:120px;}}
+  .side{background:rgba(10,30,60,.55);border:1px solid var(--grid);border-radius:16px;padding:1rem;text-align:center;}
+  .side .pill{display:inline-block;margin-top:.5rem;font-family:var(--font-display);color:var(--lime);}
+  .card{background:var(--paper);color:var(--ink);border-radius:18px;padding:1.4rem;box-shadow:0 8px 0 rgba(0,0,0,.25);}
+  .card .topic{font-family:var(--font-display);color:var(--blueprint);font-size:.9rem;text-transform:uppercase;letter-spacing:.08em;}
+  .card h2{font-size:1.3rem;margin:.2rem 0 .8rem;font-family:var(--font-body);font-weight:800;}
+  .figure{background:#fff;border:2px solid #D2DEEE;border-radius:14px;display:flex;justify-content:center;padding:.6rem;margin-bottom:1rem;}
+  .figure svg{width:100%;max-width:340px;height:auto;}
+  .options{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;}
+  @media (max-width:420px){.options{grid-template-columns:1fr;}}
+  .opt-btn{background:#fff;border:2px solid var(--ink);border-radius:12px;padding:.75rem .9rem;font-weight:800;font-size:1.05rem;color:var(--ink);}
+  .opt-btn:hover:not(:disabled){background:#E8F2FF;}
+  .opt-btn.correct{border-color:var(--ok);background:#E4F3EA;}
+  .opt-btn.wrong{border-color:var(--bad);background:#FBE6E4;}
+  .feedback{margin-top:1rem;padding:.8rem 1rem;border-radius:10px;font-weight:700;}
+  .feedback.ok{background:#E4F3EA;color:var(--ok);}
+  .feedback.bad{background:#FBE6E4;color:var(--bad);}
+  .feedback[hidden]{display:none;}
+  .actions{margin-top:1rem;text-align:right;}
+
+  /* --- end --- */
+  .diploma{background:var(--paper);color:var(--ink);border-radius:16px;padding:1.8rem;max-width:640px;margin:1.5rem auto;border:4px double var(--blueprint);text-align:left;}
+  .diploma h3{color:var(--blueprint);}
+  .facts-list{margin:1rem 0;padding-left:1.2rem;}
+  .facts-list li{margin-bottom:.5rem;}
+  .stars{font-size:2rem;letter-spacing:.2rem;}
+
+  .home-link{position:fixed;left:1rem;top:1rem;z-index:50;background:#fff;color:var(--ink);text-decoration:none;font-weight:800;font-size:.9rem;padding:.55rem 1rem;border-radius:999px;box-shadow:0 3px 0 #9DB3CF;}
+  .home-link:active{transform:translateY(3px);box-shadow:0 1px 0 #9DB3CF;}
+
+  @media (prefers-reduced-motion: reduce){
+    .screen.active,.robot .eye.on{animation:none;}
+    .robot .part{transition:none;}
+  }
+</style>
+</head>
+<body>
+
+<a href="../index.html" class="home-link" aria-label="Torna alla pagina dei giochi">🏠 Home</a>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="robot" viewBox="0 0 160 200">
+      <g class="part" data-p="0"><rect x="76" y="6" width="8" height="20" fill="#B6F36B"/><circle cx="80" cy="6" r="6" fill="#FF7B6B"/></g>
+      <g class="part" data-p="1"><rect x="40" y="24" width="80" height="58" rx="12" fill="#7FDBFF"/></g>
+      <g class="part" data-p="2"><rect class="eye" x="56" y="42" width="14" height="16" rx="4" fill="#14243A"/><rect class="eye" x="90" y="42" width="14" height="16" rx="4" fill="#14243A"/></g>
+      <g class="part" data-p="3"><polygon points="66,68 94,68 80,76" fill="#FF7B6B"/></g>
+      <g class="part" data-p="4"><rect x="72" y="82" width="16" height="10" fill="#55657A"/></g>
+      <g class="part" data-p="5"><rect x="34" y="92" width="92" height="62" rx="10" fill="#B6F36B"/></g>
+      <g class="part" data-p="6"><circle cx="80" cy="118" r="12" fill="#FFD23F"/><polygon points="80,108 89,124 71,124" fill="#FF7B6B"/></g>
+      <g class="part" data-p="7"><rect x="12" y="96" width="20" height="44" rx="10" fill="#7FDBFF"/></g>
+      <g class="part" data-p="8"><rect x="128" y="96" width="20" height="44" rx="10" fill="#7FDBFF"/></g>
+      <g class="part" data-p="9"><rect x="48" y="154" width="22" height="30" fill="#55657A"/></g>
+      <g class="part" data-p="10"><rect x="90" y="154" width="22" height="30" fill="#55657A"/></g>
+      <g class="part" data-p="11"><rect x="40" y="184" width="36" height="12" rx="6" fill="#14243A"/><rect x="84" y="184" width="36" height="12" rx="6" fill="#14243A"/></g>
+    </symbol>
+  </defs>
+</svg>
+
+<main id="app">
+
+  <!-- COVER -->
+  <section id="screen-cover" class="screen active">
+    <div class="wrap center">
+      <svg class="robot" id="robotCover" viewBox="0 0 160 200" role="img" aria-label="Il robot Pixel, tutto smontato"></svg>
+      <span class="eyebrow">📐 Avventura di Geometria</span>
+      <h1 class="title">Il Laboratorio delle Forme</h1>
+      <p class="subtitle">Il robot Pixel è caduto dallo scaffale e si è smontato in 12 pezzi! Ogni pezzo è fatto di forme geometriche: risolvi le sfide del laboratorio per rimontarlo.</p>
+      <button class="btn btn-punch" id="btnStart">Accendi il laboratorio ⚡</button>
+      <details class="howto">
+        <summary>Come si gioca</summary>
+        <ul>
+          <li>Ci sono 12 sfide: forme, lati e vertici, angoli, simmetria, perimetro e area.</li>
+          <li>Guarda bene il disegno e scegli la risposta giusta.</li>
+          <li>Ogni risposta giusta rimonta un pezzo di Pixel 🤖.</li>
+          <li>Per l'area conta i quadretti, per il perimetro somma tutti i lati!</li>
+        </ul>
+      </details>
+    </div>
+  </section>
+
+  <!-- LAB -->
+  <section id="screen-lab" class="screen">
+    <div class="wrap">
+      <div class="lab">
+        <aside class="side">
+          <p class="eyebrow" style="margin:0;">Pixel</p>
+          <svg class="robot" id="robotLab" viewBox="0 0 160 200" role="img" aria-label="Il robot Pixel mentre viene rimontato"></svg>
+          <span class="pill" id="partsPill">Pezzi: 0/12</span>
+        </aside>
+        <div class="card" id="card"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- END -->
+  <section id="screen-end" class="screen">
+    <div class="wrap center">
+      <svg class="robot" id="robotEnd" viewBox="0 0 160 200" role="img" aria-label="Il robot Pixel completamente rimontato che saluta"></svg>
+      <p class="eyebrow">Pixel è di nuovo in piedi!</p>
+      <h2 class="title">Sei un Ingegnere delle Forme!</h2>
+      <div class="stars" id="endStars"></div>
+      <div class="diploma">
+        <h3>🎖️ Diploma di Ingegnere del Laboratorio</h3>
+        <p id="endStory"></p>
+        <p><b>Cosa hai ripassato:</b></p>
+        <ul class="facts-list">
+          <li>🔺 I poligoni prendono il nome dal numero di lati: triangolo (3), quadrilatero (4), pentagono (5), esagono (6).</li>
+          <li>📐 L'angolo <b>retto</b> è come l'angolo di un foglio; l'<b>acuto</b> è più chiuso, l'<b>ottuso</b> più aperto.</li>
+          <li>🪞 Una figura è <b>simmetrica</b> se, piegandola sull'asse, le due metà combaciano.</li>
+          <li>📏 Il <b>perimetro</b> è la lunghezza del contorno: si sommano tutti i lati.</li>
+          <li>⬛ L'<b>area</b> è lo spazio dentro la figura: si può misurare contando i quadretti.</li>
+        </ul>
+      </div>
+      <button class="btn btn-punch" id="btnRestart">Gioca di nuovo 🔁</button>
+    </div>
+  </section>
+
+</main>
+
+<script>
+(function(){
+  "use strict";
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ================= FIGURE HELPERS ================= */
+  var STROKE = '#1D4E89', FILL = '#7FDBFF';
+  function svg(inner, vb){ return '<svg viewBox="' + (vb || '0 0 200 140') + '" role="img" aria-label="Figura della domanda">' + inner + '</svg>'; }
+  function poly(pts, fill){ return '<polygon points="' + pts + '" fill="' + (fill || FILL) + '" stroke="' + STROKE + '" stroke-width="3" stroke-linejoin="round"/>'; }
+  function regular(n, cx, cy, r, rot){
+    var p = [];
+    for(var i=0;i<n;i++){ var a = (rot||-90) * Math.PI/180 + i * 2*Math.PI/n; p.push((cx + r*Math.cos(a)).toFixed(1) + ',' + (cy + r*Math.sin(a)).toFixed(1)); }
+    return p.join(' ');
+  }
+  function label(x, y, t){ return '<text x="' + x + '" y="' + y + '" font-family="Nunito" font-weight="800" font-size="14" fill="#14243A" text-anchor="middle">' + t + '</text>'; }
+  function angle(deg){
+    var cx = 50, cy = 110, L = 110;
+    var a = -deg * Math.PI/180;
+    var x2 = cx + L*Math.cos(a), y2 = cy + L*Math.sin(a);
+    var arcR = 28, ax = cx + arcR*Math.cos(a), ay = cy + arcR*Math.sin(a);
+    var mark = deg === 90
+      ? '<polyline points="' + (cx+18) + ',' + cy + ' ' + (cx+18) + ',' + (cy-18) + ' ' + cx + ',' + (cy-18) + '" fill="none" stroke="#FF7B6B" stroke-width="3"/>'
+      : '<path d="M' + (cx+arcR) + ',' + cy + ' A' + arcR + ',' + arcR + ' 0 0,0 ' + ax.toFixed(1) + ',' + ay.toFixed(1) + '" fill="none" stroke="#FF7B6B" stroke-width="3"/>';
+    return svg('<line x1="' + cx + '" y1="' + cy + '" x2="' + (cx+L+30) + '" y2="' + cy + '" stroke="' + STROKE + '" stroke-width="4" stroke-linecap="round"/>' +
+      '<line x1="' + cx + '" y1="' + cy + '" x2="' + x2.toFixed(1) + '" y2="' + y2.toFixed(1) + '" stroke="' + STROKE + '" stroke-width="4" stroke-linecap="round"/>' +
+      mark + '<circle cx="' + cx + '" cy="' + cy + '" r="4" fill="#14243A"/>', '0 0 200 130');
+  }
+  function gridShape(cells, w, h){
+    // cells: array of [col,row] filled squares on a w x h grid
+    var s = 22, out = '', ox = (200 - w*s)/2, oy = (140 - h*s)/2;
+    for(var r=0;r<h;r++) for(var c=0;c<w;c++)
+      out += '<rect x="' + (ox+c*s) + '" y="' + (oy+r*s) + '" width="' + s + '" height="' + s + '" fill="none" stroke="#D2DEEE"/>';
+    cells.forEach(function(p){ out += '<rect x="' + (ox+p[0]*s) + '" y="' + (oy+p[1]*s) + '" width="' + s + '" height="' + s + '" fill="' + FILL + '" stroke="' + STROKE + '" stroke-width="1.5"/>'; });
+    return svg(out);
+  }
+  function axis(x1,y1,x2,y2){ return '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" stroke="#FF7B6B" stroke-width="3" stroke-dasharray="7 5"/>'; }
+
+  /* ================= DATA ================= */
+  var Q = [
+    {topic:'Le forme', text:'Come si chiama questa forma? (Le api la usano per costruire le celle del miele!)',
+     fig: svg(poly(regular(6,100,70,55,0))), options:['Esagono','Pentagono','Ottagono','Cerchio'], correct:'Esagono',
+     explain:'Esa- vuol dire sei: l\'esagono ha 6 lati.'},
+    {topic:'Le forme', text:'Questa figura ha 4 lati tutti uguali, ma è "inclinata" e non ha angoli retti. Come si chiama?',
+     fig: svg(poly('100,12 150,70 100,128 50,70')),
+     options:['Rombo','Quadrato','Rettangolo','Triangolo'], correct:'Rombo',
+     explain:'Il rombo ha 4 lati uguali; il quadrato ha anche 4 angoli retti.'},
+    {topic:'Lati e vertici', text:'Quanti vertici (punte) ha questa figura?',
+     fig: svg(poly(regular(5,100,74,58))), options:['5','4','6','10'], correct:'5',
+     explain:'È un pentagono: 5 lati e 5 vertici.'},
+    {topic:'Lati e vertici', text:'Un triangolo e un quadrato messi insieme fanno una casetta. Quanti lati ha in tutto il contorno della casetta?',
+     fig: svg(poly('60,60 100,18 140,60 140,125 60,125')),
+     options:['5','7','4','6'], correct:'5',
+     explain:'Il lato in comune sparisce dentro: restano 2 lati del tetto e 3 della casa, cioè 5.'},
+    {topic:'Gli angoli', text:'Che tipo di angolo è questo?', fig: angle(90),
+     options:['Retto','Acuto','Ottuso','Piatto'], correct:'Retto',
+     explain:'Il quadratino rosso indica l\'angolo retto, come l\'angolo di un foglio (90°).'},
+    {topic:'Gli angoli', text:'E questo angolo, più chiuso di un angolo retto?', fig: angle(40),
+     options:['Acuto','Retto','Ottuso','Piatto'], correct:'Acuto',
+     explain:'Un angolo più piccolo del retto si chiama acuto.'},
+    {topic:'Gli angoli', text:'Questo angolo è più aperto di un angolo retto. Come si chiama?', fig: angle(135),
+     options:['Ottuso','Acuto','Retto','Giro'], correct:'Ottuso',
+     explain:'Più grande del retto (ma meno di un angolo piatto): ottuso!'},
+    {topic:'La simmetria', text:'La linea tratteggiata è un asse di simmetria per questo cuore?',
+     fig: svg('<path d="M100,128 C30,80 40,20 100,48 C160,20 170,80 100,128 Z" fill="#FF7B6B" stroke="' + STROKE + '" stroke-width="3"/>' + axis(100,6,100,136)),
+     options:['Sì','No'], correct:'Sì',
+     explain:'Se pieghi il cuore sulla linea, le due metà combaciano perfettamente.'},
+    {topic:'La simmetria', text:'E qui? La linea tratteggiata è un asse di simmetria per questa bandierina?',
+     fig: svg(poly('50,30 150,30 120,70 150,110 50,110','#B6F36B') + axis(100,10,100,130)),
+     options:['No','Sì'], correct:'No',
+     explain:'La parte destra ha una punta che la sinistra non ha: piegando, le metà non combaciano.'},
+    {topic:'Il perimetro', text:'Il rettangolo è lungo 6 cm e alto 3 cm. Quanto misura il suo perimetro?',
+     fig: svg(poly('40,35 160,35 160,95 40,95') + label(100,28,'6 cm') + label(178,70,'3 cm') + label(100,112,'6 cm') + label(22,70,'3 cm')),
+     options:['18 cm','9 cm','12 cm','15 cm'], correct:'18 cm',
+     explain:'6 + 3 + 6 + 3 = 18 cm. Bisogna sommare tutti e 4 i lati!'},
+    {topic:'Il perimetro', text:'Questo è un quadrato con il lato di 5 cm. Quanto misura il perimetro?',
+     fig: svg(poly('65,25 125,25 125,85 65,85') + label(95,18,'5 cm')),
+     options:['20 cm','10 cm','25 cm','15 cm'], correct:'20 cm',
+     explain:'Il quadrato ha 4 lati uguali: 5 × 4 = 20 cm.'},
+    {topic:'L\'area', text:'Ogni quadretto azzurro vale 1. Qual è l\'area di questa figura a forma di L?',
+     fig: gridShape([[1,0],[1,1],[1,2],[1,3],[2,3],[3,3]], 6, 5),
+     options:['6 quadretti','5 quadretti','7 quadretti','8 quadretti'], correct:'6 quadretti',
+     explain:'Contando uno per uno i quadretti colorati ne trovi 6: 4 in colonna e 2 in fondo.'}
+  ];
+
+  var idx = 0, mistakes = 0;
+
+  /* ================= HELPERS ================= */
+  function $(id){ return document.getElementById(id); }
+  function shuffle(a){
+    a = a.slice();
+    for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; }
+    return a;
+  }
+
+  document.addEventListener('click', function(e){
+    var btn = e.target.closest('.btn-punch');
+    if(!btn || reduceMotion) return;
+    var rect = btn.getBoundingClientRect();
+    var dot = document.createElement('span');
+    dot.className = 'punch-dot';
+    dot.style.left = (e.clientX - rect.left) + 'px';
+    dot.style.top = (e.clientY - rect.top) + 'px';
+    btn.appendChild(dot);
+    setTimeout(function(){ dot.remove(); }, 420);
+  });
+
+  function chime(ok){
+    try{
+      var Ctx = window.AudioContext || window.webkitAudioContext;
+      if(!chime.ctx) chime.ctx = new Ctx();
+      var ctx = chime.ctx;
+      var o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = ok ? 'square' : 'sine';
+      o.frequency.value = ok ? 660 : 180;
+      if(ok) o.frequency.linearRampToValueAtTime(1320, ctx.currentTime + 0.15);
+      g.gain.value = 0.04;
+      o.connect(g); g.connect(ctx.destination);
+      o.start();
+      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.25);
+      o.stop(ctx.currentTime + 0.27);
+    }catch(e){}
+  }
+
+  function showScreen(id){
+    document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+    $(id).classList.add('active');
+    window.scrollTo(0,0);
+  }
+
+  /* ================= ROBOT ================= */
+  function drawRobot(el, parts){
+    el.innerHTML = document.getElementById('robot').innerHTML;
+    el.querySelectorAll('.part').forEach(function(p){
+      if(+p.dataset.p < parts) p.classList.add('on');
+    });
+    el.querySelectorAll('.part.on .eye').forEach(function(e){ e.classList.add('on'); });
+  }
+
+  /* ================= QUESTIONS ================= */
+  var card = $('card');
+
+  function renderQuestion(){
+    var q = Q[idx];
+    drawRobot($('robotLab'), idx);
+    $('partsPill').textContent = 'Pezzi: ' + idx + '/' + Q.length;
+    card.innerHTML =
+      '<p class="topic">' + q.topic + ' · sfida ' + (idx+1) + ' di ' + Q.length + '</p>' +
+      '<h2></h2>' +
+      '<div class="figure">' + q.fig + '</div>' +
+      '<div class="options" id="opts"></div>' +
+      '<div class="feedback" id="fb" hidden aria-live="polite"></div>' +
+      '<div class="actions"><button class="btn btn-punch" id="btnNext" hidden>' + (idx === Q.length-1 ? 'Accendi Pixel ⚡' : 'Prossima sfida →') + '</button></div>';
+    card.querySelector('h2').textContent = q.text;
+    var opts = $('opts');
+    (q.options.length === 2 ? q.options.slice().sort().reverse() : shuffle(q.options)).forEach(function(o){
+      var b = document.createElement('button');
+      b.className = 'opt-btn';
+      b.textContent = o;
+      b.addEventListener('click', function(){
+        var fb = $('fb');
+        fb.hidden = false;
+        if(o === q.correct){
+          chime(true);
+          b.classList.add('correct');
+          opts.querySelectorAll('button').forEach(function(x){ x.disabled = true; });
+          fb.className = 'feedback ok';
+          fb.textContent = '✅ Giusto! ' + q.explain + ' 🔧 Pezzo rimontato!';
+          drawRobot($('robotLab'), idx + 1);
+          $('partsPill').textContent = 'Pezzi: ' + (idx+1) + '/' + Q.length;
+          var nx = $('btnNext'); nx.hidden = false; nx.focus();
+        } else {
+          chime(false);
+          mistakes++;
+          b.classList.add('wrong');
+          b.disabled = true;
+          fb.className = 'feedback bad';
+          fb.textContent = '❌ Non è giusto. Guarda di nuovo il disegno con attenzione!';
+        }
+      });
+      opts.appendChild(b);
+    });
+    $('btnNext').addEventListener('click', function(){
+      idx++;
+      if(idx >= Q.length) endGame(); else { renderQuestion(); window.scrollTo(0,0); }
+    });
+  }
+
+  function endGame(){
+    drawRobot($('robotEnd'), Q.length);
+    var stars = mistakes <= 1 ? 3 : mistakes <= 4 ? 2 : 1;
+    $('endStars').textContent = '⭐'.repeat(stars) + '☆'.repeat(3 - stars);
+    $('endStars').setAttribute('aria-label', stars + ' stelle su 3');
+    $('endStory').textContent = 'Hai superato tutte le 12 sfide e rimontato il robot Pixel pezzo per pezzo. Bip bup: Pixel ti ringrazia! ' +
+      (mistakes === 0 ? 'Nemmeno un errore: precisione da vero ingegnere!' : 'Hai fatto ' + mistakes + (mistakes === 1 ? ' errore' : ' errori') + ', ma hai sempre trovato la risposta giusta.');
+    showScreen('screen-end');
+  }
+
+  /* ================= WIRING ================= */
+  drawRobot($('robotCover'), 0);
+  $('btnStart').addEventListener('click', function(){ idx = 0; mistakes = 0; renderQuestion(); showScreen('screen-lab'); });
+  $('btnRestart').addEventListener('click', function(){ drawRobot($('robotCover'), 0); showScreen('screen-cover'); });
+})();
+</script>
+</body>
+</html>

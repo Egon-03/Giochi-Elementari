@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Il Cestino del Riciclo — Gioco sull'ambiente</title>
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sniglet:wght@400;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --eco:#21A179;
+    --eco-dark:#16775A;
+    --earth:#3E7CB1;
+    --sand:#FFF4DE;
+    --belt:#5A5F6B;
+    --belt-2:#6B707D;
+    --ink:#1D2B28;
+    --steel:#5E6B68;
+    --ok:#2E7D4F;
+    --bad:#B3261E;
+    --font-display:'Sniglet',sans-serif;
+    --font-body:'Nunito',sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:var(--font-body);background:#E3F6EE;color:var(--ink);line-height:1.5;}
+  h1,h2,h3{font-family:var(--font-display);font-weight:800;margin:0;}
+  button{font-family:inherit;cursor:pointer;}
+  :focus-visible{outline:3px solid #F2792B;outline-offset:3px;}
+
+  .screen{display:none;min-height:100vh;padding:4.5rem 1.25rem 3rem;}
+  .screen.active{display:block;animation:fadein .3s ease;}
+  @keyframes fadein{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+  .wrap{max-width:900px;margin:0 auto;}
+  .center{text-align:center;}
+  .eyebrow{color:var(--eco-dark);font-weight:800;font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;margin:0 0 .4rem;}
+  .title{font-size:clamp(2rem,6vw,3.2rem);color:var(--eco-dark);margin:.3rem 0 .6rem;}
+  .subtitle{font-size:1.05rem;color:var(--steel);max-width:600px;margin:0 auto 1.4rem;}
+
+  .btn{display:inline-block;border:none;border-radius:14px;padding:.9rem 1.6rem;font-weight:800;font-size:1rem;background:var(--eco);color:#fff;box-shadow:0 4px 0 var(--eco-dark);}
+  .btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--eco-dark);}
+  .btn[hidden]{display:none;}
+  .btn-punch{position:relative;overflow:hidden;}
+  .punch-dot{position:absolute;width:10px;height:10px;border-radius:50%;background:#fff;transform:translate(-50%,-50%) scale(0);animation:punch .4s ease-out forwards;pointer-events:none;}
+  @keyframes punch{0%{transform:translate(-50%,-50%) scale(0);opacity:1;}70%{transform:translate(-50%,-50%) scale(1);opacity:1;}100%{transform:translate(-50%,-50%) scale(1);opacity:0;}}
+
+  .howto{max-width:620px;margin:1.5rem auto 0;background:#fff;border:2px solid #C5EBDD;border-radius:14px;padding:1rem 1.3rem;text-align:left;}
+  .howto summary{cursor:pointer;font-weight:800;}
+  .howto ul{margin:.7rem 0 0;padding-left:1.2rem;}
+
+  .planet{width:150px;height:150px;display:block;margin:0 auto;}
+  .planet .float{animation:float 3s ease-in-out infinite;}
+  @keyframes float{50%{transform:translateY(-6px);}}
+
+  /* --- game --- */
+  .hud{display:flex;justify-content:space-between;align-items:center;gap:.6rem;flex-wrap:wrap;margin-bottom:.8rem;}
+  .pill{background:#fff;border-radius:999px;padding:.35rem .9rem;font-weight:800;box-shadow:0 3px 0 #C5EBDD;}
+  .belt-wrap{background:#fff;border-radius:18px;padding:1rem;box-shadow:0 6px 0 #C5EBDD;}
+  .belt{position:relative;height:120px;border-radius:14px;overflow:hidden;
+    background:repeating-linear-gradient(90deg,var(--belt) 0 28px,var(--belt-2) 28px 56px);border:5px solid #3D414A;}
+  .belt.moving{animation:belt 1.2s linear infinite;}
+  @keyframes belt{from{background-position:0 0;}to{background-position:56px 0;}}
+  .belt::after{content:"";position:absolute;right:0;top:0;bottom:0;width:22%;background:linear-gradient(90deg,transparent,rgba(215,38,61,.35));pointer-events:none;}
+  .item{position:absolute;top:50%;left:0;transform:translate(-50%,-50%);background:#fff;border-radius:16px;padding:.4rem .7rem;text-align:center;box-shadow:0 4px 0 rgba(0,0,0,.25);min-width:110px;}
+  .item .emo{font-size:2.4rem;line-height:1.1;display:block;}
+  .item .nm{font-weight:800;font-size:.85rem;display:block;line-height:1.2;}
+  .item.zap{animation:zap .35s ease forwards;}
+  @keyframes zap{to{transform:translate(-50%,40%) scale(.4);opacity:0;}}
+  .item.shake{animation:shake .35s ease;}
+  @keyframes shake{0%,100%{transform:translate(-50%,-50%);}25%{transform:translate(-56%,-50%);}75%{transform:translate(-44%,-50%);}}
+  .timer-note{font-size:.85rem;color:var(--steel);margin:.5rem 0 0;text-align:center;}
+
+  .bins{display:grid;grid-template-columns:repeat(4,1fr);gap:.6rem;margin-top:1rem;}
+  @media (max-width:620px){.bins{grid-template-columns:repeat(2,1fr);}}
+  .bin{border:none;border-radius:14px 14px 18px 18px;padding:.8rem .4rem .7rem;color:#fff;font-weight:800;font-size:.95rem;background:var(--c);box-shadow:0 5px 0 rgba(0,0,0,.25);display:flex;flex-direction:column;align-items:center;gap:.2rem;position:relative;}
+  .bin::before{content:"";position:absolute;left:8%;right:8%;top:-6px;height:10px;border-radius:6px;background:var(--c);filter:brightness(.8);}
+  .bin .ic{font-size:1.8rem;line-height:1;}
+  .bin .sub{font-size:.7rem;font-weight:700;opacity:.9;}
+  .bin:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(0,0,0,.25);}
+  .bin:disabled{opacity:.5;cursor:default;}
+
+  .feedback{margin-top:1rem;padding:.8rem 1rem;border-radius:10px;font-weight:700;min-height:3.2em;}
+  .feedback.ok{background:#E4F3EA;color:var(--ok);}
+  .feedback.bad{background:#FBE6E4;color:var(--bad);}
+  .feedback.info{background:#FFF4DE;color:#7A5A12;}
+
+  /* --- end --- */
+  .diploma{background:#fff;border-radius:16px;padding:1.8rem;max-width:640px;margin:1.5rem auto;border:4px double var(--eco);text-align:left;}
+  .diploma h3{color:var(--eco-dark);}
+  .facts-list{margin:1rem 0;padding-left:1.2rem;}
+  .facts-list li{margin-bottom:.5rem;}
+  .stars{font-size:2rem;letter-spacing:.2rem;}
+  .review{margin:.6rem 0;padding-left:1.2rem;}
+
+  .home-link{position:fixed;left:1rem;top:1rem;z-index:50;background:#fff;color:var(--ink);text-decoration:none;font-weight:800;font-size:.9rem;padding:.55rem 1rem;border-radius:999px;box-shadow:0 3px 0 #B9DFCF;}
+  .home-link:active{transform:translateY(3px);box-shadow:0 1px 0 #B9DFCF;}
+
+  @media (prefers-reduced-motion: reduce){
+    .screen.active,.planet .float,.belt.moving,.item.zap,.item.shake{animation:none;}
+  }
+</style>
+</head>
+<body>
+
+<a href="../index.html" class="home-link" aria-label="Torna alla pagina dei giochi">🏠 Home</a>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="planetSym" viewBox="0 0 150 150">
+      <g class="float">
+        <circle cx="75" cy="75" r="60" fill="#3E7CB1"/>
+        <path d="M40,45 Q55,30 70,42 Q78,55 62,62 Q48,70 40,60 Z" fill="#7BC67E"/>
+        <path d="M88,90 Q105,78 118,92 Q120,110 102,116 Q86,112 88,90 Z" fill="#7BC67E"/>
+        <path d="M95,35 Q110,38 112,50 Q100,52 95,35 Z" fill="#7BC67E"/>
+        <circle cx="58" cy="80" r="6" fill="#1D2B28"/><circle cx="92" cy="80" r="6" fill="#1D2B28"/>
+        <circle cx="60" cy="78" r="2" fill="#fff"/><circle cx="94" cy="78" r="2" fill="#fff"/>
+        <circle cx="48" cy="94" r="7" fill="#FF9AA2" opacity=".6"/><circle cx="102" cy="94" r="7" fill="#FF9AA2" opacity=".6"/>
+        <path class="mouth" d="M62,96 Q75,108 88,96" stroke="#1D2B28" stroke-width="4" fill="none" stroke-linecap="round"/>
+      </g>
+    </symbol>
+  </defs>
+</svg>
+
+<main id="app">
+
+  <!-- COVER -->
+  <section id="screen-cover" class="screen active">
+    <div class="wrap center">
+      <svg class="planet" role="img" aria-label="Il pianeta Terra sorridente"><use href="#planetSym"/></svg>
+      <span class="eyebrow">♻️ Gioco sull'ambiente</span>
+      <h1 class="title">Il Cestino del Riciclo</h1>
+      <p class="subtitle">Il nastro trasportatore dell'ecocentro è impazzito: arrivano un sacco di rifiuti tutti mescolati! Mettili nel contenitore giusto prima che arrivino in fondo al nastro e aiuta il pianeta a sorridere.</p>
+      <button class="btn btn-punch" id="btnStart">Accendi il nastro ♻️</button>
+      <details class="howto">
+        <summary>Come si gioca</summary>
+        <ul>
+          <li>Sul nastro arriva un oggetto alla volta: tocca il contenitore dove va buttato.</li>
+          <li>Più rispondi in fretta, più punti guadagni! Se l'oggetto arriva in fondo al nastro, torna indietro più tardi.</li>
+          <li>Leggi bene la spiegazione dopo ogni risposta: alcuni oggetti sono dei veri tranelli!</li>
+          <li>Se sul tuo dispositivo è attiva l'opzione "riduci il movimento", il nastro sta fermo e puoi pensare con calma.</li>
+        </ul>
+      </details>
+    </div>
+  </section>
+
+  <!-- GAME -->
+  <section id="screen-game" class="screen">
+    <div class="wrap">
+      <div class="hud">
+        <span class="pill" id="hudLeft">Oggetti: 0/13</span>
+        <span class="pill" id="hudScore">Punti: 0</span>
+      </div>
+      <div class="belt-wrap">
+        <div class="belt" id="belt"></div>
+        <p class="timer-note" id="timerNote">Smista l'oggetto prima che arrivi alla zona rossa!</p>
+        <div class="bins" id="bins"></div>
+        <div class="feedback info" id="fb" aria-live="polite">Tocca il contenitore giusto per il primo oggetto.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- END -->
+  <section id="screen-end" class="screen">
+    <div class="wrap center">
+      <svg class="planet" id="planetEnd" role="img" aria-label="Il pianeta Terra che ti ringrazia"><use href="#planetSym"/></svg>
+      <p class="eyebrow">Il nastro è vuoto!</p>
+      <h2 class="title">Il pianeta ti ringrazia!</h2>
+      <div class="stars" id="endStars"></div>
+      <div class="diploma">
+        <h3>🎖️ Diploma di Eco-Campione</h3>
+        <p id="endStory"></p>
+        <div id="review"></div>
+        <p><b>Cosa hai imparato:</b></p>
+        <ul class="facts-list">
+          <li>🧴 Il <b>PET</b> si raccoglie a parte: solo le bottiglie delle bibite, che si riportano al negozio o al supermercato.</li>
+          <li>🔋 Le <b>pile</b> sono pericolose per l'ambiente: in Svizzera i negozi che le vendono devono anche riprenderle.</li>
+          <li>🍾 Il <b>vetro</b> all'ecocentro si divide per colore: bianco, verde e marrone.</li>
+          <li>🧻 Fazzoletti e tovaglioli di carta usati <b>non</b> vanno nella carta: vanno nel sacco dei rifiuti.</li>
+          <li>🍌 Gli scarti di frutta e verdura diventano <b>compost</b>, un concime naturale per l'orto.</li>
+          <li>🗑️ In Ticino i rifiuti che non si riciclano vanno nel <b>sacco ufficiale</b> del comune: meno rifiuti produciamo, meglio è!</li>
+        </ul>
+      </div>
+      <button class="btn btn-punch" id="btnRestart">Gioca di nuovo 🔁</button>
+    </div>
+  </section>
+
+</main>
+
+<script>
+(function(){
+  "use strict";
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ================= DATA ================= */
+  var BINS = [
+    {id:'carta', label:'Carta e cartone', icon:'📄', color:'#3E7CB1'},
+    {id:'vetro', label:'Vetro', icon:'🍾', color:'#2E8B57'},
+    {id:'pet', label:'PET', icon:'🧴', color:'#00A3C4', sub:'bottiglie bibite'},
+    {id:'metallo', label:'Alluminio e latta', icon:'🥫', color:'#7D8491'},
+    {id:'compost', label:'Compost', icon:'🍂', color:'#8A5A2B', sub:'scarti verdi'},
+    {id:'pile', label:'Pile', icon:'🔋', color:'#E07A1F', sub:'al negozio'},
+    {id:'sacco', label:'Sacco rifiuti', icon:'🗑️', color:'#3A3F47', sub:'non riciclabile'}
+  ];
+
+  var ITEMS = [
+    {name:'Giornale', emo:'📰', bin:'carta', why:'La carta dei giornali si ricicla e diventa carta nuova.'},
+    {name:'Scatola dei cereali', emo:'📦', bin:'carta', why:'Il cartone pulito va nella carta: schiacciala per occupare meno spazio!'},
+    {name:'Bottiglia di vetro', emo:'🍾', bin:'vetro', why:'Il vetro si può fondere e riciclare all\'infinito.'},
+    {name:'Vasetto di marmellata vuoto', emo:'🫙', bin:'vetro', why:'È di vetro: togli il coperchio di metallo e sciacqualo.'},
+    {name:'Bottiglia d\'acqua di PET', emo:'🧴', bin:'pet', why:'Le bottiglie delle bibite in PET si riportano al negozio.'},
+    {name:'Lattina di bibita', emo:'🥤', bin:'metallo', why:'Le lattine sono di alluminio: riciclarle risparmia tantissima energia.'},
+    {name:'Scatoletta del tonno', emo:'🥫', bin:'metallo', why:'La scatoletta è di latta: va con alluminio e latta, ben pulita.'},
+    {name:'Buccia di banana', emo:'🍌', bin:'compost', why:'Gli scarti di frutta diventano terra buona per l\'orto.'},
+    {name:'Torsolo di mela', emo:'🍎', bin:'compost', why:'Anche il torsolo diventa compost.'},
+    {name:'Pila della torcia', emo:'🔋', bin:'pile', why:'Le pile contengono sostanze pericolose: si riportano al negozio.'},
+    {name:'Fazzoletto di carta usato', emo:'🤧', bin:'sacco', why:'Tranello! Il fazzoletto usato è sporco e non si ricicla: va nel sacco dei rifiuti.'},
+    {name:'Spazzolino da denti', emo:'🪥', bin:'sacco', why:'È fatto di materiali mescolati: va nel sacco dei rifiuti.'},
+    {name:'Vasetto dello yogurt', emo:'🥛', bin:'sacco', why:'Tranello! Non è una bottiglia di PET: va nel sacco (o nella raccolta della plastica, se il tuo comune la organizza).'}
+  ];
+
+  var BELT_SECONDS = 11;   // tempo per attraversare il nastro
+  var queue = [], current = null, score = 0, sorted = 0, mistakes = 0, wrongItems = [];
+  var t0 = 0, raf = null, itemEl = null, busy = false, triedThis = false;
+
+  /* ================= HELPERS ================= */
+  function $(id){ return document.getElementById(id); }
+  function shuffle(a){
+    a = a.slice();
+    for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; }
+    return a;
+  }
+  function binById(id){ return BINS.filter(function(b){ return b.id === id; })[0]; }
+
+  document.addEventListener('click', function(e){
+    var btn = e.target.closest('.btn-punch');
+    if(!btn || reduceMotion) return;
+    var rect = btn.getBoundingClientRect();
+    var dot = document.createElement('span');
+    dot.className = 'punch-dot';
+    dot.style.left = (e.clientX - rect.left) + 'px';
+    dot.style.top = (e.clientY - rect.top) + 'px';
+    btn.appendChild(dot);
+    setTimeout(function(){ dot.remove(); }, 420);
+  });
+
+  function chime(ok){
+    try{
+      var Ctx = window.AudioContext || window.webkitAudioContext;
+      if(!chime.ctx) chime.ctx = new Ctx();
+      var ctx = chime.ctx;
+      var o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = 'sine';
+      o.frequency.value = ok ? 880 : 200;
+      if(ok) o.frequency.linearRampToValueAtTime(1320, ctx.currentTime + 0.12);
+      g.gain.value = 0.07;
+      o.connect(g); g.connect(ctx.destination);
+      o.start();
+      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.3);
+      o.stop(ctx.currentTime + 0.32);
+    }catch(e){}
+  }
+
+  function showScreen(id){
+    document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+    $(id).classList.add('active');
+    window.scrollTo(0,0);
+  }
+
+  /* ================= GAME ================= */
+  function renderBins(){
+    var box = $('bins');
+    box.innerHTML = '';
+    BINS.forEach(function(b){
+      var el = document.createElement('button');
+      el.className = 'bin';
+      el.style.setProperty('--c', b.color);
+      el.innerHTML = '<span class="ic" aria-hidden="true">' + b.icon + '</span><span>' + b.label + '</span>' + (b.sub ? '<span class="sub">' + b.sub + '</span>' : '');
+      el.addEventListener('click', function(){ choose(b); });
+      box.appendChild(el);
+    });
+  }
+
+  function updateHud(){
+    $('hudLeft').textContent = 'Oggetti: ' + sorted + '/' + ITEMS.length;
+    $('hudScore').textContent = 'Punti: ' + score;
+  }
+
+  function nextItem(){
+    if(!queue.length){ endGame(); return; }
+    current = queue.shift();
+    triedThis = false;
+    busy = false;
+    var belt = $('belt');
+    belt.innerHTML = '';
+    itemEl = document.createElement('div');
+    itemEl.className = 'item';
+    itemEl.innerHTML = '<span class="emo" aria-hidden="true">' + current.emo + '</span><span class="nm"></span>';
+    itemEl.querySelector('.nm').textContent = current.name;
+    belt.appendChild(itemEl);
+    $('belt').setAttribute('aria-label', 'Sul nastro: ' + current.name);
+    t0 = performance.now();
+    if(reduceMotion){
+      itemEl.style.left = '50%';
+    } else {
+      itemEl.style.left = '8%';
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(step);
+    }
+  }
+
+  function step(now){
+    if(busy) return;
+    var f = (now - t0) / 1000 / BELT_SECONDS;
+    itemEl.style.left = (8 + f * 84) + '%';
+    if(f >= 1){
+      // l'oggetto è arrivato in fondo: torna più tardi
+      busy = true;
+      chime(false);
+      var fb = $('fb');
+      fb.className = 'feedback bad';
+      fb.textContent = '⏰ ' + current.name + ' è arrivato in fondo al nastro! Tornerà tra poco: pensa a dove va.';
+      queue.push(current);
+      setTimeout(nextItem, 1200);
+      return;
+    }
+    raf = requestAnimationFrame(step);
+  }
+
+  function choose(b){
+    if(busy || !current) return;
+    var fb = $('fb');
+    if(b.id === current.bin){
+      busy = true;
+      cancelAnimationFrame(raf);
+      chime(true);
+      var elapsed = (performance.now() - t0) / 1000;
+      var pts = triedThis ? 2 : reduceMotion ? 10 : Math.max(5, Math.round(10 + (BELT_SECONDS - elapsed)));
+      score += pts;
+      sorted++;
+      updateHud();
+      fb.className = 'feedback ok';
+      fb.textContent = '✅ +' + pts + ' punti! ' + current.why;
+      if(!reduceMotion) itemEl.classList.add('zap');
+      setTimeout(nextItem, reduceMotion ? 1500 : 1700);
+    } else {
+      chime(false);
+      mistakes++;
+      if(!triedThis) wrongItems.push(current);
+      triedThis = true;
+      fb.className = 'feedback bad';
+      fb.textContent = '❌ ' + current.name + ' non va in "' + b.label + '". Riprova!';
+      if(!reduceMotion){
+        itemEl.classList.remove('shake'); void itemEl.offsetWidth; itemEl.classList.add('shake');
+      }
+    }
+  }
+
+  function start(){
+    queue = shuffle(ITEMS);
+    score = 0; sorted = 0; mistakes = 0; wrongItems = [];
+    updateHud();
+    renderBins();
+    $('belt').classList.toggle('moving', !reduceMotion);
+    $('timerNote').textContent = reduceMotion
+      ? 'Il nastro è fermo: prenditi tutto il tempo che ti serve.'
+      : 'Smista l\'oggetto prima che arrivi alla zona rossa!';
+    $('fb').className = 'feedback info';
+    $('fb').textContent = 'Tocca il contenitore giusto per il primo oggetto.';
+    showScreen('screen-game');
+    nextItem();
+  }
+
+  function endGame(){
+    cancelAnimationFrame(raf);
+    current = null;
+    var stars = mistakes <= 1 ? 3 : mistakes <= 4 ? 2 : 1;
+    $('endStars').textContent = '⭐'.repeat(stars) + '☆'.repeat(3 - stars);
+    $('endStars').setAttribute('aria-label', stars + ' stelle su 3');
+    $('endStory').textContent = 'Hai smistato tutti i ' + ITEMS.length + ' oggetti e fatto ' + score + ' punti. ' +
+      (mistakes === 0 ? 'Nemmeno un errore: sei un vero Eco-Campione!' : 'Hai sbagliato ' + mistakes + (mistakes === 1 ? ' volta' : ' volte') + ', ma alla fine ogni oggetto è finito nel posto giusto.');
+    var rv = $('review');
+    rv.innerHTML = '';
+    if(wrongItems.length){
+      var p = document.createElement('p'); p.innerHTML = '<b>Da ricordare:</b>'; rv.appendChild(p);
+      var ul = document.createElement('ul'); ul.className = 'review';
+      wrongItems.forEach(function(it){
+        var li = document.createElement('li');
+        li.textContent = it.emo + ' ' + it.name + ' → ' + binById(it.bin).label;
+        ul.appendChild(li);
+      });
+      rv.appendChild(ul);
+    }
+    showScreen('screen-end');
+  }
+
+  /* ================= WIRING ================= */
+  $('btnStart').addEventListener('click', start);
+  $('btnRestart').addEventListener('click', function(){ showScreen('screen-cover'); });
+})();
+</script>
+</body>
+</html>

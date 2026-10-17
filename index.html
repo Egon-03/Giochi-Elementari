@@ -138,6 +138,30 @@
     100%{transform:translate(-50%,-50%) scale(1);opacity:0;}
   }
 
+  /* ---------- filtro materie ---------- */
+  .filters{
+    display:flex;flex-wrap:wrap;justify-content:center;gap:.5rem;
+    margin:0 0 1.8rem;padding:0;list-style:none;
+  }
+  .filter-chip{
+    border:2px solid #DCD3EE;background:#fff;color:var(--ink);
+    font-weight:800;font-size:.92rem;border-radius:999px;
+    padding:.45rem .95rem;cursor:pointer;
+    display:inline-flex;align-items:center;gap:.4rem;
+    transition:background .15s ease, border-color .15s ease, transform .15s ease;
+  }
+  .filter-chip:hover{border-color:var(--purple);transform:translateY(-1px);}
+  .filter-chip .count{
+    background:#F1ECFB;color:var(--purple);border-radius:999px;
+    font-size:.75rem;padding:.05rem .45rem;min-width:1.5rem;text-align:center;
+  }
+  .filter-chip[aria-pressed="true"]{
+    background:var(--purple);border-color:var(--purple);color:#fff;
+    box-shadow:0 3px 0 #5F45A8;
+  }
+  .filter-chip[aria-pressed="true"] .count{background:rgba(255,255,255,.25);color:#fff;}
+  .filter-status{text-align:center;color:var(--steel);font-size:.9rem;margin:-1rem 0 1.4rem;min-height:1.2em;}
+
   /* ---------- coming soon card ---------- */
   .game-card.coming-soon{
     border:3px dashed #D8CFEA;
@@ -170,6 +194,7 @@
 
   @media (prefers-reduced-motion: reduce){
     .game-card{animation:none;}
+    .filter-chip{transition:none;}
   }
 </style>
 </head>
@@ -239,7 +264,9 @@
   <section class="games-section">
     <div class="wrap">
       <h2>I nostri giochi</h2>
-      <p class="lead">Tocca una card per iniziare a giocare 👇</p>
+      <p class="lead">Scegli una materia, poi tocca una card per iniziare a giocare 👇</p>
+      <div class="filters" id="filters" role="group" aria-label="Filtra i giochi per materia"></div>
+      <p class="filter-status" id="filterStatus" aria-live="polite"></p>
       <div class="games-grid" id="gamesGrid"></div>
     </div>
   </section>
@@ -264,12 +291,16 @@
     Per aggiungere un nuovo gioco:
     1. Metti il file HTML del gioco dentro la cartella "giochi/".
     2. Aggiungi un nuovo oggetto qui sotto con i suoi dati.
+       "categorie" decide in quali filtri compare il gioco: usa le materie
+       gia' presenti (es. "Matematica") o una nuova, che apparira' da sola
+       tra i bottoni del filtro.
     Il colore serve solo per il bottone e l'icona della card: ogni gioco
     puo' avere la sua ambientazione grafica, indipendente dalle altre.
   */
   var GIOCHI = [
     {
       file: "giochi/il-mistero-del-treno.html",
+      categorie: ["Geografia","Matematica"],
       titolo: "Il Mistero del Treno delle 15:42",
       materia: "Geografia e Matematica",
       icona: "🕵️",
@@ -279,6 +310,7 @@
     },
     {
       file: "giochi/il-fantasma-della-ferrovia.html",
+      categorie: ["Geografia","Matematica","Storia"],
       titolo: "Il Fantasma della Ferrovia",
       materia: "Geografia, Matematica e Storia",
       icona: "🚂",
@@ -288,6 +320,7 @@
     },
     {
       file: "giochi/caccia-sulla-mappa-della-svizzera.html",
+      categorie: ["Geografia"],
       titolo: "Caccia sulla Mappa della Svizzera",
       materia: "Geografia",
       icona: "🗺️",
@@ -297,6 +330,7 @@
     },
     {
       file: "giochi/il-quaderno-degli-enigmi.html",
+      categorie: ["Matematica"],
       titolo: "Il Quaderno degli Enigmi",
       materia: "Matematica e Logica",
       icona: "🧮",
@@ -306,6 +340,7 @@
     },
     {
       file: "giochi/il-segreto-dei-tre-castelli.html",
+      categorie: ["Storia"],
       titolo: "Il Segreto dei Tre Castelli",
       materia: "Storia del Ticino",
       icona: "🏰",
@@ -315,6 +350,7 @@
     },
     {
       file: "giochi/la-biblioteca-incantata.html",
+      categorie: ["Italiano"],
       titolo: "La Biblioteca Incantata",
       materia: "Italiano",
       icona: "📚",
@@ -324,6 +360,7 @@
     },
     {
       file: "giochi/la-spedizione-nel-bosco.html",
+      categorie: ["Scienze"],
       titolo: "La Spedizione nel Bosco",
       materia: "Scienze",
       icona: "🌲",
@@ -333,12 +370,63 @@
     },
     {
       file: "giochi/il-mercato-di-lugano.html",
+      categorie: ["Matematica"],
       titolo: "Il Mercato di Lugano",
       materia: "Matematica con i soldi",
       icona: "🧺",
       colore: "#D94F7A",
       coloreScuro: "#A3335A",
       descrizione: "Gestisci la bancarella della signora Rosa: calcola il conto di 6 clienti e dai il resto giusto con monete e banconote svizzere."
+    },
+    {
+      file: "giochi/la-corsa-delle-tabelline.html",
+      categorie: ["Matematica"],
+      titolo: "La Corsa delle Tabelline",
+      materia: "Matematica",
+      icona: "🏎️",
+      colore: "#E63946",
+      coloreScuro: "#B02531",
+      descrizione: "Sfida la Lumaca Turbo! Scegli le tabelline da allenare: ogni risposta giusta fa avanzare la tua macchinina verso il traguardo."
+    },
+    {
+      file: "giochi/il-laboratorio-delle-forme.html",
+      categorie: ["Matematica"],
+      titolo: "Il Laboratorio delle Forme",
+      materia: "Geometria",
+      icona: "📐",
+      colore: "#1D4E89",
+      coloreScuro: "#123563",
+      descrizione: "Il robot Pixel si è smontato! Riconosci forme, angoli e simmetrie, calcola perimetri e aree per rimontarlo pezzo per pezzo."
+    },
+    {
+      file: "giochi/bonjour-il-treno-per-ginevra.html",
+      categorie: ["Francese"],
+      titolo: "Bonjour! Il Treno per Ginevra",
+      materia: "Francese",
+      icona: "🥖",
+      colore: "#2B59C3",
+      coloreScuro: "#1C3F91",
+      descrizione: "In treno attraverso la Svizzera romanda: impara saluti, numeri, colori e animali giocando a memory, poi parla in francese a Ginevra!"
+    },
+    {
+      file: "giochi/la-patente-della-bici.html",
+      categorie: ["Educazione stradale"],
+      titolo: "La Patente della Bici",
+      materia: "Educazione stradale",
+      icona: "🚲",
+      colore: "#D7263D",
+      coloreScuro: "#A11A2C",
+      descrizione: "Pedala per il quartiere con l'agente Rezzonico: riconosci i cartelli stradali, rispondi alle domande e ottieni la tua patente da stampare."
+    },
+    {
+      file: "giochi/il-cestino-del-riciclo.html",
+      categorie: ["Ambiente"],
+      titolo: "Il Cestino del Riciclo",
+      materia: "Ambiente",
+      icona: "♻️",
+      colore: "#21A179",
+      coloreScuro: "#16775A",
+      descrizione: "Il nastro dell'ecocentro è impazzito! Metti carta, vetro, PET, pile e scarti nel contenitore giusto prima che arrivino in fondo."
     }
   ];
 
@@ -347,13 +435,67 @@
     return 'rgba(' + r + ',' + g + ',' + b + ',' + alpha + ')';
   }
 
+  var TUTTI = 'Tutti';
+  var filtro = TUTTI;
+
+  function slug(t){
+    return t.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  }
+
+  function elencoCategorie(){
+    var lista = [];
+    GIOCHI.forEach(function(g){
+      g.categorie.forEach(function(c){ if(lista.indexOf(c) < 0) lista.push(c); });
+    });
+    return lista.sort(function(a, b){ return a.localeCompare(b, 'it'); });
+  }
+
+  function contaGiochi(cat){
+    if(cat === TUTTI) return GIOCHI.length;
+    return GIOCHI.filter(function(g){ return g.categorie.indexOf(cat) >= 0; }).length;
+  }
+
+  function renderFilters(){
+    var box = document.getElementById('filters');
+    box.innerHTML = '';
+    [TUTTI].concat(elencoCategorie()).forEach(function(cat){
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'filter-chip';
+      b.setAttribute('aria-pressed', cat === filtro ? 'true' : 'false');
+      b.innerHTML = '<span></span><span class="count" aria-hidden="true">' + contaGiochi(cat) + '</span>';
+      b.firstChild.textContent = cat;
+      b.setAttribute('aria-label', cat + ', ' + contaGiochi(cat) + (contaGiochi(cat) === 1 ? ' gioco' : ' giochi'));
+      b.addEventListener('click', function(){ scegliFiltro(cat, true); });
+      box.appendChild(b);
+    });
+  }
+
+  function scegliFiltro(cat, aggiornaUrl){
+    filtro = cat;
+    if(aggiornaUrl){
+      var hash = cat === TUTTI ? '' : '#' + slug(cat);
+      try{ history.replaceState(null, '', location.pathname + location.search + hash); }catch(e){}
+    }
+    renderFilters();
+    renderGames();
+  }
+
+  function filtroDaUrl(){
+    var h = decodeURIComponent(location.hash.replace(/^#/, ''));
+    if(!h) return TUTTI;
+    var trovata = elencoCategorie().filter(function(c){ return slug(c) === h; })[0];
+    return trovata || TUTTI;
+  }
+
   function renderGames(){
     var grid = document.getElementById('gamesGrid');
     grid.innerHTML = '';
-    GIOCHI.forEach(function(g, i){
+    var visibili = GIOCHI.filter(function(g){ return filtro === TUTTI || g.categorie.indexOf(filtro) >= 0; });
+    visibili.forEach(function(g, i){
       var card = document.createElement('article');
       card.className = 'game-card';
-      card.style.animationDelay = (i * 0.08) + 's';
+      card.style.animationDelay = (i * 0.06) + 's';
       card.innerHTML =
         '<div class="badge-icon" style="background:' + hexToRgba(g.colore, .16) + ';">' + g.icona + '</div>' +
         '<span class="subject" style="background:' + hexToRgba(g.colore, .14) + ';color:' + g.coloreScuro + ';">' + g.materia + '</span>' +
@@ -363,11 +505,17 @@
       grid.appendChild(card);
     });
 
-    var soon = document.createElement('article');
-    soon.className = 'game-card coming-soon';
-    soon.style.animationDelay = (GIOCHI.length * 0.08) + 's';
-    soon.innerHTML = '<div class="badge-icon">✨</div><h3>Presto...</h3><p class="desc">Nuovi giochi sono in preparazione. Torna a trovarci!</p>';
-    grid.appendChild(soon);
+    document.getElementById('filterStatus').textContent = filtro === TUTTI
+      ? ''
+      : (visibili.length === 1 ? '1 gioco' : visibili.length + ' giochi') + ' di ' + filtro;
+
+    if(filtro === TUTTI){
+      var soon = document.createElement('article');
+      soon.className = 'game-card coming-soon';
+      soon.style.animationDelay = (visibili.length * 0.06) + 's';
+      soon.innerHTML = '<div class="badge-icon">✨</div><h3>Presto...</h3><p class="desc">Nuovi giochi sono in preparazione. Torna a trovarci!</p>';
+      grid.appendChild(soon);
+    }
   }
 
   document.addEventListener('click', function(e){
@@ -382,7 +530,8 @@
     setTimeout(function(){ dot.remove(); }, 420);
   });
 
-  renderGames();
+  window.addEventListener('hashchange', function(){ scegliFiltro(filtroDaUrl(), false); });
+  scegliFiltro(filtroDaUrl(), false);
 })();
 </script>
 <script src="ads.js"></script>
